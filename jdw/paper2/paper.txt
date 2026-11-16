@@ -1,0 +1,224 @@
+                    A Physics-Informed Pressure Digital Twin
+                       for a High-Gravity Beer Blend Skid
+                                  Department of Computer Science
+
+                                               October 2026
+
+
+                                                  Abstract
+      A nonlinear predictive controller for high-gravity blending is only as good as the valve capacities
+      and the header pressure it believes. This paper builds a physics-informed pressure digital twin of
+      the three-valve blend network. A commissioning campaign of twenty-eight noisy steady points
+      estimates the three valve capacities and a beer-header pressure bias to well inside one percent.
+      Pipe roughness and the lumped minor-loss coefficient are not separately identifiable; their sum,
+      an effective line loss, is recovered to about two and a half percent. A residual network with a
+      mass-balance penalty is trained on the same campaign and then gated off, because the hold-out
+      flow error rises from 0.030 m3 h−1 to 0.037 m3 h−1 . Deployed as the model inside the predictive
+      controller, the calibrated physical twin brings a lager-to-light grade change inside 0.05◦ P in
+      16 s. The same controller on the uncommissioned model leaves an offset of about 0.19◦ P. The
+      twin also inverts a measured water-valve deadband. It does not, and cannot, remove dissolved
+      oxygen that arrives in the dilution water.
+
+
+1    Introduction
+A digital twin is a model kept aligned with a particular asset and used for a decision [1]. In brewing,
+published twins have been built around fermentation sampling and monitoring [2]. The blend skid
+is a different asset. Its decision is a valve move on a time scale of seconds, and the parameters that
+move the beer are hydraulic: three capacities Kv , a possible bias on the beer-header transmitter,
+and the friction loss of the blend line. A predictive controller that uses the wrong capacities asks
+for the wrong lifts. A ratio station is less exposed, because its flow loops close on measured flow.
+The twin exists so that the predictive controller is entitled to its model.
+   Hybrid models and physics-informed networks are the usual way to attach data to a balance
+[3–5]. Process applications keep the network when the hold-out improves and use the corrected
+model inside predictive control [6, 7]. The rule adopted here is the same rule with the opposite
+deployment: the network is kept only if the hold-out flow error falls. On this skid it rises, and the
+deployed twin is the calibrated valve law alone.
+
+
+2    What the flows can identify
+The valve law is the installed form of IEC 60534 [8],
+                                                            s
+                                                                  ∆p
+                                         Q = Kv 50    l−1
+                                                                       .                                    (1)
+                                                                ρ/1000
+
+
+
+
+                                                      1
+Table 1: Commissioning estimates. Standard errors are from the linearised least-squares covariance.
+Roughness and minor loss are omitted as a pair; the table publishes their sum CL .
+
+                        Parameter             True      Estimate   Std. error
+                        Kv,h (m3 /h)          32.00        32.02        0.08
+                        Kv,w (m3 /h)          12.00        12.00        0.01
+                        Kv,f (m3 /h)          64.00        63.99        0.12
+                        Header bias (bar)     0.100        0.098       0.006
+                        Effective loss CL     18.85        18.37          —
+                        Solubility scale κζ   0.930        0.930          —
+
+
+The blend line adds a Darcy loss. At a fixed Reynolds number that loss depends on roughness ε
+and on the minor-loss coefficient K only through
+
+                                       CL = f (ε) L/D + K.                                        (2)
+
+A positive step in ε and a compensating step in K leave CL , and therefore every flow, unchanged.
+The two columns of the residual Jacobian are then scalar multiples, and the formal standard
+errors diverge. The engineering parameter is CL . The campaign reports that sum and withholds a
+roughness.
+  Capacities do not share a column. Kv,h scales only the beer flow, and a change of beer lift
+changes the drop and the flow in a combination that a pure header bias cannot imitate. The
+beer-header bias bh is therefore estimated jointly with the three capacities, by nonlinear least
+squares on steady points. Twenty-eight points are used, with flow noise of about 0.03 m3 h−1 and
+pressure noise of 0.008 bar. The header reading is high by 0.10 bar until the bias is removed. The
+true line is CL = 18.85, from a Haaland friction factor at ε = 2 µm plus K = 14 [9].
+   Two further scalars are not in that regression. The solubility scale κζ is a single bench
+point relating dissolved carbon dioxide to equilibrium pressure. The density contraction γ in
+ρ ∝ (1 − γAw Er ) is the median of Coriolis densities. Both are identifiable from measurements the
+flow campaign does not contain, and both are recovered to the plant values.
+   Table 1 is the result. The capacity errors are a few hundredths of a cubic metre per hour on
+valves of capacity 12 to 64. The bias error is 0.002 bar. The effective loss is about 2.5 % low. That
+is accurate enough for the grade change in Section 4. It is not a licence to publish ε = 2 µm as an
+identified roughness. A later campaign should estimate CL directly.
+
+
+3    The residual network and the gate
+Let ξ be the standardised feature of the three lifts, the two mother-beer analyses and the mix
+pressure. A network with eight hidden units predicts a flow correction,
+
+                            h = tanh(W1 ξ + b1 ),       ∆Q = W2 h + b2 ,                          (3)
+
+with W1 ∈ R8×6 and W2 ∈ R3×8 . Training minimises the squared residual against the measured
+flow error, plus weight decay, plus a penalty on ∆Qh + ∆Qw − ∆Qf every fifth step. The penalty
+is the mass balance the three flows already obey. It is not a collocation residual of a partial
+differential equation [4].
+  Six points are held out. Root-mean-square flow error on those points is 0.0296 m3 h−1 for the
+physical model and 0.0365 m3 h−1 after ∆Q is added. Eight hidden units on twenty-two training
+points are enough capacity to fit the noise of a residual that is already at the sensor floor. The
+
+
+                                                    2
+                                                  16       Beer flow, nominal model
+                                                           Beer flow, PIP-Twin
+
+                                                  14
+
+                                                  12
+                     Predicted beer flow (m3/h)
+                                                  10
+
+                                                   8
+
+                                                   6
+
+                                                   4
+
+                                                       4             6         8        10         12   14   16
+                                                                            Measured beer flow (m3/h)
+Figure 1: Commissioning parity of predicted and measured flow for the calibrated physical model. The
+residual network is not added.
+
+
+gate compares the two errors and publishes the physical prediction. The weights stay on disk with
+the campaign so that a later campaign can be scored against the same architecture. They are not
+written into the controller. Figure 1 is the flow parity of the physical twin.
+   The same campaign records a water-valve deadband when a command changes and the stem
+does not [10, 11]. If the band width S is known, the command is led by S in the direction of the
+requested move, so the stem crosses the band and the flow that appears is the flow the brand asked
+for. Undetected, the same band turns a small flow correction into a delayed jump.
+
+
+4     Closed-loop consequence
+The consumer of the twin is a three-valve nonlinear predictive controller. Two copies are run. One
+uses the nominal model: capacities 29.4, 13.2 and 58, a rougher pipe, no density contraction, and
+a header bias of +0.10 bar that the model believes. The other uses Table 1, with the bias removed
+from the header measurement. The ratio station does not use either model for its flow loops. All
+three see the same sensor noise.
+   On a lager-to-light grade change the commissioned controller is inside 0.05◦ P at 16 s, with an
+extract integral of 10.75◦ P·s and a tail of +0.012◦ P . The nominal controller’s extract integral
+is 32.29◦ P·s, statistically the same as the ratio station’s 31.30◦ P·s, and its tail is +0.19◦ P . The
+horizon, the weights and the rate limit are identical. The difference is the parameter vector. An
+uncommissioned predictive controller is the expensive choice.
+   On a mother beer that cannot hit extract and alcohol together, the commissioned tail matches the
+tolerance-weighted optimum computed offline: 11.777◦ P and 4.695 % by volume against 11.780◦ P
+and 4.696 % by volume. The nominal controller, following a biased gain, sits elsewhere. The twin
+does not create a feasible point that the mother beer does not allow. It makes the compromise the
+one the tolerances define.
+    On a sticky water valve of band 0.03 lift, the twin learns the band after 8 s and leads the command.
+
+
+                                                                                      3
+The extract integral is 1.29◦ P·s and the error stays inside 0.05◦ P. The nominal controller, with the
+wrong gain and no deadband inverse, has an extract integral of 19.28◦ P·s. The ratio station, closing
+on measured flow, has 3.97◦ P·s. When the same run raises dilution-water oxygen from 12 ppb to
+85 ppb, every controller’s product reaches about 31 ppb. The twin reports that concentration. No
+valve move removes it.
+
+
+5    Conclusion
+The innovation is a pressure twin whose parameters are the ones the blend flows can actually
+see, together with an explicit refusal to deploy a residual correction that fails the hold-out. Valve
+capacities and the header bias are identified to a fraction of a percent. Roughness and minor loss
+are identified only as the sum CL , to about two and a half percent. The residual network is part of
+the method because the gate is part of the method: the correct action on this campaign is to leave
+it off. Used as the model of a three-valve predictive controller, the twin is what turns a program
+that ties ratio control into a program that meets a feasible brand change in 16 s and an infeasible
+brand at the weighted compromise. The study commissions a simulated skid whose equations the
+estimator already knows in structure. A trim that is not equal-percentage, or a mixer that is not
+one volume, would be a reason to reopen the gate on new step tests. It would not be a reason to
+skip the hold-out.
+
+
+References
+ [1] Werner Kritzinger, Matthias Karner, Georg Traar, Jan Henjes, and Wilfried Sihn. Digital
+     twin in manufacturing: A categorical literature review and classification. IFAC-PapersOnLine,
+     51(11):1016–1022, 2018. doi: 10.1016/j.ifacol.2018.08.474.
+
+ [2] Pierre-Emmanuel Goffi, Raphaël Tremblay, and Bentley Oakes. Engineering a digital twin for
+     the monitoring and control of beer fermentation sampling. In IEEE Conference on Engineering
+     Digital Twins, 2025. Author preprint, arXiv:2508.18452.
+
+ [3] Moritz von Stosch, Rui Oliveira, Joana Peres, and Sebastião Feyo de Azevedo. Hybrid semi-
+     parametric modeling in process systems engineering: Past, present and future. Computers
+     and Chemical Engineering, 60:86–101, 2014. doi: 10.1016/j.compchemeng.2013.08.008.
+
+ [4] Maziar Raissi, Paris Perdikaris, and George E. Karniadakis. Physics-informed neural networks:
+     A deep learning framework for solving forward and inverse problems involving nonlinear
+     partial differential equations. Journal of Computational Physics, 378:686–707, 2019. doi:
+     10.1016/j.jcp.2018.10.045.
+
+ [5] George Em Karniadakis, Ioannis G. Kevrekidis, Lu Lu, Paris Perdikaris, Sifan Wang, and Liu
+     Yang. Physics-informed machine learning. Nature Reviews Physics, 3(6):422–440, 2021. doi:
+     10.1038/s42254-021-00314-5.
+
+ [6] Yingzhe Zheng and Zhe Wu. Physics-informed online machine learning and predictive control
+     of nonlinear processes with parameter uncertainty. Industrial and Engineering Chemistry
+     Research, 62(6):2804–2818, 2023. doi: 10.1021/acs.iecr.2c03691.
+
+ [7] Guoquan Wu, Wallace Tan Gian Yion, Khoa Le Nguyen Quang Dang, and Zhe Wu. Physics-
+     informed machine learning for MPC: Application to a batch crystallization process. Chemical
+     Engineering Research and Design, 192:556–569, 2023. doi: 10.1016/j.cherd.2023.02.046.
+
+
+
+                                                  4
+ [8] IEC 60534-2-1: Industrial-Process Control Valves—Part 2-1: Flow Capacity—Sizing Equations
+     for Fluid Flow under Installed Conditions. International Electrotechnical Commission, Geneva,
+     2011.
+
+ [9] Flow of Fluids Through Valves, Fittings, and Pipe. Crane Co., Stamford, 2009. Technical
+     Paper No. 410.
+
+[10] M. A. A. Shoukat Choudhury, Nina F. Thornhill, and Sirish L. Shah. Modelling valve stiction.
+     Control Engineering Practice, 13(5):641–658, 2005. doi: 10.1016/j.conengprac.2004.05.005.
+
+[11] Mohieddine Jelali and Biao Huang, editors. Detection and Diagnosis of Stiction in Control
+     Loops. Springer, London, 2010.
+
+
+
+
+                                                5
+

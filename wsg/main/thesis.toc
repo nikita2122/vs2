@@ -1,0 +1,70 @@
+\contentsline {chapter}{Principal symbols}{i}{chapter*.1}%
+\contentsline {chapter}{\numberline {1}Research of previous work}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Research on coupled valve flow and disturbance decoupling}{2}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}High-gravity beer and the dilution step}{2}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}The linear valve and the installed pressure drop}{3}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}What a fixed-gain flow loop cannot absorb}{6}{subsection.1.1.3}%
+\contentsline {subsection}{\numberline {1.1.4}From disturbance accommodation to the extended state}{7}{subsection.1.1.4}%
+\contentsline {subsection}{\numberline {1.1.5}The gap that the first technique addresses}{10}{subsection.1.1.5}%
+\contentsline {section}{\numberline {1.2}Research on delay, soft sensing and header coordination}{11}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}The analyser delay}{11}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Inferential control and the mass balance}{12}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Header pressure as a means of keeping valve authority}{13}{subsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.2.4}The gap that the second technique addresses}{15}{subsection.1.2.4}%
+\contentsline {section}{\numberline {1.3}Problem set}{15}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}The plant and the measurements}{15}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Installed gains and the relative-gain array at the design point}{17}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}Disturbances the controller must reject}{18}{subsection.1.3.3}%
+\contentsline {subsection}{\numberline {1.3.4}Statement of the control problem}{19}{subsection.1.3.4}%
+\contentsline {subsection}{\numberline {1.3.5}What the two techniques are required to add}{20}{subsection.1.3.5}%
+\contentsline {chapter}{\numberline {2}The two control techniques}{23}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Pressure-manifold decoupled linear active disturbance rejection control}{23}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Plant seen by one inlet loop}{23}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Installed gains from the measurements}{25}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Why the off-diagonal gains are not inverted}{27}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Observer and control law}{28}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Bandwidth, noise and the error equation}{29}{subsection.2.1.5}%
+\contentsline {subsection}{\numberline {2.1.6}Internal-model reading of the same controller}{30}{subsection.2.1.6}%
+\contentsline {subsection}{\numberline {2.1.7}Setpoints of the two flow loops}{31}{subsection.2.1.7}%
+\contentsline {subsection}{\numberline {2.1.8}What this technique does not do}{31}{subsection.2.1.8}%
+\contentsline {section}{\numberline {2.2}Valve-authority coordination and delay-compensated extract control}{32}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}The stem-optimal header setpoint}{32}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Scheduled-bandwidth control of the outlet valve}{33}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}The mass-balance soft sensor}{35}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Extract loop}{37}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}The four bandwidths together}{38}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}Discrete realisation}{39}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}How the two techniques meet}{39}{subsection.2.2.7}%
+\contentsline {subsection}{\numberline {2.2.8}A numerical step of the beer observer}{40}{subsection.2.2.8}%
+\contentsline {subsection}{\numberline {2.2.9}Installed gain along the supply step}{41}{subsection.2.2.9}%
+\contentsline {subsection}{\numberline {2.2.10}A decoupler that was not used}{42}{subsection.2.2.10}%
+\contentsline {subsection}{\numberline {2.2.11}Discrete transfer function of one flow loop}{43}{subsection.2.2.11}%
+\contentsline {subsection}{\numberline {2.2.12}Order of computation in one sample}{43}{subsection.2.2.12}%
+\contentsline {subsection}{\numberline {2.2.13}What a shared bandwidth does}{44}{subsection.2.2.13}%
+\contentsline {subsection}{\numberline {2.2.14}The bias innovation that freezes an offset}{45}{subsection.2.2.14}%
+\contentsline {subsection}{\numberline {2.2.15}Noise budget of the flow command}{46}{subsection.2.2.15}%
+\contentsline {subsection}{\numberline {2.2.16}Authority arithmetic at the high rate}{47}{subsection.2.2.16}%
+\contentsline {subsection}{\numberline {2.2.17}Tuning sequence}{48}{subsection.2.2.17}%
+\contentsline {subsection}{\numberline {2.2.18}Installed gain at the high rate}{49}{subsection.2.2.18}%
+\contentsline {subsection}{\numberline {2.2.19}One pipe length, in samples}{50}{subsection.2.2.19}%
+\contentsline {subsection}{\numberline {2.2.20}Command jump if the gain update skips the correction}{51}{subsection.2.2.20}%
+\contentsline {subsection}{\numberline {2.2.21}The two operating points side by side}{52}{subsection.2.2.21}%
+\contentsline {chapter}{\numberline {3}System build and estimation}{53}{chapter.3}%
+\contentsline {section}{\numberline {3.1}System build}{53}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Numerical plant}{53}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}The three controllers}{54}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Scenario clock}{56}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.4}Indices}{56}{subsection.3.1.4}%
+\contentsline {section}{\numberline {3.2}Estimation}{57}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Overall comparison}{57}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Supply-pressure step}{58}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Water-supply oscillation}{62}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Brand change}{62}{subsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.2.5}Throughput ramp under the reduced supply}{63}{subsection.3.2.5}%
+\contentsline {subsection}{\numberline {3.2.6}Unmeasured drift of the mother-beer extract}{65}{subsection.3.2.6}%
+\contentsline {subsection}{\numberline {3.2.7}Loss of beer-valve capacity}{67}{subsection.3.2.7}%
+\contentsline {subsection}{\numberline {3.2.8}Reading the baseline that looks quiet}{67}{subsection.3.2.8}%
+\contentsline {subsection}{\numberline {3.2.9}What the estimation does not claim}{69}{subsection.3.2.9}%
+\contentsline {subsection}{\numberline {3.2.10}Window table}{70}{subsection.3.2.10}%
+\contentsline {subsection}{\numberline {3.2.11}Mean errors}{70}{subsection.3.2.11}%
+\contentsline {subsection}{\numberline {3.2.12}Build parameters collected for reproduction}{71}{subsection.3.2.12}%

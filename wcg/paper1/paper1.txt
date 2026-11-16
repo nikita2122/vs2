@@ -1,0 +1,270 @@
+A Vision-Guided Feed-Speed Controller for a Wooden Seed Sowing
+Machine
+
+Abstract
+Hardwood seeds such as acorns vary in diameter and lock against each other in a hopper throat.
+A meter that only tracks shaft speed will keep turning at the kinematic command while the
+throat is bridged, and the spacing error is then already committed. This short paper specifies
+a vision-guided feed-speed controller for that failure. A camera over the throat publishes
+occupancy, equivalent diameter, and a bridge index. The motor loop, on a separate computer,
+multiplies the kinematic shaft command by a scale that falls when the bridge index crosses a
+threshold, and a fuzzy proportional–integral–derivative law tracks the scaled command. The
+scale cut is capped, so one bad frame cannot stall the wheel. A numerical estimate of the same
+event model used in the parent thesis, not a field trial, shows the expected pattern: on red oak
+the multiple index falls from 22.5% with speed tracking alone to 12.5% with the constraint,
+while planting efficiency stays near 61% because some spacings stretch. On bur oak and under
+a 16 Hz frame disturbance, slowing the feed without changing vibration does not repair the
+miss index. The controller is a quality intervention on doubles, with a rate side effect that
+must be reported separately.
+
+1
+
+Introduction
+
+Direct seeding of oak can cost about a third of planting nursery seedlings, so the placement of
+each wooden seed is worth controlling [1]. The seed is a poor match to a cereal meter. Pin oak,
+red oak, and bur oak differ by more than the adjustment range of one cell, and two acorns readily
+form an arch. A ground wheel copies slip into every spacing. An electronic drive removes that
+slip by tracking
+2πv
+ω⋆ =
+,
+(1)
+Nc Xt
+with v the ground speed, Xt the target spacing, and Nc the number of cells [2, 3]. Tracking is not
+enough. If the throat is bridged, ω ⋆ is the speed at which empty cells are presented on time. The
+error the operator sees is a gap, and a tube sensor reports it only after the cell has passed [4].
+Borja and colleagues put a camera on a corn plate and advanced the plate when a hole was
+empty [5]. Classification was accurate, and misses fell at 2 and 4 km/h. At 6 km/h misses rose,
+because one microcontroller could not finish the image and the motor update. The design in this
+paper keeps that lesson and changes the action. The camera does not classify plate holes of a
+graded seed. It compresses the throat of a wooden-seed meter into a bridge index, and the motor
+is allowed to slow down. Slowing is a decision, not a tracking error.
+
+2
+
+Bridge index and the speed constraint
+
+The nominal machine is the single-row planter of the parent study: Nc = 12, cell mouth dc =
+24 mm, Xt = 0.25 m, and forward speed near 0.7 to 1.1 m/s. At 1.10 m/s, Equation (1) asks for
+22.0 r/min. The camera looks at a fixed window in the throat at 20 Hz. Otsu’s threshold separates
+seed pixels from a stored empty-throat image [6]. Components supply area and equivalent diameter
+p
+d = 2 A/π. Occupancy ρ is seed area over window area. The bridge index is
+
+
+B = ρ (0.45 + 0.55 min(1, cd /0.25)) 1 +
+
+max(d¯ − dc , 0) 
+,
+dc
+
+(2)
+
+with cd the coefficient of variation of the diameters in view. Occupancy alone would treat a full
+but flowing throat as a bridge. The diameter term raises B when the seeds are larger than the
+cell, which is the bur-oak case. A one-pole filter, ρ ← 0.92ρ + 0.08ρraw , stops one specular frame
+from slamming the wheel.
+The constrained command is ωcmd = σ(B) ω ⋆ , with σ = 1 when B ≤ 0.42 and
+σ = 1 − min 0.22, 0.55(B − 0.42)
+
+
+
+(3)
+
+otherwise. The deepest cut is 22 percent. Setpoint moves are rate-limited so a new bridge becomes
+a ramp. A late datagram holds B; after 150 ms, B is halved each vision period until the constraint
+opens. The motor never blocks on a frame. That split is the answer to the latency reversal in the
+corn meter [5].
+Camera
+20 Hz
+
+d, ρ, B
+
+Scale σ(B)
+
+ω ⋆ (v, Xt )
+
+Fuzzy PID
+10 ms
+
+Cell wheel
+
+Figure 1: The camera publishes a bridge index. The motor loop tracks a scaled speed command
+and does not wait for the next frame.
+A red-oak frame with ρ = 0.62 and cd = 0.15 gives B = 0.48 and a scale of 0.965, so 22.0 r/min
+becomes 21.2 r/min. A bur-oak frame with d¯ = 32 mm and ρ = 0.70 hits the cap and falls
+to 17.2 r/min. The first case should barely intervene. The second gives large seeds more time.
+Whether that time becomes filled cells depends on vibration as well as on the wheel, which this
+paper does not control.
+
+3
+
+Inner loop
+
+The design model of the loaded wheel motor is 0.18ω̇ + ω = u. The sample is 10 ms. The discrete
+law is a fuzzy proportional–integral–derivative controller with nominal gains Kp = 2.4, Ki = 6.0,
+and Kd = 0.08, plus bounded increments from a five-label Mamdani table on the scaled error and
+its difference [7, 8, 9]. Integral action freezes when the error exceeds 0.8 rad/s or the command
+is on its rail, which is the integral separation used by He and colleagues to limit overshoot [2].
+2
+
+The derivative path is filtered at 40 Hz. Frozen gains stay positive inside the increment box, so
+each frozen loop is an ordinary stable speed servo. That is not a Lyapunov certificate for the
+time-varying fuzzy system. The schedule moves with the tracking error, and the error of a 0.18 s
+plant does not cross the linguistic range in one sample unless the setpoint jumps. Jumps are
+rate-limited.
+Shaft speed is a windowed difference over eight samples, 80 ms, so a 4096-count encoder does
+not dominate the fuzzy input. A cell at 22 r/min arrives every 0.228 s. Vision samples the throat
+about four times per cell, which is the point of looking at the throat rather than at the tube: the
+constraint can act on the cell that is about to be filled. Four frames at a 30 ms abort budget still
+fit inside that cell period. They stop fitting near 2.1 m/s, which is outside the specified speed and
+is the same class of limit Borja observed.
+
+4
+
+What the estimate shows
+
+Spacings were generated from the logistic event model of the parent thesis, 4,000 cells per case,
+generator seed 20261029. Quality of feed, multiple index, and miss index follow Kachman and
+Smith: spacings in (0.5Xt , 1.5Xt ], at most 0.5Xt , and above 1.5Xt [10]. Planting efficiency is
+qualified spacings per second divided by v/Xt . The vision mode is electronic tracking plus Equation (3). Factors stay at a fixed zero shaker frequency and 3 kPa of assist vacuum, so this column
+is the feed controller alone.
+Table 1: Vision against speed tracking. Qf , multiple, and miss are percentages. ηE is planting
+efficiency.
+Case
+
+Mode
+
+Qf
+
+Mult.
+
+Miss
+
+ηE
+
+Red oak, level, 6 Hz
+
+PID
+Vision
+PID
+Vision
+PID
+Vision
+PID
+Vision
+
+60.9
+68.5
+51.8
+60.6
+30.2
+30.2
+36.9
+41.1
+
+22.5
+12.5
+34.3
+24.3
+12.7
+5.6
+21.2
+13.2
+
+16.6
+19.0
+13.9
+15.2
+57.1
+64.1
+41.9
+45.6
+
+61.0
+60.7
+61.6
+63.8
+11.9
+9.8
+21.8
+22.0
+
+Pin oak, level, 6 Hz
+Bur oak, 8◦ , 12 Hz
+Red oak, level, 16 Hz
+
+On mild red oak the multiple index falls by about ten points and the miss index rises by about
+two. Efficiency does not move. The constraint removes doubles and pays with longer gaps. On
+pin oak, where the cell is large for the seed, multiples fall from 34.3% to 24.3% and efficiency
+rises only two points. On bur oak in slope and a 12 Hz disturbance, efficiency falls from 11.9%
+to 9.8% and the miss index rises. Under a 16 Hz disturbance on red oak, doubles fall and misses
+rise, and efficiency stays near 22%. Slowing a meter that is missing because of vibration creates
+longer gaps. The feed controller is not a substitute for a vibrator or a depth loop.
+These figures are solutions of a declared model anchored to published qualitative facts: slip
+hurts a ground drive, vision can cut misses when the computer keeps up, and large hardwood
+seeds defeat a fixed cell [11, 3, 5]. They are not belt measurements. A sticky-belt comparison of
+the PID and vision rows is the acceptance test. The ranking to look for is a lower multiple index
+on red oak and pin oak, and no requirement that vision alone raise efficiency when the frame is
+shaking above about 10 Hz.
+3
+
+5
+
+Spacing side effect and faults
+
+A constant scale σ stretches the geometric gap from Xt to Xt /σ. At the cap, σ = 0.78, every gap
+grows by a factor of about 1.28 if the cells that do fill are singles. Part of that stretch replaces a
+double. Part of it becomes a miss if the next cell was going to be empty anyway. The efficiency
+column in Table 1 is that second part. A score that looked only at doubles would drive σ to the
+floor. The cap, and the separate efficiency number, are what stop that.
+The feed computer has four local faults. A late vision message holds B. After 150 ms, B decays
+and the constraint opens while tracking continues. Two missed shaft-encoder periods remove
+motor current. A stale ground speed is held for one second and then ramped to zero, so a dead
+radar does not leave the wheel planting forever. A radar stuck at a high value is not detected by
+these rules. It looks like a healthy, fast tractor. That case needs a second speed source before it
+can be tripped. None of the four faults asks the factor coordinator for help. The camera can fail
+and the shaft loop remains a speed servo at σ = 1.
+
+6
+
+Conclusion
+
+The feed-speed controller is a cascade with one extra scalar. Equation (1) sets the speed of a
+clear throat. Equation (3) reduces that speed when Equation (2) says the throat is bridging, and
+the reduction is capped. The motor loop does not decode images. The estimate says the scalar
+does what it was built to do: it cuts doubles on seeds that nearly fit the cell, and it does not, by
+itself, recover bur oak or a harshly vibrating frame. Planting efficiency must be reported beside
+the quality-of-feed index, because a controller scored only on doubles will always prefer the lowest
+scale.
+
+References
+[1] M. Löf et al., “Tamm Review: Direct seeding to restore oak forests and woodlands,” Forest
+Ecol. Manage., vol. 448, pp. 474–489, 2019.
+[2] X. He et al., “Design and evaluation of a PID electronic control system for seed meters,”
+Trans. CSAE, vol. 33, no. 17, pp. 28–33, 2017.
+[3] X. Zhao et al., “Electronic control seed-metering system based on fuzzy PID,” Int. J. Agric.
+Biol. Eng., vol. 17, no. 4, 2024.
+[4] M. F. Kocher, Y. Lan, C. Chen, and J. A. Smith, “Opto-electronic sensor system for rapid
+evaluation of planter seed spacing uniformity,” Trans. ASAE, vol. 41, no. 1, pp. 237–245,
+1998.
+[5] A. A. Borja, R. M. Amongo, J. P. Pabico, and D. C. Suministrado, “A machine vision system
+and mechatronic drive for a pneumatic seed meter,” Philipp. J. Agric. Biosyst. Eng., vol. 17,
+no. 1, 2021.
+[6] N. Otsu, “A threshold selection method from gray-level histograms,” IEEE Trans. Syst.,
+Man, Cybern., vol. 9, no. 1, pp. 62–66, 1979.
+4
+
+[7] E. H. Mamdani, “Application of fuzzy algorithms for control of a simple dynamic plant,”
+Proc. IEE, vol. 121, no. 12, pp. 1585–1588, 1974.
+[8] L. A. Zadeh, “Fuzzy sets,” Inf. Control, vol. 8, no. 3, pp. 338–353, 1965.
+[9] K. J. Åström and T. Hägglund, Advanced PID Control. ISA, 2006.
+[10] S. D. Kachman and J. A. Smith, “Alternative measures of accuracy in plant spacing,” Trans.
+ASAE, vol. 38, no. 2, pp. 379–387, 1995.
+[11] L. G. Wells, T. W. Richards, T. D. Smith, and G. B. Day, “Pneumatic metering of hardwood
+tree seeds,” Appl. Eng. Agric., vol. 6, no. 2, pp. 239–243, 1990.
+
+5
+
+

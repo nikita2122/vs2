@@ -1,0 +1,237 @@
+                  A Physics-Informed Oxygen-Transfer Sensor
+                          for Brewery Aeration Fans
+                             Short paper on innovation 2 of the thesis
+
+
+                                                 Abstract
+     Detergents from brewery clean-in-place lower the oxygen-transfer factor α that aeration con-
+     trollers usually freeze. A dissolved-oxygen probe cannot separate that drop from a change in
+     oxygen uptake: both make the reading fall, and a fan loop adds air for both. This paper specifies
+     a soft sensor whose outputs are α, the transfer coefficient, and the uptake, trained with the oxy-
+     gen balance and with the blower power map, not only with the probe. A health bit returns the
+     fan law to a recipe table when the residual is bad. On a representative detergent window, using
+     the lagged true factor instead of a quiet-week value of 0.55 raises the dissolved-oxygen minimum
+     from 0.90 to 1.63 mg/L. An open-loop step with uptake held fixed falls to about 0.53 mg/L in
+     0.8 h if the wrong factor is used. The sensor is justified by that floor, not by a further large cut
+     in kilowatt-hours once the set-point is already reasonable.
+
+
+1    Introduction
+Fine-bubble aeration is sensitive to surfactants. The process-water transfer rate over the clean-
+water rate, the factor α, falls when detergents occupy the bubble interface, and the fall is sharper
+for fine bubbles than for coarse ones [1, 2]. Brewery clean-in-place liquors are a surfactant source by
+design [3, 4, 5]. Municipal soft sensors and recent physics-informed dissolved-oxygen models forecast
+concentration [6, 7, 8]. They do not emit α into a fan command. Off-gas hoods measure transfer
+directly and remain the reference [9, 10]. They are a poor assumption as the only signal at the
+moment a recipe arrives.
+   This paper defines the sensor as useful only if a fan law can consume it. The companion paper
+writes that law. Here the law is the customer: each minute it inverts an oxygen-transfer curve that
+is proportional to α. A forecast of dissolved oxygen that hides a wrong α inside a wrong uptake
+authorizes the wrong airflow.
+
+
+2    What one probe does not identify
+Ignore advection. A steady oxygen balance is
+
+                                      KL a (βC ∗ − C) − OUR ≈ 0.                                            (1)
+
+Any pair (KL a, OUR) on that line matches the same C. A single airflow and a single probe cannot
+tell a detergent hour from a load hour. The fan curve breaks the tie if the clean-water map is known.
+Delivered airflow q and electrical power fix q through the blower map. The map used with this plant
+is polytropic compression against
+
+                                    ∆p = 52 + 0.55 (q/1000)2       [kPa],                                   (2)
+which is mostly tank submergence. The clean-water curve then fixes KL a up to α,
+
+                                    KL a = α kref (q/qref )0.82 θ T −20 ,                           (3)
+
+with kref = 6.5 h−1 at 2500 Nm3 /h and θ = 1.024. Once KL a and C are known, (1) solves for uptake.
+The partial derivatives at fixed q and T ,
+                                               0.82
+                     ∂KL a               q                            ∂ OUR
+                                    
+                           = kref                      θ T −20 > 0,         = βC ∗ − C,             (4)
+                      ∂α                qref                          ∂KL a
+
+are nonzero whenever the tank is not saturated. A local change in α cannot hide inside the uptake.
+What remains is a flat direction when q and the detergent flag never move. The estimator must
+then hold α, which is a standard excitation requirement [11], not a reason to drop the balance.
+  At a detergent point KL a = 6.50 h−1 , α = 0.40, and driving force 4.60 mg/L, the sensitivity
+of transfer rate to α is (6.50/0.40) × 4.60 = 74.8 mg L−1 h−1 per unit α. An error of 0.15, the
+gap between a quiet-week 0.55 and a detergent 0.40, is 11.2 mg L−1 h−1 , more than a third of a
+30 mg L−1 h−1 uptake. That is the budget a sensor is asked to return.
+
+
+3     Sensor
+The deployed map reads a thirty-minute window at one-minute samples: airflow, power, header
+pressure, temperature, influent flow, dissolved oxygen, and the detergent flag. Thirty minutes covers
+several blower lags and does not cover a whole clean-in-place, so the network cannot memorize
+a regime instead of using the flag. Two hidden layers of 32 units feed four heads. The α head
+is squashed into (0.15, 0.90). The transfer and uptake heads are positive. A fourth head predicts
+dissolved oxygen one step ahead and is not given to the controller. Publishing a second concentration
+next to a real probe invites an unaudited average.
+    The loss has the usual shape [8, 12, 13]. On a window,
+
+                        1 X               X
+                                                            ∗
+                                                                              2
+                   L=       (Ĉ − C)2 + λ     Ċ − K
+                                                   dL a(βC − C) + OUR
+                                                                        [
+                        N                                                                           (5)
+                           X               2    X
+                                                                  curve            2
+                        +λ     P − Pmap (q) + λ      K
+                                                     d L a − KL a       (α̂, q, T ) .
+
+The derivative Ċ is a smoothed probe slope, not another network. The power residual stops a
+claimed airflow from disagreeing with the meter. The curve residual is the term that removes (1)’s
+free direction. Training raises λ only after a data-only stage has fitted the probe, because the two
+gradients otherwise conflict [13, 7]. The bound term penalizes α moving faster than 0.5 per hour
+unless the detergent flag has changed. Diffuser wear is slow. A recipe is not.
+   The health bit is cleared if α leaves [0.15, 0.90], if L on the physics terms exceeds a threshold set
+from a commissioning week that includes one detergent day, or if the uptake head moves faster than
+the kinetic ceiling. A cleared bit does not stop the fans. The controller loads α from the recipe table.
+For fermentation clean-in-place that table value is 0.40, already closer to the truth than 0.55. A
+stuck probe freezes airflow rather than integrating a bias against a dead reading [14]. A lost calendar
+keeps the sensor and drops the preview. Those degradations are the interface.
+  Normalization is frozen at commissioning: airflow over 2500 Nm3 /h, power over 80 kW, header
+pressure relative to 52 kPa, temperature relative to 30◦ C. An online mean would shift when the
+detergent arrives and would hide the event. Inference is a small forward pass. If it is late, the
+previous α is kept. A fan command does not wait on a network timeout.
+    In the estimate reported below, the “sensor” is not one training seed. It is the true regime α,
+
+
+                                                            2
+filtered with a 0.30 h lag and a two-percent caution. That is an upper bound on what a good sensor
+is worth. A network whose α error exceeds that filtered truth will do worse. Commissioning still
+needs an off-gas or portable probe on a detergent day [10, 15]. The threshold that never fires, and
+the threshold fit only on a quiet week, are both wrong. The first removes the fallback. The second
+declares every detergent day a fault and ignores the sensor exactly when it is needed.
+
+
+4    What the factor changes
+Two airflows are frozen after a detergent step, with uptake held at 30 mg L−1 h−1 , T = 33◦ C, and
+βC ∗ = 6.80. The short airflow, 3570 Nm3 /h, is the inversion of (3) at α = 0.55. The corrected
+airflow, 5250 Nm3 /h, uses α = 0.40. Dissolved oxygen starts at 1.80 mg/L. The semi-implicit step
+of the oxygen balance at 0.1 h, with uptake not allowed to fall, gives Table 1.
+
+Table 1: Open-loop dissolved oxygen (mg/L) after detergent arrives. Uptake is held at 30 mg L−1 h−1 .
+                    Time (h)   q = 3570 (α believed 0.55)   q = 5250 (true α = 0.40)
+                       0.0                1.80                        1.80
+                       0.2                1.08                        2.05
+                       0.4                0.75                        2.14
+                       0.8                0.53                        2.18
+
+
+   By 0.3 h the wrong-factor column is already under 1 mg/L. The corrected column settles near
+the 2.2 mg/L set-point. Feedback in the full week does not reach 0.53 mg/L, because uptake falls
+with dissolved oxygen and because an integral bias adds air. The week minimum with α locked at
+0.55 is 0.90 mg/L. With the lagged true factor it is 1.63 mg/L. The operational floor used in the
+study is 1.5 mg/L. The sensor is the difference between those two minima. Blower energy of the two
+predictive laws over the whole week is 9620 kWh against 9656 kWh. Inside the 18 h fermentation
+window the live factor costs about 255 kWh relative to the locked factor (2441 against 2186 kWh)
+and buys the floor back. A report that ranks the locked factor first on kilowatt-hours in that window
+is ranking a loop that crossed the floor.
+  A proportional-integral loop at a fixed 2.5 mg/L also stays above the floor in that window (min-
+imum 1.87 mg/L) and spends the difference in the quiet hours. The sensor does not replace that
+loop. It tells a set-point-aware inverter which α to use so the set-point is reachable when the recipe,
+not the probe, is the first sign of detergent [16, 17].
+
+
+5    Commissioning check
+The threshold ϵ and the recipe-table value of α are identified on a day when the proportional-integral
+fallback is still in charge and the sensor is only logging. The day has to include a real detergent
+recipe. A threshold fit on a quiet week marks the detergent day as a fault, and the fan law then
+ignores α at the only hour Table 1 says it matters. A threshold so loose that the health bit never
+clears deletes the fallback to the recipe table. The logged residual on that detergent day, compared
+with a portable probe or an off-gas hood, is the quantile [10, 9].
+  Two other checks stop a good dissolved-oxygen forecast from being mistaken for a good α. First,
+the curve residual in (5) is inspected on the same day. If the emitted KL a and the curve at the
+emitted α disagree by more than about fifteen percent, the health bit is treated as clear even if the
+network set it. Second, the fan inversion is evaluated twice on the logged airflow: once with the
+emitted α and once with 0.55. The gap should be of the order of the 3570 against 5250 Nm3 /h in
+Table 1 when the recipe is the fermentation clean. If the two inversions agree, the sensor has not
+
+                                                   3
+moved α, and the network is not yet doing the job this paper defined. Agreement of the one-step
+dissolved-oxygen head with the probe is not a substitute for that gap. Equation (1) can be fitted by
+moving uptake alone.
+  The sensor is installed last. Constant-speed headers move to a dissolved-oxygen loop first. The
+recipe clock and the set-point table come second, with α from the table. The network closes the
+inversion only after the detergent-day log exists. That order is forced by the numbers: the large
+energy cut does not need the network, and the dissolved-oxygen floor during detergent does not
+survive a wrong α.
+
+
+6    Conclusion
+The oxygen-transfer factor during brewery clean-in-place is a measured disturbance, not a calibrated
+constant. A small residual network can emit it from fan power, airflow, and a dissolved-oxygen probe
+if the clean-water curve is enforced, so that uptake cannot trade off against α. On the representative
+window, replacing a quiet-week factor of 0.55 with the lagged true factor of about 0.40 lifts the
+dissolved-oxygen minimum from 0.90 to 1.63 mg/L at essentially the same weekly blower energy.
+The open-loop column shows why the weekly minimum is the mitigated error, not the raw one. The
+result is an integration with a filtered true factor standing in for a commissioned sensor. It is not
+a field residual, and it is not a claim that the sensor saves a further large fraction of fan electricity
+once the airflow set-point is already right.
+
+
+References
+ [1] D. Rosso and M. K. Stenstrom. Surfactant effects on α-factors in aeration systems. Water
+     Research, 40:1397–1404, 2006.
+
+ [2] J. A. Mueller, W. C. Boyle, and H. J. Pöpel. Aeration: Principles and Practice. CRC Press,
+     2002.
+
+ [3] G. S. Simate et al. The treatment of brewery wastewater for reuse: State of the art. Desalination,
+     273:235–247, 2011.
+
+ [4] K. R. Goode, K. Asteriadou, P. T. Robbins, and P. J. Fryer. Fouling and cleaning studies in the
+     food and beverage industry classified by cleaning type. Comprehensive Reviews in Food Science
+     and Food Safety, 12:121–143, 2013.
+
+ [5] L. Fillaudeau, P. Blanpain-Avet, and G. Daufin. Water, wastewater and waste management in
+     brewing industries. J. Cleaner Production, 14:463–471, 2006.
+
+ [6] H. Haimi, M. Mulas, F. Corona, and R. Vahala. Data-derived soft-sensors for biological wastew-
+     ater treatment plants: An overview. Environmental Modelling and Software, 47:88–107, 2013.
+
+ [7] E. S. Koksal and E. Aydin. A hybrid approach of transfer learning and physics-informed mod-
+     elling for dissolved oxygen in an industrial wastewater treatment plant. Chemical Engineering
+     Science, 121088, 2024.
+
+ [8] M. Raissi, P. Perdikaris, and G. E. Karniadakis. Physics-informed neural networks. Journal of
+     Computational Physics, 378:686–707, 2019.
+
+ [9] D. Redmon, W. C. Boyle, and L. Ewing. Oxygen transfer efficiency measurements in mixed
+     liquor using off-gas techniques. J. Water Pollution Control Federation, 55:1338–1347, 1983.
+
+
+                                                   4
+[10] S.-Y. Leu, D. Rosso, L. E. Larson, and M. K. Stenstrom. Real-time aeration efficiency moni-
+     toring in the activated sludge process. Water Environment Research, 81:2471–2481, 2009.
+
+[11] L. Ljung. System Identification: Theory for the User. Prentice Hall, 2nd ed., 1999.
+
+[12] G. E. Karniadakis et al. Physics-informed machine learning. Nature Reviews Physics, 3:422–440,
+     2021.
+
+[13] S. Wang, Y. Teng, and P. Perdikaris. Understanding and mitigating gradient pathologies in
+     physics-informed neural networks. SIAM J. Scientific Computing, 43:A3055–A3081, 2021.
+
+[14] L. Rieger, J. Alex, S. Winkler, M. Boehler, M. Thomann, and H. Siegrist. Progress in sensor
+     technology — progress in process control? Water Science and Technology, 47(2):103–112, 2003.
+
+[15] ASCE. Measurement of Oxygen Transfer in Clean Water, ASCE/EWRI 2-06. Reston, 2007.
+
+[16] L. Åmand, G. Olsson, and B. Carlsson. Aeration control — a review. Water Science and Tech-
+     nology, 67:2374–2397, 2013.
+
+[17] L. Rieger, R. M. Jones, P. L. Dold, and C. B. Bott. Ammonia-based feedforward and feedback
+     aeration control in activated sludge processes. Water Environment Research, 86:63–71, 2014.
+
+
+
+
+                                                 5
+

@@ -1,0 +1,54 @@
+\subsection{Where the two modules sit on the forward pass}
+
+Before either update is derived, the forward pass they attach to should be fixed in dimensions, so that ``a small head'' and ``a center'' are quantities rather than slogans. The pass described here is the YOLOv8-seg assembly with the vertical-feature gate of~\eqref{eq:vf}. It is the baseline. Nothing in this subsection is claimed as a contribution. The contributions begin at Section~\ref{sec:icph}.
+
+An input frame is resized to the network's square working resolution, denoted $S\times S$ with three channels. The value of $S$ is a deployment choice, commonly $640$. The footprint calculation in Section~\ref{sec:footprint} shows that the lattice is not starved of pixels at the gate, so the reason to keep $S$ large is the lip between two stacked crates, not the metre-scale pitch. The backbone, a cross-stage convolutional network of the kind introduced for efficient gradient flow~\cite{wang2020cspnet} and used by the maintained YOLO implementations~\cite{jocher2023yolov8}, emits three maps whose strides are $8$, $16$, and $32$ pixels. On a $640$ input those maps are $80\times 80$, $40\times 40$, and $20\times 20$. The neck builds the feature pyramid~\cite{lin2017fpn} and, on each of the three maps, applies the vertical gate
+\begin{equation}
+a = \sigma\!\left( g(\operatorname{GAP}_{w}(U)) \right),
+\qquad
+\tilde U_{c,i,j} = a_{c,i}\, U_{c,i,j}.
+\label{eq:vf-again}
+\end{equation}
+The pooled column $\operatorname{GAP}_{w}(U)$ has shape $C\times H\times 1$. A convolution of kernel $1\times 3$ along $H$ mixes each row with the lip above it and the lip below it, which is the only place in the baseline where the stack's periodicity is written down as an architectural bias. The sigmoid keeps the gate in $(0,1)$ so that a row can be suppressed and cannot be amplified without bound. A row that contains a horizontal lip receives a larger $a$ if $g$ learns to respond to the vertical gradient of the pooled column. A row that contains only the flat plastic of a crate face receives a smaller $a$. The gate does not know the pitch in metres. It knows only that the informative variation, on this camera, runs down the image.
+
+The detection head is decoupled. At each spatial site and at each stride it predicts an objectness, a class distribution over whatever classes the segmenter was trained to emit, and a box. For the brewery the segmenter's class may be the single class ``crate.'' Color is not this distribution. Color is ICPH, precisely so that a change of lamp does not have to be solved by the same softmax that decides whether a site is a crate. The box is parameterized as an offset from the site center plus a width and a height, the anchor-free form used since YOLOX~\cite{ge2021yolox}. Non-maximum suppression then keeps one box when two sites describe the same crate. The surviving box is the window inside which the mask is cropped, and its center is the fallback center if the mask is empty. The mask head, in parallel, predicts $K_{p}=32$ prototype masks at stride $4$, so on a $640$ input the prototypes are $160\times 160$, and one coefficient vector $c\in\mathbb{R}^{32}$ per detection. The mask is~\eqref{eq:yolact}, cropped to the box and thresholded at one half. The center passed to PLC is the first moment of the thresholded mask,
+\begin{equation}
+\bar u = \frac{\sum_{x\in M} u(x)}{\lvert M\rvert},
+\qquad
+\bar v = \frac{\sum_{x\in M} v(x)}{\lvert M\rvert},
+\label{eq:moment}
+\end{equation}
+then mapped by $H$. Using the moment rather than the box center lets a crate that is half in shadow pull its reported center toward the visible plastic, which is usually toward the interior of the stack rather than toward the aisle. That pull is helpful when the shadow is on the outside of the face and harmful when the shadow is the seam, because the moment then slides toward the neighbor. The $3.5\,\mathrm{cm}$ noise in the counting model is a stand-in for both effects. It is not a measurement of~\eqref{eq:moment} on real masks.
+
+ICPH reads $M$ and, in the full specification, the mask-pooled vector~\eqref{eq:pool} from the finest neck map. It does not read the prototype coefficients. Those coefficients are a spatial code, shared in meaning with YOLACT's prototypes~\cite{bolya2019yolact}, and they are not a color. Reusing $c$ as a color feature would entangle the seam with the lamp. The head's output is a class and a margin, attached to the same index as the center, so that cell $(r,c)$ and class $\hat k$ refer to one detection until the gap rule invents a cell that has no detection. Invented cells are the only ones that inherit a class, by the neighbor rule in~\eqref{eq:per-color}.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  box/.style={draw, rounded corners=1.5pt, align=center, inner sep=3pt, minimum height=8mm, minimum width=18mm},
+  arr/.style={-{Stealth}, semithick}
+]
+  \node[box, fill=black!6] (in) {Image\\$S\times S\times 3$};
+  \node[box, fill=black!6, right=4mm of in] (bb) {Backbone\\strides 8, 16, 32};
+  \node[box, fill=blue!10, right=4mm of bb] (vf) {Vertical gate\\on each level};
+  \node[box, fill=black!6, right=4mm of vf] (det) {Decoupled\\boxes};
+  \node[box, fill=black!6, below=7mm of det] (msk) {32 prototypes\\and coefficients};
+  \node[box, fill=orange!15, below=7mm of vf] (icph) {ICPH\\class, margin};
+  \node[box, fill=green!12, below=7mm of bb] (plc) {PLC\\cells $\times$ depth};
+  \draw[arr] (in) -- (bb);
+  \draw[arr] (bb) -- (vf);
+  \draw[arr] (vf) -- (det);
+  \draw[arr] (det) -- (msk);
+  \draw[arr] (msk) -- (icph);
+  \draw[arr] (msk.west) -- ++(-2mm,0) |- (plc.east);
+  \node[align=center, font=\scriptsize] at ($(msk.west)+(-1.15,-0.55)$) {centers};
+  \node[align=center, font=\scriptsize] at ($(msk.south)+(0,-0.45)$) {pixels in $M$};
+\end{tikzpicture}
+\caption{Forward pass of the updated model. The backbone and the vertical gate are the baseline YOLO-vf-seg. The prototype assembly produces the mask. ICPH and PLC both read that mask and do not read each other. Depth enters PLC from outside the figure.}
+\label{fig:forward}
+\end{figure}
+
+The cost of being this explicit is that several widely discussed alternatives are now visibly in the wrong place. A second class head on the detection branch would name the color from the box features, including background inside the box, and would be trained by the same assignment that trains objectness. ICPH is downstream of the mask so that the pixels are the crate. A density head on the pyramid would estimate a visible count and would never see $\hat d$. PLC is downstream of the centers so that the pitch can be applied in metres. A global constancy preprocessing in front of the backbone would rescale the whole frame before the gate saw it, and \Cref{prop:uniform} says a per-face rescaling is already destructive if it is used as the classifier. No constancy step sits in front of the backbone. The camera gain is locked, and the only place an illuminant is estimated is inside $M$, as one block of $\mathbf{f}$.
+
+The numbers that a deployer tunes, and that this thesis does not claim to have tuned on images, are $S$, the non-maximum-suppression overlap, the mask threshold of one half, and $K_{p}$. Moving $K_{p}$ from $32$ to $16$ halves the prototype tensor and, on COCO-like masks, usually costs a small amount of boundary detail~\cite{bolya2019yolact,zhao2023fastsam}. On a crate face the boundary that matters is one horizontal lip. Whether $16$ prototypes can express that lip is a question for a labeled gate, not for the Monte Carlo model, which never renders a lip. The model begins at the center. The architecture above is what has to produce a center that \Cref{prop:snap} can trust.

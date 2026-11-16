@@ -1,0 +1,11 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Fourier bin of each monitored frequency for \(N=8192\) and \(f_{s}=10\,\mathrm {kHz}\). The exact bin coordinate \(f/\Delta f\) is shown before rounding.}}{48}{table.caption.16}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Published operating point of the vertical axial-flow pump.}}{58}{table.caption.17}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Published transducer and acquisition parameters.}}{60}{table.caption.19}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Published qualitative signatures of the four states, radial severity and tangential spectral emphasis.}}{64}{table.caption.22}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Training classification counts on \(45\) vectors per state. Pooled accuracy is correct-over-\(180\).}}{65}{table.caption.23}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Test classification on \(15\) vectors per state. The BPNN entry for SRWF is \(13/15\), the count consistent with the printed percentage \(86.667\%\) and the printed pooled accuracy \(85\%\).}}{67}{table.caption.25}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Drop from pooled training accuracy to pooled test accuracy.}}{69}{table.caption.28}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Error counts. Training errors are out of \(180\) pooled vectors. Test errors are out of \(60\) pooled vectors, and the four class columns are out of \(15\).}}{76}{table.caption.29}%

@@ -1,0 +1,216 @@
+
+
+===== PAGE 1 =====
+
+Research for Solving Breakdown Risk in School Bag Factory Scheduling by Using
+Status-Synchronized Digital Twin Coordination
+Computer Science Short Paper
+Companion to the system-design thesis
+October 2026
+Abstract
+Machine status in a school-bag factory is not a label beside the schedule. Cutter wear and needle heat change the
+next cycle time, the energy, and the chance that the cycle is interrupted. This paper presents status-synchronized
+digital twin coordination with chance constraints (SSDT-CC). A live health state scales processing time, a hazard
+gives a failure probability, and an assignment whose probability exceeds a tolerance is not deleted: a sixteen-
+minute preventive maintenance renews the machine and the cycle is recomputed. The dispatcher is called again
+whenever a resource becomes free, so the twin reschedules by rewriting the state the score reads. On twenty
+accelerated-wear order books the coupled system finishes in1122minutes with0.81expected failures, against
+about2059minutes and39expected failures for earliest due date. A tolerance sweep shows that a tighter limit
+buys fewer failures with more maintenance. The plant uses expected delay, not a noisy sensor.
+1 Introduction
+Condition-based maintenance and digital twins are usually described as monitoring systems. A remaining-useful-life
+model estimates when a tool will cross a failure threshold [5, 6]. A twin mirrors the machine for an operator or for
+a planner who still writes the sequence by hand [2, 3, 1]. Scheduling research has started to put degradation inside
+flexible job shops [11], most often as a cost or as a constraint on a plan that is built once. End-to-end multitarget
+policies [12] still act on operation–machine pairs and do not renew a worn tool.
+A school-bag shift does not offer that separation. The automatic cutter begins the day already worn. Running
+it makes it slower, hotter, and more likely to stop. A schedule that treats processing time as a constant from the
+routing sheet is using a health factor of one, whatever number is displayed on a screen. Inserting maintenance on a
+clock, independently of which orders are waiting, spends the tool change on a machine the book does not need and
+withholds it from a machine the book is about to overload.
+The contribution is a closed loop with one action. Health is the twin. The chance constraint is the veto. The
+action, when the veto fires, is a short renewal of that same machine, after which the dispatcher scores the shop again.
+The score that chooses among bundles is the resource-coupled graph policy of the companion thesis. This paper
+isolates what the health loop adds: the maps from health to time, energy, and failure, the maintenance rewrite, and
+the estimates obtained when that rewrite is allowed or forbidden.
+2 Health, time, energy, and hazard
+Each machinekcarries a scalar healthh k. Zero is a new tool. One is a tool the maintenance standard calls failed.
+Between decisions the design model is a Wiener drift,
+dhk =η k dt+σ k dBt,(1)
+observed through a noisy indicatoryk =h k +ϵ k. A Kalman filter would predictˆh− = ˆh+η kp, then correct with the
+reading [8]. The estimation plant has no sensor noise. It applies the drift directly,
+hk←min(1.25, h k +η kp),(2)
+which is the Kalman prediction with posterior variance held at zero. For the automatic cutter,η= 0.00115per
+minute and the day starts ath= 0.58.
+1
+
+===== PAGE 2 =====
+
+Processing time uses the health factor1 + 0.85h 1.15. The exponent above one makes the last part of the wear
+more expensive than the first. Energy of a cycle is
+E=P k· p
+60·(1 + 0.45h k),(3)
+in kilowatt-hours, withP k the rated power. Expected repair energy is charged separately at half power for an
+expected repair of48minutes.
+The failure probability is an intensity, not a Gaussian crossing. Mid-cycle health ishmid =h+ 1
+2·0.0004·p, and
+λ= 2.4
+(
+max(0,h mid−0.40)
+)1.35
+, ϕ= 1−exp(−λp/60).(4)
+Below health0.40the intensity is zero. Above it, intensity grows faster than linearly. The expected breakdown delay
+charged to the machine is48ϕminutes. The plant does not draw a Bernoulli failure. Methods are compared on the
+risk they choose to accept, which is reproducible.
+A Gaussian ceiling gives a different veto. The probability of crossing a limit during the cycle can sit under the
+tolerance while (4) sits over it. On the worn cutter the two tests disagree: the hazard vetoes atε= 0.10and a
+Gaussian ceiling at0.90would still allow the cycle. The dispatcher uses the hazard, and the thesis records the
+disagreement rather than averaging the two tests.
+3 Chance-constrained renewal
+An assignment is refused in its current form whenϕ>εor when the predicted health at the end of the cycle exceeds
+0.90. The default tolerance isε= 0.10. Refusal does not remove the machine from the feasible set. The same bundle
+is offered with a preventive maintenance prefixed,
+hk←0.30h k + 0.04,∆←∆ + 16.(5)
+Time, energy, andϕare recomputed at the renewed health. The sixteen minutes occupy the machine and the
+operator. They do not hold the die or the thread lot. The factor0.30is a partial renewal: a knife or needle change
+brings the indicator down and leaves a residual of0.04. On a machine that is already healthy the map barely moves
+h,ϕis already zero, and the test does not fire.
+Healthh k ϕandp(h) Veto atε
+Renew,16minRun the cycle
+if over
+if under
+Figure 1: The twin writes health, the hazard tests the next cycle, and either maintenance or ordinary wear writes
+health again. The dispatcher is called when the resource is next free.
+Figure 1 is the whole coordination loop. There is no second solver that rebuilds a Gantt chart from scratch.
+Because candidates are rebuilt whenever a machine and an operator are free, a health value written at the last
+completion is already inside the next score. A rush order enters the same rebuild when its release time arrives.
+Rescheduling is the dispatch itself.
+On one navy shell the arithmetic is local and unfavourable to maintenance. Cutter-A ath= 0.58takes27.3
+minutes, uses about3.90 kWh, and hasϕ= 0.106, so the expected repair delay is5.1minutes. The total occupation
+if the risk is accepted is about32.4minutes. Maintenance renews health to0.214, cuts the processing time to21.5
+minutes, and adds16minutes, for an occupation of37.5minutes and4.65 kWh, withϕ= 0. The manual cutter,
+already healthy, takes37.3minutes and1.64 kWhwith no failure. One cycle does not pay for the tool change. Three
+unrepaired cuts on the same automatic cutter charge about102minutes and end near health0.68. One renewal
+followed by three cuts charges about82minutes. The saving appears across cycles, which is why the estimate below
+is a day and not a row.
+2
+
+===== PAGE 3 =====
+
+4 Estimate on the worn day
+The cell has nine machines and eight operators. Cutter-A, Lockstitch-2, and the embroidery head start the nominal
+day at health0.58,0.52, and0.46. The accelerated-wear scenario adds0.10to every initial health and multiplies
+every wear coefficient by1.85. All methods share the mask. RCH is the graph score with the maintenance test off.
+RCH-SSDT is the same score with the test on. “No status” zeroes health and failure inside the score and does not
+maintain. Means are over twenty paired books.
+Table 1: Accelerated wear, twenty books. Times are minutes. Energy is kilowatt-hours. PM is the mean number of
+renewals.
+Method Makespan Tardiness On time Energy Failures PM
+FIFO 2097.7 5898.7 0.397 388.2 42.26 0
+EDD 2059.3 1849.0 0.584 384.3 38.75 0
+RCH 1782.0 895.1 0.697 310.0 30.58 0
+No status 1676.9 1054.7 0.706 283.6 28.88 0
+RCH-SSDT 1121.7 287.2 0.850 176.1 0.81 11.95
+Seeing wear without being allowed to renew it is worth several hundred minutes: RCH and the no-status ablation
+finish near1700–1780minutes with about thirty expected failures, against about2100minutes and about forty
+failures for the rules. Renewal is the second cut. Twelve maintenances cost192minutes of tool-change time.
+Expected repair delay avoided, relative to earliest due date, is on the order of1800minutes. Makespan falls to1122,
+energy to176 kWh, and expected failures to0.81. Tardiness falls from1849to287minutes. On this scenario the
+due-date gap is large beside the spreads (364minutes for the full system, about1000for earliest due date), because
+the failures a due-date rule accepts are what make the orders late.
+The same pattern appears on an ordinary day, with a smaller maintenance count. Over twenty nominal books the
+coupled system finishes in1052minutes and168 kWhwith0.91expected failures and5.4renewals. The graph score
+alone, which can prefer the healthy cutter and cannot renew the worn one, finishes in1234minutes and211 kWhwith
+10.1expected failures. Status features without the maintenance action reproduce that first band, not the second.
+Table 2 repeats the wear stress on eight further books whileεchanges. These seeds are not the twenty books of
+Table 1. Tightening the tolerance from0.50to0.02raises the maintenance count from7.0to15.0, drops expected
+failures from9.77to0.05, and on this parameterization also shortens the day and lowers energy. The curve has
+not yet turned upward. A longer tool change, or a fleet that is already healthy, would make excessive maintenance
+expensive. The useful fact is thatεis a visible knob. A scheduler that hides the tolerance inside a trained weight
+cannot be retuned when the knife-change time changes.
+Table 2: Tolerance sweep on eight accelerated-wear books. The policy is the coupled system.
+εMakespan Failures Energy PM
+0.02 1145.3 0.046 182.0 15.00
+0.05 1151.3 0.238 182.3 13.88
+0.10 1170.2 0.813 195.7 12.63
+0.20 1187.2 2.741 198.2 10.38
+0.50 1335.7 9.773 228.6 7.00
+5 Why the local loss and the daily gain coexist
+Table 3 puts the three ways of cutting one navy shell on one line. Maintenance is the slowest immediate occupation
+and uses more energy than the manual cutter. It is the only option that both uses the fast machine and leaves that
+machine below the hazard threshold.
+The day is a sequence of such rows that share a health state. Three unrepaired cuts on Cutter-A charge about
+102minutes and finish near health0.68, where the next shell is both slower and more likely to fail. One renewal and
+then three cuts charge about82minutes and stay near the renewed health. Twelve such renewals on a worn book
+are192minutes of tool-change time. The repair delay they avoid, relative to a due-date rule that never renews, is
+on the order of1800minutes. The local row and the daily table are not in conflict. They answer different questions:
+whether this cycle, alone, is shorter with a knife change, and whether the shift is shorter if worn cycles are allowed
+to compound.
+3
+
+===== PAGE 4 =====
+
+Table 3: One navy shell. Times are minutes. Energy is kilowatt-hours. Extra is expected repair delay, or the
+sixteen-minute renewal.
+Option Process Extra Energy
+Cutter-A, acceptϕ= 0.10627.3 5.1 3.90
+Cutter-A, renew first 21.5 16.0 4.65
+Cutter-B, already healthy 37.3 0.0 1.64
+The same split is visible without accelerating wear. On twenty ordinary books the coupled system uses5.4renewals
+and finishes in1052minutes with0.91expected failures. The graph score, allowed to see health and forbidden to
+renew, finishes in1234minutes with10.1expected failures. Zeroing health inside the score and forbidding renewal
+lands in that same band, not in the renewed one. A penalty on a worn machine can steer work toward the healthy
+cutter. It cannot put the automatic cutter back into the pool at health0.21. Only the rewrite in (5) does that,
+which is why the tolerance in Table 2 is a maintenance count and not merely a reweighting ofψ.
+6 What this estimate includes
+The tables use the hazard (4), the renewal (5), and the deterministic wear recursion (2). They do not use a random
+breakdown draw, so a second run with the same seeds reproduces the means. They do not use the Kalman correction.
+A noisy current or temperature would be reduced to the unit interval and then filtered; until that residual exists,
+filtering it would be theatre. They also do not train a deep network. The dispatcher that proposes the bundle is the
+identified one-hop score of the companion paper, and the twin’s only extra authority is the maintenance bit on that
+bundle.
+An ordinary book, included so the wear table is not the only evidence, finishes under the coupled system in1052
+minutes and168 kWhwith0.91expected failures and5.4renewals. First-in-first-out on the same twenty books
+takes1521minutes and303 kWhwith18.0expected failures and no renewals. The graph score without renewal sits
+between them, at1234minutes,211 kWh, and10.1expected failures. Health-aware dispatch and health renewal are
+different levers. The second lever is the one this paper isolates, and it is the one that moves failures from the teens,
+or from about thirty on a worn day, to under one.
+7 Conclusion
+SSDT-CC keeps machine health inside the dispatch loop of a school-bag shop. The health state scales time and
+energy, a hazard supplies the failure probability, and a chance constraint inserts a sixteen-minute partial renewal
+instead of deleting the worn machine. One cycle does not repay the renewal. A worn day does: about twelve renewals
+replace on the order of thirty expected failures and several hundred minutes of makespan. The Kalman update is the
+form to use when a sensor is noisy. The tables were produced with a deterministic wear recursion, so they estimate
+the chosen risk and not a particular factory’s next breakdown.
+References
+[1] J. Lee, B. Bagheri, and H.-A. Kao. A cyber-physical systems architecture for Industry 4.0-based manufacturing
+systems.Manufacturing Letters, 3:18–23, 2015.
+[2] M. Grieves and J. Vickers. Digital twin: Mitigating unpredictable, undesirable emergent behavior in complex
+systems. InTransdisciplinary Perspectives on Complex Systems, pp. 85–113. Springer, 2017.
+[3] F. Tao, H. Zhang, A. Liu, and A. Y. C. Nee. Digital twin in industry: State-of-the-art.IEEE Transactions on
+Industrial Informatics, 15(4):2405–2415, 2019.
+[4] Q. Qi and F. Tao. Digital twin and big data towards smart manufacturing and Industry 4.0: 360 degree
+comparison.IEEE Access, 6:3585–3593, 2018.
+[5] X.-S. Si, W. Wang, C.-H. Hu, and D.-H. Zhou. Remaining useful life estimation – a review on the statistical
+data driven approaches.European Journal of Operational Research, 213(1):1–14, 2011.
+4
+
+===== PAGE 5 =====
+
+[6] Y. Lei, N. Li, L. Guo, N. Li, T. Yan, and J. Lin. Machinery health prognostics: A systematic review from data
+acquisition to RUL prediction.Mechanical Systems and Signal Processing, 104:799–834, 2018.
+[7] N. Z. Gebraeel, M. A. Lawley, R. Li, and J. K. Ryan. Residual-life distributions from component degradation
+signals: A Bayesian approach.IIE Transactions, 37(6):543–557, 2005.
+[8] R. E. Kalman. A new approach to linear filtering and prediction problems.Journal of Basic Engineering,
+82(1):35–45, 1960.
+[9] A. Charnes and W. W. Cooper. Chance-constrained programming.Management Science, 6(1):73–79, 1959.
+[10] J. R. Birge and F. Louveaux.Introduction to Stochastic Programming. Springer, 2nd edition, 2011.
+[11] L. Li, L. Deng, B. Tang, and F. Wang. Bi-objective flexible job shop scheduling on machines considering
+condition-based maintenance activities.Proceedings of the Institution of Mechanical Engineers, Part O: Journal
+of Risk and Reliability, 238(6):1244–1255, 2024.
+[12] R. Wang, Y. Jing, C. Gu, S. He, and J. Chen. End-to-end multitarget flexible job shop scheduling with deep
+reinforcement learning.IEEE Internet of Things Journal, 12(4):4420–4434, 2025.
+[13] L. Monostori et al. Cyber-physical systems in manufacturing.CIRP Annals, 65(2):621–641, 2016.
+[14] Y. Koren and M. Shpitalni. Design of reconfigurable manufacturing systems.Journal of Manufacturing Systems,
+29(4):130–141, 2010.
+5

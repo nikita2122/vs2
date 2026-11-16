@@ -1,0 +1,137 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.15cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.08}
+\setlength{\parskip}{0.25em}
+\setlength{\parindent}{1em}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+
+\title{Schedule-Aware Fan Control for\\Brewery Wastewater Cleaning}
+\author{Short paper on innovation 1 of the thesis}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent
+Aeration blowers are the main electrical load when a brewery cleans process water before discharge. The hard disturbances are not a daily sewage curve. They are clean-in-place recipes the production clock already names, including detergent pulses that cut oxygen transfer. This paper specifies a schedule-aware fan law: a one-minute inversion of the oxygen balance that previews the recipe, stages identical centrifugal blowers off their surge line, and falls back to a dissolved-oxygen loop if the optimizer stops. On a representative week the law uses 9656\,kWh of blower electricity, 11.6\,percent less than a proportional-integral loop parked at 2.5\,mg/L and 69\,percent less than constant speed sized for the detergent hour, with no hours above a study limit of 125\,mg/L chemical oxygen demand. A companion paper treats the live transfer factor. Here that factor is an input.
+\end{abstract}
+
+\section{Introduction}
+
+Brewery wastewater is warm, strong, and scheduled. Equalization, anaerobic pretreatment, and aerobic polishing are the usual train when the water is cleaned and discharged rather than reused \cite{simate2011,fillaudeau2006,ashraf2021}. After anaerobic pretreatment the polishing tank is still an oxygen-transfer problem, and the fans that solve it are typically more than half of a biological plant's electricity \cite{longo2016,amand2013}. Published predictive aeration controllers act on municipal benchmarks whose input is a smooth airflow or a transfer coefficient, not a staged blower, and whose disturbance is a diurnal file \cite{holenda2008,shen2008,zeng2015,cristea2011}. They do not read a batch recipe.
+
+The contribution is the disturbance and the actuator together. The brewhouse and clean-in-place calendar is encoded as a preview. The command is header airflow and the number of online machines, subject to a surge margin. Inner loops and interlocks stay in the programmable controller \cite{qin2003,obrien2011}. The numerical week below uses the deployed one-step law, not a mixed-integer solver. The horizon problem is the specification that law reduces to while the machines are identical.
+
+\section{Plant and preview}
+
+The aerobic volume is \(V=900\,\mathrm{m^3}\). Three identical variable-speed blowers share a header. Delivered airflow \(q\) is in normal cubic metres per hour, with a mixing floor of 900 and a header cap of 9000. Header gauge pressure is mostly static submergence,
+\begin{equation}
+\label{eq:dp}
+\Delta p = 52 + 0.55\,(q/1000)^{2}
+\quad[\mathrm{kPa}].
+\end{equation}
+Electrical power is polytropic compression of the delivered mass flow at inlet \(20^{\circ}\mathrm{C}\), with combined efficiency \(0.70\times 0.95\times 0.97\). Because \(\Delta p\) hardly grows with flow, power is much closer to linear in \(q\) than a fan cube law. The cube law remains appropriate only for the small exhaust fans on equalization and flotation, which are metered and are not decision variables here.
+
+Oxygen transfer in the tank is
+\begin{equation}
+\label{eq:kla}
+K_La = \alpha\,k_{\mathrm{ref}}\left(\frac{q}{q_{\mathrm{ref}}}\right)^{0.82}\theta^{\,T-20},
+\end{equation}
+with \(k_{\mathrm{ref}}=6.5\,\mathrm{h^{-1}}\) at \(q_{\mathrm{ref}}=2500\), \(\theta=1.024\), and \(\alpha\) the process-to-clean-water factor. Dissolved oxygen \(C\) obeys
+\begin{equation}
+\label{eq:do}
+\dot C = K_La\big(\beta C^{*}(T)-C\big) - \mathrm{OUR},
+\end{equation}
+with \(\beta=0.95\). The calendar maps each recipe class to flow, chemical oxygen demand, temperature, a detergent flag, and a dissolved-oxygen set-point: 1.8\,mg/L in base production, 2.0 in the brewhouse peak and packaging clean-in-place, 2.2 in fermentation clean-in-place, and 1.3 on the weekend. The preview is applied 0.75\,h ahead of a boundary so the blower lag (0.10\,h) and the probe lag (0.08\,h) sit inside the lead.
+
+\section{Deployed fan law}
+
+Each minute the law reads the current regime \(\rho\) and the regime \(\rho^{+}\) at \(t+0.75\,\mathrm{h}\), and sets
+\begin{equation}
+C_{\mathrm{sp}}=\max\big\{C_{\mathrm{sp}}(\rho),\,C_{\mathrm{sp}}(\rho^{+})\big\}.
+\end{equation}
+Mass load \(L=Q\cdot\mathrm{COD}\) supplies a scale
+\begin{equation}
+\sigma=\mathrm{clip}(L^{+}/L,\,1,\,1.35).
+\end{equation}
+The scale is not allowed below one in the integrated week. That omission causes a short unload dip at the weekend and is a known defect, not a hidden one. Airflow is the inverse of \eqref{eq:kla} at uptake \(\sigma\,\mathrm{OUR}\) and driving force \(\beta C^{*}-C_{\mathrm{sp}}\):
+\begin{equation}
+\label{eq:inv}
+q^{\star}
+=
+q_{\mathrm{ref}}
+\left(
+\frac{\sigma\,\mathrm{OUR}}
+{\alpha\,k_{\mathrm{ref}}\,\theta^{\,T-20}\,(\beta C^{*}-C_{\mathrm{sp}})}
+\right)^{1/0.82}.
+\end{equation}
+A clamped bias \(b\), with \(|b|\le 0.25\) and gain \(0.55\,\mathrm{h^{-1}}\) on \(C_{\mathrm{sp}}-C\), removes constant offset \cite{pannocchia2003}. The command is \(\mathrm{clip}((1+b)q^{\star},900,9000)\). Staging is one machine below \(2600\,\mathrm{Nm^{3}/h}\), two up to 5200, and three above. Surge flow at rated speed is \(0.22\times 2800=616\,\mathrm{Nm^{3}/h}\) per machine; the margin used is 1.15 times that, about \(708\,\mathrm{Nm^{3}/h}\). One machine at the mixing floor of 900 is legal. Two machines sharing 900 are not, so the optimizer must be allowed to turn machines off.
+
+At a quiet base point (\(\mathrm{OUR}\approx 18\,\mathrm{mg\,L^{-1}\,h^{-1}}\), \(C_{\mathrm{sp}}=1.8\), \(T=28^{\circ}\mathrm{C}\), \(\alpha=0.60\)) the inversion returns about \(1550\,\mathrm{Nm^{3}/h}\) and about 33\,kW. One machine. At fermentation conditions (\(\mathrm{OUR}\approx 30\), \(C_{\mathrm{sp}}=2.2\), \(T=33^{\circ}\mathrm{C}\), \(\alpha=0.40\)) it returns about \(5250\,\mathrm{Nm^{3}/h}\) and about 133\,kW, on the two-to-three machine boundary. The same inversion with the quiet-week factor \(\alpha=0.55\) asks for only about \(3570\,\mathrm{Nm^{3}/h}\). The missing factor is \((0.55/0.40)^{1/0.82}\approx 1.47\). Innovation 1 can apply that factor only if innovation 2, or a recipe table, supplies \(\alpha\). In this paper \(\alpha\) is assumed known through the 0.30\,h filter used in the thesis estimate.
+
+If the edge computer does not publish, the programmable controller holds a proportional-integral loop at 2.5\,mg/L. Low dissolved oxygen, a drive fault, a shut outlet valve, or header over-pressure override the set-point. The optimizer proposes. Level 1 disposes.
+
+The economic problem this law approximates minimizes, over a horizon, blower energy plus hinge penalties on \(C\) below a floor and on chemical oxygen demand above 125\,mg/L, plus a penalty on each machine start. With identical machines the integer part is the rule above. With unequal machines the same slacks become three convex programs, one per machine count \cite{bemporad1999,rawlings2017}.
+
+\section{Estimate}
+
+The week is 96\,h base, 30\,h brewhouse, 18\,h fermentation clean-in-place, 12\,h packaging clean-in-place, and 12\,h weekend. Aerobic influent chemical oxygen demand runs from 160 to 460\,mg/L depending on regime. Four loops share the plant: the schedule-aware law; a predictive inversion with \(\alpha\) locked at 0.55 and no load preview; the 2.5\,mg/L proportional-integral fallback; and constant speed at 6552\,Nm\(^{3}\)/h, 1.15 times a detergent design point. Constant speed draws 185\,kW for the whole week because \eqref{eq:dp} at that flow is the design point of the power map.
+
+\begin{table}[ht]
+\centering
+\caption{Blower electricity, representative week. COD violation hours are time above 125\,mg/L.}
+\label{tab:week}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Loop & kWh & Mean kW & COD viol.\ (h) & Min DO in ferm.\ CIP \\
+\midrule
+Schedule-aware & 9656 & 57.5 & 0 & 1.63 \\
+Fixed \(\alpha\), no preview & 9620 & 57.3 & 0 & 0.90 \\
+PI at 2.5\,mg/L & 10920 & 65.0 & 0 & 1.87 \\
+Constant speed & 31151 & 185.4 & 0 & 2.90 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:week} is the result. Every loop meets the study chemical-oxygen-demand limit, so the comparison is not a compliance contest. Against constant speed the schedule-aware law saves \(31151-9656=21495\,\mathrm{kWh}\) (69\,percent). Against the proportional-integral habit it saves \(1264\,\mathrm{kWh}\) (11.6\,percent). About half of that 11.6\,percent is the 96\,h base regime, where the set-point is 1.8 rather than 2.5 (3469\,kWh against 4102\,kWh). During fermentation clean-in-place the two use almost the same energy (2441 against 2460\,kWh). The fixed-\(\alpha\) inversion matches the schedule-aware energy and lets dissolved oxygen fall to 0.90\,mg/L in that window, under the 1.5\,mg/L operational floor. Preview and a live \(\alpha\) are what hold the floor at 1.63\,mg/L. They are not a second large energy cut once the set-point table exists.
+
+The schedule-aware minimum elsewhere is not perfect. Entering the brewhouse peak, dissolved oxygen touches 1.39\,mg/L. Entering the weekend it touches 0.86\,mg/L while the weekend mean is 4.46\,mg/L, because the mixing floor over-aerates after the step. Allowing \(\sigma<1\) when the previewed load falls removes the second dip. It was not re-run. Exhaust fans on the same calendar add about 1300\,kWh and do not change the ranking.
+
+\section{What to install first}
+
+The percentages are not an instruction to deploy the edge computer on day one. Constant speed at the detergent-hour valve is the policy that wastes the 21495\,kWh. Moving that header onto the proportional-integral fallback already in the programmable controller takes most of the saving and does not require a calendar feed. The set-point table in this paper is the next increment, and it can run with \(\alpha\) taken from the recipe table rather than from a sensor. Fermentation clean-in-place then uses 0.40 instead of a quiet-week 0.55 even before any network is trained. Only after that week is logged against the fallback should a live \(\alpha\) close the inversion. The companion paper is that third step. Reversing the order puts a model in the loop while the plant still has no tested fallback \cite{obrien2011}.
+
+A header that does not match \eqref{eq:dp} falsifies the kilowatt-hours and usually not the ranking against constant speed, because constant speed is the same wrong map held at one flow. The ranking against the proportional-integral loop is only twelve percent and is more fragile. The acceptance test is therefore three statements on a production week, not a copied percentage: blower energy below the fallback on the same calendar, hours above the site permit not higher than the fallback, and the dissolved-oxygen minimum during each detergent recipe above the floor the site has written down. In this study that floor is 1.5\,mg/L. The 11.6 and 69\,percent figures are the output of one integrator. The three statements are the result that travels.
+
+\section{Conclusion}
+
+A brewery fan controller should read the production clock and the blower map, not only a dissolved-oxygen error. On the representative polishing week, schedule-aware set-points and a surge-safe staging rule cut about twelve percent of blower electricity relative to a competent loop at 2.5\,mg/L, and about two thirds relative to constant speed sized for the detergent hour, without adding hours above 125\,mg/L chemical oxygen demand. The same week shows the limit of the claim: energy does not fall much further once a predictive law already uses a sensible set-point, unless the transfer factor is wrong, in which case the loss is dissolved-oxygen margin rather than kilowatt-hours. That margin is the subject of the companion paper. The figures are an integration of a stated model, not a trial on a named factory.
+
+\begin{thebibliography}{99}
+\bibitem{simate2011} G.~S. Simate et al. The treatment of brewery wastewater for reuse: State of the art. \textit{Desalination}, 273:235--247, 2011.
+\bibitem{fillaudeau2006} L.~Fillaudeau, P.~Blanpain-Avet, and G.~Daufin. Water, wastewater and waste management in brewing industries. \textit{J. Cleaner Production}, 14:463--471, 2006.
+\bibitem{ashraf2021} A.~Ashraf, R.~Ramamurthy, and E.~R. Rene. Wastewater treatment and resource recovery technologies in the brewery industry. \textit{Sustainable Energy Technologies and Assessments}, 47:101432, 2021.
+\bibitem{longo2016} S.~Longo et al. Monitoring and diagnosis of energy consumption in wastewater treatment plants. \textit{Applied Energy}, 179:1251--1268, 2016.
+\bibitem{amand2013} L.~{\AA}mand, G.~Olsson, and B.~Carlsson. Aeration control --- a review. \textit{Water Science and Technology}, 67:2374--2397, 2013.
+\bibitem{holenda2008} B.~Holenda, E.~Domokos, {\'A}.~R{\'e}dey, and J.~Fazakas. Dissolved oxygen control of the activated sludge wastewater treatment process using model predictive control. \textit{Computers and Chemical Engineering}, 32:1270--1278, 2008.
+\bibitem{shen2008} W.~Shen, X.~Chen, and J.-P. Corriou. Application of model predictive control to the BSM1 benchmark. \textit{Computers and Chemical Engineering}, 32:2849--2856, 2008.
+\bibitem{zeng2015} J.~Zeng and J.~Liu. Economic model predictive control of wastewater treatment processes. \textit{Ind. Eng. Chem. Res.}, 54:5710--5721, 2015.
+\bibitem{cristea2011} S.~Cristea, C.~de~Prada, D.~Sarabia, and G.~Guti{\'e}rrez. Aeration control of a wastewater treatment plant using hybrid NMPC. \textit{Computers and Chemical Engineering}, 35:638--650, 2011.
+\bibitem{qin2003} S.~J. Qin and T.~A. Badgwell. A survey of industrial model predictive control technology. \textit{Control Engineering Practice}, 11:733--764, 2003.
+\bibitem{obrien2011} M.~O'Brien, J.~Mack, B.~Lennox, D.~Lovett, and A.~Wall. Model predictive control of an activated sludge process: A case study. \textit{Control Engineering Practice}, 19:54--61, 2011.
+\bibitem{pannocchia2003} G.~Pannocchia and J.~B. Rawlings. Disturbance models for offset-free model-predictive control. \textit{AIChE Journal}, 49:426--437, 2003.
+\bibitem{bemporad1999} A.~Bemporad and M.~Morari. Control of systems integrating logic, dynamics, and constraints. \textit{Automatica}, 35:407--427, 1999.
+\bibitem{rawlings2017} J.~B. Rawlings, D.~Q. Mayne, and M.~M. Diehl. \textit{Model Predictive Control: Theory, Computation, and Design}. Nob Hill, 2nd ed., 2017.
+\bibitem{rosso2006} D.~Rosso and M.~K. Stenstrom. Surfactant effects on \(\alpha\)-factors in aeration systems. \textit{Water Research}, 40:1397--1404, 2006.
+\end{thebibliography}
+
+\end{document}

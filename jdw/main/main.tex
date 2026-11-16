@@ -1,0 +1,102 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.62}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,tabularx,longtable,array}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,fit}
+\usepackage{siunitx}
+\sisetup{detect-weight=true,detect-family=true}
+\DeclareSIUnit{\ppb}{ppb}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\numberwithin{equation}{chapter}
+\numberwithin{figure}{chapter}
+\numberwithin{table}{chapter}
+\setlength{\parskip}{0.25em}
+\setlist[enumerate]{itemsep=0.25em,topsep=0.4em}
+\setlist[itemize]{itemsep=0.2em,topsep=0.35em}
+\captionsetup{font=small,labelfont=bf,skip=6pt}
+\sloppy
+
+\title{Research for Improving Final Beer Quality in High-Gravity Blending by Using Three-Valve Nonlinear Model Predictive Control and a Physics-Informed Pressure Digital Twin}
+\author{Department of Computer Science}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+High-gravity brewing ferments a concentrated mother beer and then blends it with cold deaerated water to the alcohol, original extract and carbonation of the beer that is sold. On the blend skid the actuators that actually set the product are three control valves---one on the high-gravity beer, one on the dilution water, and one on the line that leaves the skid---together with a carbon-dioxide injector. The beer flow, the water flow and the pressure at the mix point are one hydraulic network. A ratio controller that trims the water valve from a delayed extract reading, and a separate pressure controller on the final valve, can hold a quiet operating point. They do not plan the move that a brand change requires, and they have no model of the pressure at which dissolved carbon dioxide comes out of solution inside a valve.
+
+This thesis formulates that skid as a computer-science problem in constrained optimisation and in estimation. Two technologies are developed. The first is a three-valve nonlinear model predictive controller. At each sample it chooses the three valve lifts and the carbon-dioxide dose over a short horizon so that original extract, alcohol, carbon dioxide and product flow approach their setpoints, while the predicted pressure at each vena contracta stays above the composition-dependent equilibrium pressure. Original extract is computed from the nonlinear Balling map, so the controller does not treat extract and alcohol as two independent dilutions of the same ratio. The second technology is a physics-informed pressure digital twin of the same network. A commissioning experiment estimates the three valve capacities and the bias of the beer-header pressure transmitter to well inside one percent. Pipe roughness and the lumped minor-loss coefficient are not separately identifiable; their sum, an effective loss coefficient, is recovered to about two and a half percent. A residual neural network is trained with a mass-balance penalty and is then gated off, because on held-out step tests it increases the flow error. The predictive controller that uses the calibrated twin brings a lager-to-light grade change inside a band of \SI{0.05}{\degree}P in \SI{16}{\second}. A decay at the mixer residence time, from an inlet placed exactly on the new brand, would still be outside that band; the controller gets inside it by spending the valve rate limit on a lighter inlet. The same predictive controller, given only the nominal and biased model, leaves an offset of about \SI{0.19}{\degree}P and does no better on extract than the ratio controller. When the mother beer changes so that extract and alcohol can no longer be met together, the calibrated controller sits on the tolerance-weighted compromise. Dissolved oxygen that enters with the dilution water is estimated and is not removed by any valve motion.
+
+The study is a reproducible dynamic simulation of an \SI{80}{\litre} mix volume at \SI{20}{\cubic\metre\per\hour}. It is a design and estimation result, not a brewery trial.
+\end{abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter*{Nomenclature}
+\addcontentsline{toc}{chapter}{Nomenclature}
+\noindent
+Symbols used in more than one chapter are collected here. A symbol that is local to a derivation is defined where it appears.
+
+\begin{longtable}{@{}lp{0.62\textwidth}@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+\endhead
+$A_w$ & Alcohol by weight, in percent. \\
+$E_r$ & Real extract, in percent by weight. \\
+$p_{\mathrm{OE}}$ & Original extract, in degrees Plato, identical to percent by weight on the Plato scale used here. \\
+$\mathrm{ABV}$ & Alcohol by volume, in percent, at the density reference of the correlation. \\
+$c$ & Dissolved carbon dioxide, grams per litre. \\
+$c_{\mathrm{DO}}$ & Dissolved oxygen, parts per billion, equivalent to micrograms per litre. \\
+$\zeta$ & Carbon-dioxide absorption coefficient, grams per litre per bar. \\
+$\kappa_{\zeta}$ & Multiplicative scale on the Rammert--Pahl polynomial. \\
+$\rho$ & Density, kilograms per cubic metre. \\
+$Q_h,Q_w,Q_f$ & Volumetric flow of beer, water and product, cubic metres per hour. \\
+$v_h,v_w,v_f$ & Mean liquid velocity in the beer, water and product pipes. \\
+$l_h,l_w,l_f$ & Fractional lifts of the beer, water and final valves. \\
+$K_v$ & Valve flow coefficient in cubic metres per hour at a one-bar water drop. \\
+$\Phi$ & Inherent relative valve capacity, between $1/R$ and $1$. \\
+$R$ & Inherent rangeability of an equal-percentage valve, taken as $50$. \\
+$F_L$ & Liquid pressure-recovery factor of a valve. \\
+$p_h,p_w,p_m,p_d,p_b$ & Absolute pressures: beer header, water header, mix node, downstream of the blend line, bright-beer tank. \\
+$p_{\mathrm{vc}}$ & Absolute pressure at a vena contracta. \\
+$p_{\mathrm{eq}}$ & Equilibrium pressure of dissolved carbon dioxide. \\
+$C_L$ & Dimensionless line resistance, $fL/D+K$. \\
+$f$ & Darcy friction factor. \\
+$K$ & Sum of minor-loss coefficients. \\
+$\varepsilon$ & Absolute pipe roughness. \\
+$w$ & Mass fraction of mother beer in the product. \\
+$V$ & Liquid volume of the static mixer and adjacent pipe, cubic metres. \\
+$\mathbf{u}$ & Manipulated vector $(l_h,l_w,l_f,\dot m_{\mathrm{CO_2}})$. \\
+$\mathbf{y}$ & Quality and hydraulic outputs used by the controller. \\
+\bottomrule
+\end{longtable}
+
+\input{chapters/chapter1}
+\input{chapters/chapter2}
+\input{chapters/chapter3}
+
+\bibliographystyle{unsrtnat}
+\bibliography{refs}
+
+\end{document}

@@ -1,0 +1,151 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm, headheight=14pt}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc,shapes.geometric,backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\makeatletter
+\renewcommand{\theALG@line}{\arabic{algorithm}.\arabic{ALG@line}}
+\AtBeginDocument{\renewcommand{\theHALG@line}{\arabic{algorithm}.\arabic{ALG@line}}}
+\makeatother
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{assumption}{Assumption}[chapter]
+\newtheorem{proposition}{Proposition}[chapter]
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\round}{round}
+\DeclareMathOperator{\median}{median}
+\DeclareMathOperator{\softmax}{softmax}
+\DeclareMathOperator{\diag}{diag}
+
+\setlist[itemize]{topsep=0.35em,itemsep=0.2em}
+\setlist[enumerate]{topsep=0.35em,itemsep=0.2em}
+\captionsetup{font=small,labelfont=bf,skip=6pt}
+\sloppy
+\hbadness=10000
+\emergencystretch=2em
+
+\title{Research on an Automated Box-Counting Method Using a Deep Instance Segmentation Model}
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{titlepage}
+\hypersetup{pageanchor=false}
+\centering
+\vspace*{1.2cm}
+{\large Computer Science Thesis}\\[0.35cm]
+{\large System Design and Optimization}\\[1.6cm]
+{\LARGE\bfseries Research on an Automated Box-Counting Method Using a Deep Instance Segmentation Model\par}
+\vspace{1.1cm}
+{\large An update of the YOLO-vf-seg instance segmenter for side-view counting and color typing of beer crates on a forklift\par}
+\vspace{1.4cm}
+\begin{tikzpicture}[scale=0.92, every node/.style={font=\small}]
+  \draw[thick] (0,0) -- (11.2,0);
+  \draw[fill=black!8] (0.3,0.25) rectangle (2.5,1.35);
+  \draw[fill=black!18] (0.7,1.35) rectangle (1.9,2.15);
+  \draw[line width=1pt] (2.5,0.38) -- (4.15,0.38);
+  \draw[line width=1pt] (2.5,0.58) -- (4.15,0.58);
+  \draw[fill=brown!45] (4.15,0.22) rectangle (8.55,0.72);
+  \foreach \c in {0,1,2} {
+    \foreach \r in {0,1,2} {
+      \draw[fill=orange!35, draw=black!70] ({4.35+\c*1.35},{0.82+\r*0.78}) rectangle ++(1.22,0.68);
+    }
+  }
+  \draw[fill=green!35, draw=black!70] (4.35,3.16) rectangle ++(1.22,0.68);
+  \draw[fill=red!35, draw=black!70] (5.70,3.16) rectangle ++(1.22,0.68);
+  \draw[fill=blue!30, draw=black!70] (7.05,3.16) rectangle ++(1.22,0.68);
+  \draw[fill=black!75] (9.55,2.15) rectangle (10.55,2.62);
+  \draw[-{Stealth}, thick] (9.55,2.38) -- (8.7,2.15);
+  \node at (1.4,0.8) {\footnotesize forklift};
+  \node at (6.35,0.47) {\footnotesize pallet};
+  \node[align=center] at (10.05,3.05) {\footnotesize side\\[-2pt]\footnotesize camera};
+\end{tikzpicture}
+\vfill
+{\large November 2026}
+\hypersetup{pageanchor=true}
+\end{titlepage}
+
+\pagenumbering{roman}
+\begin{abstract}
+\noindent
+This thesis studies the last visual check of a brewery packaging line: beer crates stacked on a pallet, carried by a forklift into the warehouse. A camera looking at the side of the load must name each crate by body color and must count how many crates pass. The stack is regular, the colors are few, and most of the geometry is known in advance. The image is not. Forks shadow the bottom row, the top row is often cut by the frame, adjacent crates of the same color share a weak seam, and the aisle mixes daylight with lamps whose color changes through the day.
+
+The starting point is YOLO-vf-seg, an instance segmenter in the one-stage YOLO family whose neck is biased toward the horizontal lips of a side-view stack. Two updates are developed on top of that segmenter. The first, the illumination-invariant chromatic prototype head (ICPH), does not ask a global white-balance algorithm to repaint the frame. It builds, inside each predicted mask, a feature that keeps reflectance chromaticity, opponent color, and an estimate of the local illuminant, and it scores that feature against a learned prototype of each crate color. The second, perspective lattice completion (PLC), rectifies the front face, snaps mask centers to the known crate pitch, fills a single-cell gap only when orthogonal neighbors support it, and multiplies the occupied front cells by a pallet-depth reading.
+
+Both updates are estimated by a Monte Carlo observation model, not by a recording from a brewery aisle. Under that model, ICPH holds color accuracy better than raw prototype matching once the illuminant becomes strong, and it avoids the collapse that gray-world and shades-of-gray corrections produce on a nearly uniform plastic face. PLC, applied to one frame, is the most accurate of the six counters that were compared. Fusing every frame of a passage by a simple union is not: false cells accumulate and the gap rule then invents crates. The thesis therefore specifies the system around a single sharp frame, states the geometry and the timing budget, and treats the numerical chapter as an estimate of the two modules under an explicit generative model.
+\end{abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter*{Principal notation}
+\addcontentsline{toc}{chapter}{Principal notation}
+\markboth{Principal notation}{Principal notation}
+
+The notation below is used from Chapter~2 onward. Earlier sections introduce each symbol again at the point where it is needed, so that the survey chapter can be read on its own.
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$I_c(x)$ & Intensity of channel $c\in\{r,g,b\}$ at pixel $x$ \\
+$\mathbf{L}$ & Diagonal illuminant, three positive gains \\
+$\mathbf{R}(x)$ & Surface reflectance at $x$ \\
+$\Omega$, $M$ & A crate face, and the predicted mask of one instance \\
+$p$ & Order of the Minkowski illuminant estimate \\
+$\hat{\ell}$ & Estimated illuminant on a mask \\
+$\chi$ & Chromaticity of the corrected face \\
+$o$ & Two-dimensional opponent color \\
+$\eta$ & Chromaticity of the illuminant estimate \\
+$\mathbf{f}$ & Eight-dimensional ICPH feature \\
+$W,b$ & Linear prototype classifier \\
+$w,h$ & Nominal width and height of the front face of one crate \\
+$d$, $\hat{d}$ & True pallet depth in crates, and the depth reading \\
+$(r,c)$ & Integer lattice cell, row then column \\
+$\mathcal{F}$ & Set of front cells declared occupied \\
+$\hat{N}$ & Estimated crate count, $\lvert\mathcal{F}\rvert\cdot\hat{d}$ \\
+$H$ & Homography from the image to the front plane \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.6em}
+\noindent
+Nominal numbers used throughout the design and the estimate are a face of $w=0.40\,\mathrm{m}$ by $h=0.28\,\mathrm{m}$, a crate depth of $0.30\,\mathrm{m}$, six body colors (amber, green, red, blue, yellow, white), and a passage of five frames when a temporal variant is tested. These are design values for returnable plastic crates of one family. They are not claimed as a measurement of any particular brewery's crate.
+
+\cleardoublepage
+\pagenumbering{arabic}
+
+\input{chapters/chapter1}
+\input{chapters/chapter2}
+\input{chapters/chapter3}
+
+\bibliographystyle{unsrtnat}
+\bibliography{refs}
+
+\end{document}

@@ -1,0 +1,430 @@
+\subsection{A numerical walk-through of speed, orders, and severity}
+\label{sec:walkthrough}
+
+The formulae of the feature map are short enough to evaluate by hand on the published operating point, and the arithmetic is worth doing once so that every later frequency has a known bin.
+The shaft turns at \(n_{\mathrm{rpm}}=960\).
+Equation~\eqref{eq:f0} gives
+\begin{equation}
+f_{0}=\frac{960}{60}=16\,\mathrm{Hz}
+\label{eq:f0exact}
+\end{equation}
+with no remainder.
+The seven orders that the coefficient sampler reads are therefore exact multiples,
+\begin{equation}
+\begin{aligned}
+\tfrac12 f_{0}&=8,&
+f_{0}&=16,&
+2f_{0}&=32,&
+3f_{0}&=48,\\
+4f_{0}&=64,&
+5f_{0}&=80,&
+6f_{0}&=96,
+\end{aligned}
+\label{eq:ordersexact}
+\end{equation}
+all in hertz.
+The fourth of these coincides with blade pass for a four-blade impeller,
+\begin{equation}
+Z f_{0}=4\times 16=64\,\mathrm{Hz},
+\label{eq:bpexact}
+\end{equation}
+so a line at \(64\,\mathrm{Hz}\) is expected in the healthy pump and is not, by itself, a fault indicator.
+The supply tone reported in the healthy spectrum sits at \(50\,\mathrm{Hz}\), two hertz above \(3f_{0}\).
+Any sampler aimed at \(48\,\mathrm{Hz}\) has to be narrower than that gap.
+
+The analysis length used to describe the records is \(N=8192\) samples at \(f_{s}=10\,\mathrm{kHz}\).
+Duration, resolution, and the number of shaft revolutions inside one record are
+\begin{align}
+T_{\mathrm{rec}}&=\frac{8192}{10000}=0.8192\,\mathrm{s},&
+\Delta f&=\frac{10000}{8192}=1.220703125\,\mathrm{Hz},\\
+N_{\mathrm{rev}}&=0.8192\times 16=13.1072,&
+N_{\mathrm{spr}}&=\frac{10000}{16}=625,
+\label{eq:arith2}
+\end{align}
+where \(N_{\mathrm{spr}}\) is the number of samples in one shaft revolution.
+Six hundred and twenty-five samples per revolution is a fine angular grid: an impact that lasts one millisecond occupies ten samples, and a half-order event that repeats every two revolutions occupies \(1250\) samples.
+The Fourier bin nearest a frequency \(f\) has index
+\begin{equation}
+k(f)=\mathrm{round}\!\left(\frac{f}{\Delta f}\right)
+=\mathrm{round}\!\left(\frac{f\,N}{f_{s}}\right).
+\label{eq:bin}
+\end{equation}
+Applying \eqref{eq:bin} to the family and to the supply line gives the indices in Table~\ref{tab:bins}.
+The half-order, the shaft line, and the supply line fall in different bins.
+Bin \(41\) is the supply; bin \(39\) is \(3f_{0}\).
+Nothing in the order sampler is asked to share a bin with the mains.
+
+\begin{table}[H]
+\centering
+\caption{Fourier bin of each monitored frequency for \(N=8192\) and \(f_{s}=10\,\mathrm{kHz}\). The exact bin coordinate \(f/\Delta f\) is shown before rounding.}
+\label{tab:bins}
+\begin{tabular}{lrrr}
+\toprule
+Tone & Frequency (Hz) & \(f/\Delta f\) & Nearest bin \\
+\midrule
+\(\tfrac12 f_{0}\) & 8 & 6.5536 & 7 \\
+\(f_{0}\) & 16 & 13.1072 & 13 \\
+\(2f_{0}\) & 32 & 26.2144 & 26 \\
+\(3f_{0}\) & 48 & 39.3216 & 39 \\
+Supply & 50 & 40.9600 & 41 \\
+\(4f_{0}\) (blade pass) & 64 & 52.4288 & 52 \\
+\(5f_{0}\) & 80 & 65.5360 & 66 \\
+\(6f_{0}\) & 96 & 78.6432 & 79 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The same clock fixes the coefficient-domain grid at the level the source plots.
+At dyadic level \(j=5\) the coefficient rate and the coefficient length are
+\begin{equation}
+f_{c}=\frac{f_{s}}{2^{5}}=\frac{10000}{32}=312.5\,\mathrm{Hz},
+\qquad
+N_{c}=\frac{N}{2^{5}}=\frac{8192}{32}=256,
+\label{eq:coeffgrid}
+\end{equation}
+so the bin spacing of a transform of the level-\(5\) coefficients is
+\begin{equation}
+\Delta f_{c}=\frac{f_{c}}{N_{c}}=\frac{312.5}{256}=1.220703125\,\mathrm{Hz},
+\label{eq:dfc}
+\end{equation}
+identical to \(\Delta f\) of the full record.
+The coefficient-domain Nyquist frequency is \(f_{c}/2=156.25\,\mathrm{Hz}\), which lies above \(6f_{0}=96\,\mathrm{Hz}\).
+Every order in Table~\ref{tab:bins} is therefore a legal sample of the level-\(5\) coefficient power spectrum.
+The map does not have to resample that level before it reads the family.
+If a future record selected a winning level \(j\ge 7\), the coefficient Nyquist would be \(f_{s}/2^{j+1}\).
+At \(j=7\) that frequency is \(39.0625\,\mathrm{Hz}\), and orders from \(3f_{0}\) upward would sit above it.
+The implementation note in Section~\ref{sec:vwc} --- refuse an order above the coefficient Nyquist rather than report a folded line --- is exactly the protection this arithmetic asks for.
+On the records the source displays, the winning level is \(d_{5}\) and the protection is idle.
+
+Severity can be checked on a short series without pretending the series is a pump record.
+Take four velocity samples, in millimetres per second,
+\begin{equation}
+v=(1.0,\ -1.0,\ 1.0,\ -1.0).
+\label{eq:vtoy}
+\end{equation}
+Equation~\eqref{eq:vibdisc} returns
+\begin{equation}
+\mathrm{VIB}=\sqrt{\frac{1}{4}\bigl(1^{2}+(-1)^{2}+1^{2}+(-1)^{2}\bigr)}
+=\sqrt{1}=1\,\mathrm{mm/s}.
+\label{eq:vibtoy}
+\end{equation}
+A constant shift of the same series up by \(c\) does not leave the severity unchanged, because severity is an RMS and not a standard deviation.
+For \(v_{i}'=v_{i}+c\),
+\begin{equation}
+\mathrm{VIB}'=\sqrt{\mathrm{VIB}^{2}+c^{2}+2c\,\bar{v}},
+\label{eq:vibshift}
+\end{equation}
+and here \(\bar{v}=0\), so a drift of \(c\) inflates the severity by \(\sqrt{1+c^{2}}\).
+That is why the integrator that produces velocity from acceleration is followed by a high-pass step in the illustrative construction, and why a published severity should be read together with the band in which it was computed.
+The four published radial severities remain the experimental numbers: \(1.051\), \(3.737\), \(1.161\), and \(1.70024\,\mathrm{mm/s}\).
+Their ratios to the healthy value are
+\begin{equation}
+\frac{3.737}{1.051}\approx 3.56,
+\qquad
+\frac{1.161}{1.051}\approx 1.10,
+\qquad
+\frac{1.70024}{1.051}\approx 1.62.
+\label{eq:vibatios}
+\end{equation}
+Eccentricity multiplies intensity by about three and a half.
+The pedestal fault multiplies it by about one tenth above unity.
+Seal wear sits between them.
+A threshold placed anywhere between \(2\) and \(3\,\mathrm{mm/s}\) would catch the eccentric state and miss the other two faults.
+The spectral coordinates exist to catch those two.
+
+The short-window map \eqref{eq:vsrc} has a unit that is easy to misread.
+Over \(\tau=0.01\,\mathrm{s}\) with sampling step \(\Delta t=10^{-4}\,\mathrm{s}\),
+\begin{equation}
+v_{i}\approx \Delta t\sum_{m=0}^{99}\abs{a[m]}
+=\frac{1}{100}\cdot\frac{1}{100}\sum_{m=0}^{99}\abs{a[m]}\times 100
+=\tau\cdot\mathrm{MA}_{i},
+\label{eq:ma}
+\end{equation}
+where \(\mathrm{MA}_{i}\) is the mean absolute acceleration inside the window.
+A window whose mean absolute acceleration is \(2\,\mathrm{m/s}^{2}\) contributes \(v_{i}=0.02\,\mathrm{m/s}=20\,\mathrm{mm/s}\) to the series that then enters the RMS.
+The RMS of those window values is not the RMS of a once-integrated acceleration, and it is not in the same proportion to ISO severity zones unless the window and the absolute value are part of the stated definition.
+This paper therefore never converts the published millimetre-per-second figures into an ISO zone letter.
+It uses them as comparative intensities under one fixed definition.
+
+\subsection{Karush--Kuhn--Tucker conditions of the soft-margin problem}
+\label{sec:kkt}
+
+The dual quadratic program is the form a solver accepts.
+The conditions that certify its solution are the Karush--Kuhn--Tucker conditions of the primal, and they are the reason a support vector is allowed to determine the threshold while a correctly classified interior point is not.
+Restoring the slack form \eqref{eq:soft}, the Lagrangian is
+\begin{equation}
+\begin{aligned}
+\mathcal{L}
+&=\frac12\norm{\vect{w}}^{2}+C\sum_{i=1}^{n}\xi_{i}
+-\sum_{i=1}^{n}\alpha_{i}\bigl(y_{i}(\vect{w}^{\top}\vect{x}_{i}+b)-1+\xi_{i}\bigr)
+-\sum_{i=1}^{n}\mu_{i}\xi_{i},
+\end{aligned}
+\label{eq:lag}
+\end{equation}
+with \(\alpha_{i}\ge 0\) and \(\mu_{i}\ge 0\).
+Stationarity with respect to \(\vect{w}\), \(b\), and \(\xi_{i}\) requires
+\begin{align}
+\vect{w}&=\sum_{i=1}^{n}\alpha_{i} y_{i}\vect{x}_{i},&
+\sum_{i=1}^{n}\alpha_{i} y_{i}&=0,&
+C&=\alpha_{i}+\mu_{i}.
+\label{eq:stat}
+\end{align}
+Primal feasibility requires the margin inequality and \(\xi_{i}\ge 0\).
+Dual feasibility requires \(\alpha_{i}\ge 0\) and \(\mu_{i}\ge 0\), hence \(0\le\alpha_{i}\le C\) once the third stationarity relation is substituted.
+Complementary slackness requires
+\begin{align}
+\alpha_{i}\bigl(y_{i}(\vect{w}^{\top}\vect{x}_{i}+b)-1+\xi_{i}\bigr)&=0,&
+\mu_{i}\xi_{i}&=0.
+\label{eq:comp}
+\end{align}
+The three regimes used in Section~\ref{sec:svm} are these conditions read by cases.
+If \(\alpha_{i}=0\), then \(\mu_{i}=C>0\), so \(\xi_{i}=0\), and the point satisfies the margin strictly or lies unused on the boundary; it does not appear in \(\vect{w}\).
+If \(0<\alpha_{i}<C\), then \(\mu_{i}>0\), so \(\xi_{i}=0\), and the first complementary condition places the point exactly on the margin boundary \(y_{i}(\vect{w}^{\top}\vect{x}_{i}+b)=1\).
+That point is a legal place to solve for \(b\).
+If \(\alpha_{i}=C\), then \(\mu_{i}=0\), the slack may be positive, and the point is a margin violation that still pulls on \(\vect{w}\).
+Replacing the inner product by \(K\) does not change the case logic.
+It changes only the expression for the decision value,
+\begin{equation}
+\vect{w}^{\top}\Psi(\vect{x})+b
+=\sum_{i=1}^{n}\alpha_{i} y_{i} K(\vect{x}_{i}, \vect{x})+b.
+\label{eq:decval}
+\end{equation}
+A frog evaluates fitness from labels of held-out folds, and those labels are the signs of \eqref{eq:decval}.
+The KKT cases are how the solver represents the same rule with a few nonzero multipliers instead of with the full normal vector \(\vect{w}\), which for a radial kernel is an element of an infinite-dimensional space and is never stored.
+
+The threshold formula \eqref{eq:bias} is the margin-boundary equation solved for \(b\) at one free support vector, with the source's diagonal soft-margin term absorbed into the way the dual is written.
+Averaging \(b\) over every free support vector, rather than trusting one index, is a standard numerical safeguard and does not change the decision rule when the KKT conditions are met exactly.
+In floating point they are met up to a tolerance, and the average is the more stable of the two.
+This exposition uses the average when it describes an implementation, and it records that the source writes the single-index form.
+
+\subsection{A two-point illustration of the radial kernel}
+\label{sec:rbftoy}
+
+The effect of \(g\) on \eqref{eq:rbf} is visible on two unit-cube points, without any claim that these points are pump features.
+Let
+\begin{equation}
+\vect{p}=(0,0),\qquad \vect{q}=(1,0),
+\qquad
+\norm{\vect{p}-\vect{q}}^{2}=1.
+\label{eq:pq}
+\end{equation}
+Then
+\begin{equation}
+K(\vect{p}, \vect{q})=\exp(-g).
+\label{eq:kpq}
+\end{equation}
+At \(g=0.1\), \(K\approx 0.905\): the two points are almost interchangeable and a hyperplane in the kernel space cannot bend between them.
+At \(g=1\), \(K\approx 0.368\): the points are distinct and a modest margin is available.
+At \(g=4\), \(K\approx 0.018\): each point is nearly orthogonal to the other, and a classifier can assign them opposite labels while ignoring every neighbor that sits a Euclidean distance \(1\) away.
+On the normalized pump cube the typical distance between two vectors from different states is of order one, because each coordinate has been mapped to \([0,1]\) and twenty-two coordinates of moderate difference accumulate.
+The box \(\log_{10} g\in[-3,1]\) therefore runs from a kernel that is almost flat on that cube to a kernel that resolves distances well below the coordinate spacing.
+The box on \(C\), from \(10^{-1}\) to \(10^{3}\), runs from a penalty that tolerates many slacks to a penalty that treats a slack as three orders of magnitude more expensive than a unit of \(\norm{\vect{w}}^{2}\).
+A leap that proposes a pair outside this box is clipped.
+A leap that proposes a pair inside it is scored by the five-fold vote accuracy \eqref{eq:fitness}, which changes only when the sign pattern on a fold changes.
+
+Consider the weights of the modified leap on a population that has already spread out.
+Suppose four frogs, in the logarithmic coordinates \((\log_{10} C, \log_{10} g)\), sit at
+\begin{equation}
+\begin{aligned}
+\vect{F}_{g}&=(2.0,\ -1.0),&
+\vect{F}_{b}&=(1.5,\ -0.5),\\
+\vect{F}_{w}^{\mathrm{near}}&=(1.8,\ -0.8),&
+\vect{F}_{w}^{\mathrm{far}}&=(0.0,\ 0.5),
+\end{aligned}
+\label{eq:frogpos}
+\end{equation}
+and, for this illustration only, take memeplex centers coincident so that \eqref{eq:ffdist} reduces to Euclidean distance.
+Then
+\begin{align}
+\mathrm{FFdist}(\mathrm{near}, g)&=\sqrt{(0.2)^{2}+(0.2)^{2}}\approx 0.283,&
+\mathrm{FFdist}(\mathrm{far}, g)&=\sqrt{(2.0)^{2}+(1.5)^{2}}=2.5.
+\label{eq:frogdist}
+\end{align}
+With these two distances as the minimum and the maximum in \eqref{eq:dminmax},
+\begin{equation}
+q_{\mathrm{near}}=0,
+\quad h_{\mathrm{near}}=1,
+\qquad
+q_{\mathrm{far}}=1,
+\quad h_{\mathrm{far}}=0.
+\label{eq:qhex}
+\end{equation}
+The near frog's expected step \eqref{eq:expect} points entirely at the local best.
+The far frog's expected step points entirely at the global best.
+A frog halfway in distance would split the step.
+The unmodified cascade would, on its first try, point both frogs at the local best, and would consult the global best only after that try had failed to raise fitness.
+The numerical difference is the whole content of the modification: distance selects the mixture before the fitness is spent, instead of after a wasted training.
+The positions in \eqref{eq:frogpos} are an exposition.
+They are not a recovered state of the 2019 search.
+
+If the near leap fails, the Gaussian mutant \eqref{eq:gauss} multiplies each logarithmic coordinate by an independent factor \(1+\varepsilon\), \(\varepsilon\sim\mathcal{N}(0,1)\).
+A draw \(\varepsilon=0.2\) moves \(\log_{10} C\) from \(1.8\) to \(2.16\), which is a factor of about \(10^{0.36}\approx 2.3\) on \(C\) itself.
+A draw \(\varepsilon=-0.2\) divides \(C\) by about the same factor.
+Unit normal noise on the logarithm is therefore a multiplicative jitter of a few-fold on the parameters, large enough to leave a flat step of the accuracy surface and small enough to remain in the neighborhood the clip is prepared to defend.
+A uniform redraw in the box, which is what the unmodified search does on failure, would replace \((1.8,-0.8)\) by a point whose expected squared distance to the current frog is the mean squared distance between two uniform points of a rectangle of width \(4\) and height \(4\).
+That distance is of order one in each coordinate, an order of magnitude larger than the typical successful leap late in the run.
+The mutant spends the failure case on a local move.
+The redraw spends it on a restart.
+
+\subsection{Operation count and a reference schedule}
+\label{sec:cost}
+
+The cost of one fitness evaluation dominates the cost of the feature map, and it is worth writing the count so that a schedule can be chosen without discovering it in a profiler.
+One binary SVM on \(n_{b}\) training rows, solved by sequential minimal optimization, is observed in practice to scale between \(n_{b}\) and roughly \(n_{b}^{2}\) kernel evaluations, depending on how many multipliers remain free.
+This exposition does not rely on a worst-case quadratic bound.
+It counts trainings.
+A one-versus-one reduction on four classes trains six binary machines.
+A stratified five-fold fitness trains each of them five times, on four fifths of the \(180\) rows.
+One frog evaluation is therefore
+\begin{equation}
+N_{\mathrm{train}}=6\times 5=30
+\label{eq:ntrain}
+\end{equation}
+binary trainings, each on \(144\) rows, plus six cheap predictions on the complementary \(36\) rows.
+A local step that proposes one leap evaluates fitness once, and evaluates it a second time if the leap fails and a mutant is scored.
+Scoring the mutant is optional for acceptance --- the procedure in Section~\ref{sec:svm} accepts the mutant whether or not it improves --- so an implementation may skip the second evaluation and pay it only when the mutant becomes the worst frog of a later step.
+Counting one evaluation per local step is the lower figure.
+
+A reference schedule, offered as a software starting point and not as the unpublished experimental setting, is \(M=5\) memeplexes, \(P=10\) frogs, \(L=10\) local steps per memeplex per shuffle, and \(S=30\) shuffles.
+The number of fitness evaluations is then
+\begin{equation}
+N_{F}
+=MP+S\,M\,L
+=50+30\times 5\times 10
+=1550,
+\label{eq:nfeval}
+\end{equation}
+the first term being the initial population and the second the local steps.
+At \(30\) binary trainings per evaluation this is \(46500\) binary trainings on \(144\) rows of dimension \(22\).
+On a current desktop solver that training is a fraction of a second, and the schedule finishes in minutes.
+It is not a reason to reduce the fold count.
+Five folds on \(180\) stratified rows put nine vectors of each state in every test fold.
+Three folds would put fifteen, which is a coarser estimate of the same accuracy the frog is trying to maximize.
+The fitness surface is already a step function; coarsening it further hides the one-vector improvements the modification is designed to find.
+
+The feature map, by comparison, is paid once per record.
+Eight steps of a length-\(8\) filter bank on \(N=8192\) samples, three axes, plus one real transform of \(256\) coefficients, is well under \(10^{6}\) arithmetic operations per record.
+Two hundred and forty records are irrelevant next to \(N_{F}\).
+Precomputing \(\Phi(\vect{a})\) and storing the \(240\times 22\) matrix, then letting every frog see only that matrix, is the right order of work.
+Recomputing the wavelet bank inside the fitness would multiply the map cost by \(N_{F}\) and would not change a single label.
+
+Memory is equally one-sided.
+The kernel matrix of one binary problem is \(144\times 144\) doubles, about \(160\,\mathrm{kB}\), and six such problems can be built and discarded in series.
+The population stores \(50\) pairs of scalars.
+Nothing in the search requires a kernel matrix of the full multiclass sample at once, because the six binary problems do not share multipliers.
+They share only the pair \((C, g)\).
+
+\subsection{What a correct implementation is obliged to log}
+
+Two implementations of the procedure can return different pairs \((C, g)\) and the same test labels, or the same pair and different labels if a tie in the vote is broken differently.
+A log that makes the run auditable, given the raw records, contains six items.
+\begin{enumerate}
+\item The mother wavelet, the analysis depth \(J\), and the tie break for \(k^{\star}\).
+\item The integrator that produced velocity, including the high-pass cutoff if one was used, and which axis supplied the single severity coordinate.
+\item The training ranges \((u^{(j)}, v^{(j)})\) of \eqref{eq:norm}, stored and reused on the test rows.
+\item The box, \(D_{\max}\), the population schedule \((M, P, L, S)\), and the random seed of the initial population.
+\item The returned \((\log_{10} C, \log_{10} g)\) and the five fold accuracies that make up \(F\) at that pair.
+\item The vote matrix on the sixty test rows: six binary decisions and the final label, so that a tie and its break can be replayed.
+\end{enumerate}
+The source paper prints none of these six, because it prints the classification counts instead.
+This exposition prints the definitions that make the six meaningful, and it leaves the numerical log to a run that has the records.
+The estimate in Chapter~\ref{ch:estimation} does not need the log.
+It needs the counts, and it has them.
+The log is the condition under which a later run is allowed to say that it reproduced the method rather than only the tables.
+
+\subsection{Limits of the two technologies, stated as engineering constraints}
+
+VWC assumes a single dominant shaft speed known to an accuracy better than the half-order window.
+At \(960\,\mathrm{r/min}\) the half-order spacing is \(8\,\mathrm{Hz}\), and the sampler's window of half an order is \(4\,\mathrm{Hz}\).
+A speed error of one percent is \(0.16\,\mathrm{Hz}\) at \(f_{0}\) and \(0.96\,\mathrm{Hz}\) at \(6f_{0}\), still inside the window.
+A speed error of ten percent walks \(6f_{0}\) by \(9.6\,\mathrm{Hz}\) and puts the sample on the neighboring order.
+The rig statement of a fixed \(960\,\mathrm{r/min}\) is therefore part of the feature definition, not only part of the operating-point table.
+A variable-speed campaign would have to track \(f_{0}\) per record, resample the orders from that estimate, and re-derive the coefficient Nyquist check.
+None of that tracking is present here, and the published accuracies do not transfer to it by analogy.
+
+MSFLA assumes that the fitness \(F\) is a function of two continuous parameters and that spending thirty binary trainings to learn its value at one point is acceptable.
+If the decision rule grew a third parameter --- a selected subset of the twenty-two coordinates, or a per-axis kernel width --- the same schedule would search a volume instead of a rectangle, and \(1550\) evaluations would become a thin net.
+The modification of the leap does not change that scaling.
+It changes the direction of each evaluation.
+Feature selection inside the frog, which several of the genetic-algorithm papers in Chapter~\ref{ch:previous} do perform, is a different algorithm and would need its own estimate.
+This paper keeps every coordinate.
+The pedestal difficulty discussed in Chapter~\ref{ch:estimation} may well live in a few of them, but the tables do not isolate which ones, and a search over subsets on \(180\) rows would be able to over-fit the folds faster than a search over \((C, g)\).
+
+The two constraints together say where the method is entitled to be trusted.
+Fixed speed, four named states, triaxial casing acceleration, a \(22\)-vector with one severity and twenty-one shaft-order amplitudes, a shared radial kernel, and a search whose only job is the pair \((C, g)\): that is the operating envelope of the chapters that follow.
+Inside the envelope the published test counts are the estimate.
+Outside it the chapters supply a specification, and the specification is not a result.
+
+\subsection{Margin width on a separable pair, in numbers}
+\label{sec:margintoy}
+
+The geometric claim that the support vector machine maximizes a margin is easier to audit on four points than on the \(180\) pump rows, and the arithmetic fixes the scale of \(C\) used later.
+Take a training set in \(\R^{2}\) that is linearly separable,
+\begin{equation}
+\begin{aligned}
+\vect{x}_{1}&=(0,0),& y_{1}&=+1,\\
+\vect{x}_{2}&=(0,1),& y_{2}&=+1,\\
+\vect{x}_{3}&=(2,0),& y_{3}&=-1,\\
+\vect{x}_{4}&=(2,1),& y_{4}&=-1.
+\end{aligned}
+\label{eq:toyset}
+\end{equation}
+The two classes are vertical lines a distance \(2\) apart.
+The hard-margin solution is the mid-plane \(x^{(1)}=1\), which can be written
+\begin{equation}
+\vect{w}=(1,0),\qquad b=-1,
+\label{eq:toysol}
+\end{equation}
+because
+\begin{equation}
+y_{i}(\vect{w}^{\top}\vect{x}_{i}+b)
+=
+\begin{cases}
+1 & i=1,2,\\
+1 & i=3,4,
+\end{cases}
+\label{eq:toymargin}
+\end{equation}
+so every point lies on the boundary of the slab and every point is a support vector.
+The Euclidean margin, from the mid-plane to either boundary, is
+\begin{equation}
+\frac{1}{\norm{\vect{w}}}=1,
+\label{eq:toym}
+\end{equation}
+and the slab thickness is \(2\).
+No separating line has a larger thickness: the classes themselves are only \(2\) apart.
+The objective \(\tfrac12\norm{\vect{w}}^{2}\) equals \(\tfrac12\).
+Any other normal with the same orientation and a larger weight, say \(\vect{w}=(2,0)\) and \(b=-2\), still classifies the four points but scores \(2\) in the objective and only \(\tfrac12\) in the margin.
+The optimizer refuses it.
+This is the entire content of \eqref{eq:hard} on a set that happens to be separable: among the rules that make no training error, take the one with the thickest empty slab.
+
+Now move \(\vect{x}_{3}\) to \((0.5,\ 0)\), so the classes overlap in the first coordinate and no line has an empty slab.
+A soft-margin solution may keep \(\vect{w}\) near \((1,0)\) and pay a slack on the intruding point, or it may tilt and shrink the margin to reduce that slack.
+The trade is priced by \(C\).
+At the moved point the signed margin of the old rule is
+\begin{equation}
+y_{3}(\vect{w}^{\top}\vect{x}_{3}+b)
+= -1\cdot(0.5-1)=0.5,
+\label{eq:slackex}
+\end{equation}
+which misses the required value \(1\) by \(0.5\).
+A slack \(\xi_{3}=0.5\) restores feasibility and costs \(0.5\,C\) in the objective, against the \(\tfrac12\norm{\vect{w}}^{2}=\tfrac12\) already paid for the normal.
+If \(C=0.1\), the slack term costs \(0.05\) and the optimizer will happily tolerate the intrusion rather than inflate \(\vect{w}\).
+If \(C=100\), the same slack costs \(50\), and the optimizer will distort the slab, or recruit a kernel, to drive \(\xi_{3}\) down.
+The pump sample is the second situation in degree and the first in form.
+Healthy and eccentric vectors separate strongly along severity, as the factor \(3.56\) of \eqref{eq:vibatios} shows, and a modest \(C\) already isolates them.
+Pedestal and healthy vectors overlap along severity, the ratio \(1.10\), and they separate, when they separate, along the half-order tangential coordinate.
+A large \(C\) spends its budget on that overlap and can memorize the two or three pedestal training rows that sit on the wrong side of a smooth boundary.
+A small \(C\) ignores them and also ignores real half-order structure.
+The frog exists to put \(C\), together with the kernel width that decides how local that boundary is, where five-fold accuracy on the \(180\) rows is highest.
+The toy set is not an estimate of that location.
+It is the reason the location matters by a factor of a thousand across the box \eqref{eq:box}, and the reason a default pair \((C, g)=(1, 1)\) is not a substitute for the search.
+
+The same four points also show what normalization does to the margin.
+If the first coordinate is recorded in centimetres instead of in the unit interval, \(\vect{x}_{3}-\vect{x}_{1}\) becomes \((200,\ 0)\) under a conversion of metres, or \((0.02,\ 0)\) under a conversion the other way.
+The optimal \(\norm{\vect{w}}\) scales as the inverse of that number, and a radial kernel with a fixed \(g\) changes its value from nearly \(1\) to nearly \(0\).
+Equation~\eqref{eq:norm}, fit on the training rows and frozen for the test rows, removes exactly this dependence.
+After it, a coordinate that spanned a factor of ten in engineering units spans \([0,1]\), and \(g\) means the same thing on severity as on a coefficient amplitude.
+Omitting the step would make the search over \(g\) a search over the accidental units of the wavelet implementation.
+The source states that the vectors were normalized and does not state the map.
+The unit-interval map is the specification that makes the box \eqref{eq:box} a meaningful rectangle rather than a rectangle in mixed units.

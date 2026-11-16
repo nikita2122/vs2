@@ -1,0 +1,4370 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{longo2016}{article}{}{}
+      \name{author}{10}{}{%
+        {{hash=9b37a1df76a0f77e33a508fd45df014a}{%
+           family={Longo},
+           familyi={L\bibinitperiod},
+           given={Stefano},
+           giveni={S\bibinitperiod}}}%
+        {{hash=5035cfb1fa578b640493fcdeb9609d91}{%
+           family={d'Antoni},
+           familyi={d\bibinitperiod},
+           given={Benedetto\bibnamedelima Mirko},
+           giveni={B\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=c51af2c1170330e2aa69a4bd0064d6c8}{%
+           family={Bongards},
+           familyi={B\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=f9f35620cb52c2e6a5e8b3c378466efe}{%
+           family={Chaparro},
+           familyi={C\bibinitperiod},
+           given={Antonio},
+           giveni={A\bibinitperiod}}}%
+        {{hash=969b2cae89ad32020c762428d2c1820f}{%
+           family={Cronrath},
+           familyi={C\bibinitperiod},
+           given={Andreas},
+           giveni={A\bibinitperiod}}}%
+        {{hash=32f6c216d85f31c787a8c1f16c87ea40}{%
+           family={Fatone},
+           familyi={F\bibinitperiod},
+           given={Francesco},
+           giveni={F\bibinitperiod}}}%
+        {{hash=dc9dbf249a72cdd9fe2e21b0b2a7b145}{%
+           family={Lema},
+           familyi={L\bibinitperiod},
+           given={Juan\bibnamedelima M.},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=a60843e07352d9669225f880d0921370}{%
+           family={Mauricio-Iglesias},
+           familyi={M\bibinithyphendelim I\bibinitperiod},
+           given={Miguel},
+           giveni={M\bibinitperiod}}}%
+        {{hash=5d7b2a91cd7cf9e25b5ea4d7085ff4fd}{%
+           family={Soares},
+           familyi={S\bibinitperiod},
+           given={Ana},
+           giveni={A\bibinitperiod}}}%
+        {{hash=31c1dd7a14838d31129e0ff9293fef01}{%
+           family={Hospido},
+           familyi={H\bibinitperiod},
+           given={Almudena},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{38973b455c41dc98c8b402ddf67b53f5}
+      \strng{fullhash}{0106ca8e982ec371dde83540a67f657b}
+      \strng{fullhashraw}{0106ca8e982ec371dde83540a67f657b}
+      \strng{bibnamehash}{38973b455c41dc98c8b402ddf67b53f5}
+      \strng{authorbibnamehash}{38973b455c41dc98c8b402ddf67b53f5}
+      \strng{authornamehash}{38973b455c41dc98c8b402ddf67b53f5}
+      \strng{authorfullhash}{0106ca8e982ec371dde83540a67f657b}
+      \strng{authorfullhashraw}{0106ca8e982ec371dde83540a67f657b}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Applied Energy}
+      \field{title}{Monitoring and diagnosis of energy consumption in wastewater treatment plants. {A} state of the art and proposals for improvement}
+      \field{volume}{179}
+      \field{year}{2016}
+      \field{pages}{1251\bibrangedash 1268}
+      \range{pages}{18}
+      \verb{doi}
+      \verb 10.1016/j.apenergy.2016.07.043
+      \endverb
+    \endentry
+    \entry{epa2010energy}{report}{}{}
+      \name{author}{1}{}{%
+        {{hash=8233d83a5e663161d707a62961f8f66f}{%
+           family={{U.S. Environmental Protection Agency}},
+           familyi={U\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {U.S. Environmental Protection Agency}%
+      }
+      \list{location}{1}{%
+        {Washington, DC}%
+      }
+      \strng{namehash}{8233d83a5e663161d707a62961f8f66f}
+      \strng{fullhash}{8233d83a5e663161d707a62961f8f66f}
+      \strng{fullhashraw}{8233d83a5e663161d707a62961f8f66f}
+      \strng{bibnamehash}{8233d83a5e663161d707a62961f8f66f}
+      \strng{authorbibnamehash}{8233d83a5e663161d707a62961f8f66f}
+      \strng{authornamehash}{8233d83a5e663161d707a62961f8f66f}
+      \strng{authorfullhash}{8233d83a5e663161d707a62961f8f66f}
+      \strng{authorfullhashraw}{8233d83a5e663161d707a62961f8f66f}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{number}{EPA 832-R-10-005}
+      \field{title}{Evaluation of Energy Conservation Measures for Wastewater Treatment Facilities}
+      \field{type}{techreport}
+      \field{year}{2010}
+    \endentry
+    \entry{amand2013review}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=351b7e2faf11a743913dd4eefc40350a}{%
+           family={{Å}mand},
+           familyi={Å\bibinitperiod},
+           given={Linda},
+           giveni={L\bibinitperiod}}}%
+        {{hash=d6bc91fd370b3132acf29ff0ecfadc92}{%
+           family={Olsson},
+           familyi={O\bibinitperiod},
+           given={Gustaf},
+           giveni={G\bibinitperiod}}}%
+        {{hash=3e62925fe1bca59d9beb50da1698221c}{%
+           family={Carlsson},
+           familyi={C\bibinitperiod},
+           given={Bengt},
+           giveni={B\bibinitperiod}}}%
+      }
+      \strng{namehash}{b8ce89e7202b245e6a3d1fb4f45d1fec}
+      \strng{fullhash}{b8ce89e7202b245e6a3d1fb4f45d1fec}
+      \strng{fullhashraw}{b8ce89e7202b245e6a3d1fb4f45d1fec}
+      \strng{bibnamehash}{b8ce89e7202b245e6a3d1fb4f45d1fec}
+      \strng{authorbibnamehash}{b8ce89e7202b245e6a3d1fb4f45d1fec}
+      \strng{authornamehash}{b8ce89e7202b245e6a3d1fb4f45d1fec}
+      \strng{authorfullhash}{b8ce89e7202b245e6a3d1fb4f45d1fec}
+      \strng{authorfullhashraw}{b8ce89e7202b245e6a3d1fb4f45d1fec}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Science and Technology}
+      \field{number}{11}
+      \field{title}{Aeration control -- a review}
+      \field{volume}{67}
+      \field{year}{2013}
+      \field{pages}{2374\bibrangedash 2397}
+      \range{pages}{24}
+      \verb{doi}
+      \verb 10.2166/wst.2013.139
+      \endverb
+    \endentry
+    \entry{mueller2002aeration}{book}{}{}
+      \name{author}{3}{}{%
+        {{hash=db7b4084c41e29abe4e429906337323e}{%
+           family={Mueller},
+           familyi={M\bibinitperiod},
+           given={James\bibnamedelima A.},
+           giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=5438e85588c1d4608517660f81170417}{%
+           family={Boyle},
+           familyi={B\bibinitperiod},
+           given={William\bibnamedelima C.},
+           giveni={W\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=7e370301f47b5ed7a2956e6583e69580}{%
+           family={Pöpel},
+           familyi={P\bibinitperiod},
+           given={H.\bibnamedelimi Johannes},
+           giveni={H\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Boca Raton}%
+      }
+      \list{publisher}{1}{%
+        {CRC Press}%
+      }
+      \strng{namehash}{dd1c29f3689c32e65cf75f705c4f4111}
+      \strng{fullhash}{dd1c29f3689c32e65cf75f705c4f4111}
+      \strng{fullhashraw}{dd1c29f3689c32e65cf75f705c4f4111}
+      \strng{bibnamehash}{dd1c29f3689c32e65cf75f705c4f4111}
+      \strng{authorbibnamehash}{dd1c29f3689c32e65cf75f705c4f4111}
+      \strng{authornamehash}{dd1c29f3689c32e65cf75f705c4f4111}
+      \strng{authorfullhash}{dd1c29f3689c32e65cf75f705c4f4111}
+      \strng{authorfullhashraw}{dd1c29f3689c32e65cf75f705c4f4111}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Aeration: Principles and Practice}
+      \field{year}{2002}
+    \endentry
+    \entry{rosso2008state}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=facfeb6cb095b4546f79709f5d1c979c}{%
+           family={Rosso},
+           familyi={R\bibinitperiod},
+           given={Diego},
+           giveni={D\bibinitperiod}}}%
+        {{hash=cf61b16ae0777a05df5f3f25509eab0e}{%
+           family={Larson},
+           familyi={L\bibinitperiod},
+           given={L.\bibnamedelimi E.},
+           giveni={L\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=d663dd9eb52090915f34719894ff04a4}{%
+           family={Stenstrom},
+           familyi={S\bibinitperiod},
+           given={Michael\bibnamedelima K.},
+           giveni={M\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+      }
+      \strng{namehash}{89e1a159e5309014e65d92745ccbb56e}
+      \strng{fullhash}{89e1a159e5309014e65d92745ccbb56e}
+      \strng{fullhashraw}{89e1a159e5309014e65d92745ccbb56e}
+      \strng{bibnamehash}{89e1a159e5309014e65d92745ccbb56e}
+      \strng{authorbibnamehash}{89e1a159e5309014e65d92745ccbb56e}
+      \strng{authornamehash}{89e1a159e5309014e65d92745ccbb56e}
+      \strng{authorfullhash}{89e1a159e5309014e65d92745ccbb56e}
+      \strng{authorfullhashraw}{89e1a159e5309014e65d92745ccbb56e}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Science and Technology}
+      \field{number}{7}
+      \field{title}{Aeration of large-scale municipal wastewater treatment plants: state of the art}
+      \field{volume}{57}
+      \field{year}{2008}
+      \field{pages}{973\bibrangedash 978}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.2166/wst.2008.218
+      \endverb
+    \endentry
+    \entry{tchobanoglous2014}{book}{}{}
+      \name{author}{4}{}{%
+        {{hash=49adc79c35e8aa9733634e37fae306d7}{%
+           family={Tchobanoglous},
+           familyi={T\bibinitperiod},
+           given={George},
+           giveni={G\bibinitperiod}}}%
+        {{hash=c8553f0e99eef1511a08390c56d7985c}{%
+           family={Stensel},
+           familyi={S\bibinitperiod},
+           given={H.\bibnamedelimi David},
+           giveni={H\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+        {{hash=5dd5524953f46bdc8271504f30438396}{%
+           family={Tsuchihashi},
+           familyi={T\bibinitperiod},
+           given={Ryujiro},
+           giveni={R\bibinitperiod}}}%
+        {{hash=90333732d057ed84586a19149c5cbead}{%
+           family={Burton},
+           familyi={B\bibinitperiod},
+           given={Franklin\bibnamedelima L.},
+           giveni={F\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {New York}%
+      }
+      \list{publisher}{1}{%
+        {McGraw-Hill}%
+      }
+      \strng{namehash}{8cb96345c2df4762c594971cc36ae779}
+      \strng{fullhash}{0ff4d11c0fc52d1ed2f6a6eb0374e63c}
+      \strng{fullhashraw}{0ff4d11c0fc52d1ed2f6a6eb0374e63c}
+      \strng{bibnamehash}{0ff4d11c0fc52d1ed2f6a6eb0374e63c}
+      \strng{authorbibnamehash}{0ff4d11c0fc52d1ed2f6a6eb0374e63c}
+      \strng{authornamehash}{8cb96345c2df4762c594971cc36ae779}
+      \strng{authorfullhash}{0ff4d11c0fc52d1ed2f6a6eb0374e63c}
+      \strng{authorfullhashraw}{0ff4d11c0fc52d1ed2f6a6eb0374e63c}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{5}
+      \field{note}{Metcalf \& Eddy}
+      \field{title}{Wastewater Engineering: Treatment and Resource Recovery}
+      \field{year}{2014}
+    \endentry
+    \entry{simate2011}{article}{}{}
+      \name{author}{7}{}{%
+        {{hash=dec1c6def22fd7bf0b8583aaef6d349b}{%
+           family={Simate},
+           familyi={S\bibinitperiod},
+           given={Geoffrey\bibnamedelima S.},
+           giveni={G\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=6b20da614829957f2c152c7a6a8512df}{%
+           family={Cluett},
+           familyi={C\bibinitperiod},
+           given={John},
+           giveni={J\bibinitperiod}}}%
+        {{hash=0d0bcc324aabcc455f0fbd9ca321d515}{%
+           family={Iyuke},
+           familyi={I\bibinitperiod},
+           given={Sunny\bibnamedelima E.},
+           giveni={S\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=0b1c3784ccb8c76cff3643679c9bab3d}{%
+           family={Musapatika},
+           familyi={M\bibinitperiod},
+           given={Evans\bibnamedelima T.},
+           giveni={E\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=9232cff3904c739c27144a0c736329a5}{%
+           family={Ndlovu},
+           familyi={N\bibinitperiod},
+           given={Sehliselo},
+           giveni={S\bibinitperiod}}}%
+        {{hash=d85a47bde758fc455aa31a5479312bfd}{%
+           family={Walubita},
+           familyi={W\bibinitperiod},
+           given={Lubinda\bibnamedelima F.},
+           giveni={L\bibinitperiod\bibinitdelim F\bibinitperiod}}}%
+        {{hash=453c9ede50ad7e75f3e8397960c576b7}{%
+           family={Alvarez},
+           familyi={A\bibinitperiod},
+           given={Allex\bibnamedelima E.},
+           giveni={A\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+      }
+      \strng{namehash}{ec2a7fcf925fd95bb24c1563ba4e9452}
+      \strng{fullhash}{3618ae7b10701683ed97c7740512289c}
+      \strng{fullhashraw}{3618ae7b10701683ed97c7740512289c}
+      \strng{bibnamehash}{3618ae7b10701683ed97c7740512289c}
+      \strng{authorbibnamehash}{3618ae7b10701683ed97c7740512289c}
+      \strng{authornamehash}{ec2a7fcf925fd95bb24c1563ba4e9452}
+      \strng{authorfullhash}{3618ae7b10701683ed97c7740512289c}
+      \strng{authorfullhashraw}{3618ae7b10701683ed97c7740512289c}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Desalination}
+      \field{number}{2--3}
+      \field{title}{The treatment of brewery wastewater for reuse: State of the art}
+      \field{volume}{273}
+      \field{year}{2011}
+      \field{pages}{235\bibrangedash 247}
+      \range{pages}{13}
+      \verb{doi}
+      \verb 10.1016/j.desal.2011.02.035
+      \endverb
+    \endentry
+    \entry{fillaudeau2006}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=3620aeb4575cd2376509d4f6be61b9c1}{%
+           family={Fillaudeau},
+           familyi={F\bibinitperiod},
+           given={Luc},
+           giveni={L\bibinitperiod}}}%
+        {{hash=9603fc196a7809c52c14f8ca5a6c42c5}{%
+           family={Blanpain-Avet},
+           familyi={B\bibinithyphendelim A\bibinitperiod},
+           given={Pascal},
+           giveni={P\bibinitperiod}}}%
+        {{hash=42f9635715a6467d7e2e7abdf46bc986}{%
+           family={Daufin},
+           familyi={D\bibinitperiod},
+           given={Georges},
+           giveni={G\bibinitperiod}}}%
+      }
+      \strng{namehash}{c6ee9f80257278d23514ce1d42e9b656}
+      \strng{fullhash}{c6ee9f80257278d23514ce1d42e9b656}
+      \strng{fullhashraw}{c6ee9f80257278d23514ce1d42e9b656}
+      \strng{bibnamehash}{c6ee9f80257278d23514ce1d42e9b656}
+      \strng{authorbibnamehash}{c6ee9f80257278d23514ce1d42e9b656}
+      \strng{authornamehash}{c6ee9f80257278d23514ce1d42e9b656}
+      \strng{authorfullhash}{c6ee9f80257278d23514ce1d42e9b656}
+      \strng{authorfullhashraw}{c6ee9f80257278d23514ce1d42e9b656}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Cleaner Production}
+      \field{number}{5}
+      \field{title}{Water, wastewater and waste management in brewing industries}
+      \field{volume}{14}
+      \field{year}{2006}
+      \field{pages}{463\bibrangedash 471}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1016/j.jclepro.2005.01.002
+      \endverb
+    \endentry
+    \entry{ashraf2021}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=d79e44d00ac7b34b5aa0a09255e60ac0}{%
+           family={Ashraf},
+           familyi={A\bibinitperiod},
+           given={Adil},
+           giveni={A\bibinitperiod}}}%
+        {{hash=4e6111390594957b99aabd5e66dca042}{%
+           family={Ramamurthy},
+           familyi={R\bibinitperiod},
+           given={Racchana},
+           giveni={R\bibinitperiod}}}%
+        {{hash=c212bd08a9c0480c642a6a9ed2d7446e}{%
+           family={Rene},
+           familyi={R\bibinitperiod},
+           given={Eldon\bibnamedelima Raj},
+           giveni={E\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+      }
+      \strng{namehash}{1480549285d2b6abd89a49c78cd19e13}
+      \strng{fullhash}{1480549285d2b6abd89a49c78cd19e13}
+      \strng{fullhashraw}{1480549285d2b6abd89a49c78cd19e13}
+      \strng{bibnamehash}{1480549285d2b6abd89a49c78cd19e13}
+      \strng{authorbibnamehash}{1480549285d2b6abd89a49c78cd19e13}
+      \strng{authornamehash}{1480549285d2b6abd89a49c78cd19e13}
+      \strng{authorfullhash}{1480549285d2b6abd89a49c78cd19e13}
+      \strng{authorfullhashraw}{1480549285d2b6abd89a49c78cd19e13}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Sustainable Energy Technologies and Assessments}
+      \field{title}{Wastewater treatment and resource recovery technologies in the brewery industry: Current trends and emerging practices}
+      \field{volume}{47}
+      \field{year}{2021}
+      \field{pages}{101432}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1016/j.seta.2021.101432
+      \endverb
+    \endentry
+    \entry{werkneh2019}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=ba5dc18ab2f65aa9b787791c5db5ef41}{%
+           family={Werkneh},
+           familyi={W\bibinitperiod},
+           given={Adhena\bibnamedelima Ayaliew},
+           giveni={A\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=29f564ff897b5e647dd4206171d6efff}{%
+           family={Beyene},
+           familyi={B\bibinitperiod},
+           given={Hayelom\bibnamedelima Dargo},
+           giveni={H\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+        {{hash=b50b4b424752e25bbcb33c0989495068}{%
+           family={Osunkunle},
+           familyi={O\bibinitperiod},
+           given={Abduljeleel\bibnamedelima A.},
+           giveni={A\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{30881226eeb3c95f9dafd4e08f054a2c}
+      \strng{fullhash}{30881226eeb3c95f9dafd4e08f054a2c}
+      \strng{fullhashraw}{30881226eeb3c95f9dafd4e08f054a2c}
+      \strng{bibnamehash}{30881226eeb3c95f9dafd4e08f054a2c}
+      \strng{authorbibnamehash}{30881226eeb3c95f9dafd4e08f054a2c}
+      \strng{authornamehash}{30881226eeb3c95f9dafd4e08f054a2c}
+      \strng{authorfullhash}{30881226eeb3c95f9dafd4e08f054a2c}
+      \strng{authorfullhashraw}{30881226eeb3c95f9dafd4e08f054a2c}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Environmental Sustainability}
+      \field{title}{Recent advances in brewery wastewater treatment; approaches for water reuse and energy recovery: a review}
+      \field{volume}{2}
+      \field{year}{2019}
+      \field{pages}{199\bibrangedash 209}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1007/s42398-019-00056-2
+      \endverb
+    \endentry
+    \entry{batstone2002adm1}{article}{}{}
+      \name{author}{9}{}{%
+        {{hash=17bfd588d6f6b96ae84c6639a88f7480}{%
+           family={Batstone},
+           familyi={B\bibinitperiod},
+           given={Damien\bibnamedelima J.},
+           giveni={D\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=1410f3c9b3d092505e39d1590621dfa2}{%
+           family={Keller},
+           familyi={K\bibinitperiod},
+           given={Jürg},
+           giveni={J\bibinitperiod}}}%
+        {{hash=6c2898aad0905be871bfdb9293f8e82a}{%
+           family={Angelidaki},
+           familyi={A\bibinitperiod},
+           given={Irini},
+           giveni={I\bibinitperiod}}}%
+        {{hash=bbdb6acc64aa9bc7243be9f98d03efeb}{%
+           family={Kalyuzhnyi},
+           familyi={K\bibinitperiod},
+           given={S.\bibnamedelimi V.},
+           giveni={S\bibinitperiod\bibinitdelim V\bibinitperiod}}}%
+        {{hash=450207178fcad29e770bf539f7afef5b}{%
+           family={Pavlostathis},
+           familyi={P\bibinitperiod},
+           given={S.\bibnamedelimi G.},
+           giveni={S\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=80dd20d2af2cbce13eb45a758efea973}{%
+           family={Rozzi},
+           familyi={R\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+        {{hash=001061ce11c25454ace2595f06bae215}{%
+           family={Sanders},
+           familyi={S\bibinitperiod},
+           given={W.\bibnamedelimi T.\bibnamedelimi M.},
+           giveni={W\bibinitperiod\bibinitdelim T\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=e466ca4dd3dbfc6e3a328aed2b0cfd22}{%
+           family={Siegrist},
+           familyi={S\bibinitperiod},
+           given={H.},
+           giveni={H\bibinitperiod}}}%
+        {{hash=2ce2ee2e664a2634abf793094c85e5a8}{%
+           family={Vavilin},
+           familyi={V\bibinitperiod},
+           given={V.\bibnamedelimi A.},
+           giveni={V\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{4e6194e3049881ae29bdfd98796b1dc7}
+      \strng{fullhash}{fe72497db92567ea1d6cb4239705eef3}
+      \strng{fullhashraw}{fe72497db92567ea1d6cb4239705eef3}
+      \strng{bibnamehash}{4e6194e3049881ae29bdfd98796b1dc7}
+      \strng{authorbibnamehash}{4e6194e3049881ae29bdfd98796b1dc7}
+      \strng{authornamehash}{4e6194e3049881ae29bdfd98796b1dc7}
+      \strng{authorfullhash}{fe72497db92567ea1d6cb4239705eef3}
+      \strng{authorfullhashraw}{fe72497db92567ea1d6cb4239705eef3}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Science and Technology}
+      \field{number}{10}
+      \field{title}{The {IWA} Anaerobic Digestion Model No~1 ({ADM1})}
+      \field{volume}{45}
+      \field{year}{2002}
+      \field{pages}{65\bibrangedash 73}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.2166/wst.2002.0292
+      \endverb
+    \endentry
+    \entry{rosso2006alpha}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=facfeb6cb095b4546f79709f5d1c979c}{%
+           family={Rosso},
+           familyi={R\bibinitperiod},
+           given={Diego},
+           giveni={D\bibinitperiod}}}%
+        {{hash=d663dd9eb52090915f34719894ff04a4}{%
+           family={Stenstrom},
+           familyi={S\bibinitperiod},
+           given={Michael\bibnamedelima K.},
+           giveni={M\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+      }
+      \strng{namehash}{941edbdad34e12d628310a0710429892}
+      \strng{fullhash}{941edbdad34e12d628310a0710429892}
+      \strng{fullhashraw}{941edbdad34e12d628310a0710429892}
+      \strng{bibnamehash}{941edbdad34e12d628310a0710429892}
+      \strng{authorbibnamehash}{941edbdad34e12d628310a0710429892}
+      \strng{authornamehash}{941edbdad34e12d628310a0710429892}
+      \strng{authorfullhash}{941edbdad34e12d628310a0710429892}
+      \strng{authorfullhashraw}{941edbdad34e12d628310a0710429892}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{7}
+      \field{title}{Surfactant effects on $\alpha$-factors in aeration systems}
+      \field{volume}{40}
+      \field{year}{2006}
+      \field{pages}{1397\bibrangedash 1404}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1016/j.watres.2006.01.044
+      \endverb
+    \endentry
+    \entry{asce2007oxygen}{standard}{}{}
+      \name{author}{1}{}{%
+        {{hash=1965b1388e13516c345362deae25ad52}{%
+           family={{American Society of Civil Engineers}},
+           familyi={A\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Reston, VA}%
+      }
+      \strng{namehash}{1965b1388e13516c345362deae25ad52}
+      \strng{fullhash}{1965b1388e13516c345362deae25ad52}
+      \strng{fullhashraw}{1965b1388e13516c345362deae25ad52}
+      \strng{bibnamehash}{1965b1388e13516c345362deae25ad52}
+      \strng{authorbibnamehash}{1965b1388e13516c345362deae25ad52}
+      \strng{authornamehash}{1965b1388e13516c345362deae25ad52}
+      \strng{authorfullhash}{1965b1388e13516c345362deae25ad52}
+      \strng{authorfullhashraw}{1965b1388e13516c345362deae25ad52}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{number}{ASCE/EWRI 2-06}
+      \field{title}{Measurement of Oxygen Transfer in Clean Water}
+      \field{year}{2007}
+    \endentry
+    \entry{pittoors2014}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=b0ce0731078bab9035814259f6757741}{%
+           family={Pittoors},
+           familyi={P\bibinitperiod},
+           given={Erika},
+           giveni={E\bibinitperiod}}}%
+        {{hash=85327efe1fbdfc97c7e0c9cf54aeb028}{%
+           family={Guo},
+           familyi={G\bibinitperiod},
+           given={Yaping},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=b9b9a4215f04902ba50c4d2330dbb27e}{%
+           family={Van\bibnamedelima Hulle},
+           familyi={V\bibinitperiod\bibinitdelim H\bibinitperiod},
+           given={Stijn\bibnamedelimb W.\bibnamedelimi H.},
+           giveni={S\bibinitperiod\bibinitdelim W\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+      }
+      \strng{namehash}{ffbb93a5a030046275020d203e28c009}
+      \strng{fullhash}{ffbb93a5a030046275020d203e28c009}
+      \strng{fullhashraw}{ffbb93a5a030046275020d203e28c009}
+      \strng{bibnamehash}{ffbb93a5a030046275020d203e28c009}
+      \strng{authorbibnamehash}{ffbb93a5a030046275020d203e28c009}
+      \strng{authornamehash}{ffbb93a5a030046275020d203e28c009}
+      \strng{authorfullhash}{ffbb93a5a030046275020d203e28c009}
+      \strng{authorfullhashraw}{ffbb93a5a030046275020d203e28c009}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Chemical Engineering Communications}
+      \field{number}{8}
+      \field{title}{Modeling dissolved oxygen concentration for optimizing aeration systems and reducing oxygen consumption in activated sludge processes: A review}
+      \field{volume}{201}
+      \field{year}{2014}
+      \field{pages}{983\bibrangedash 1002}
+      \range{pages}{20}
+      \verb{doi}
+      \verb 10.1080/00986445.2014.883974
+      \endverb
+    \endentry
+    \entry{gillot2005}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=93ac48009b9c90f6c1df8b0f985c2cf5}{%
+           family={Gillot},
+           familyi={G\bibinitperiod},
+           given={Sylvie},
+           giveni={S\bibinitperiod}}}%
+        {{hash=ebe2cf6624e92b1db91be95408df1d4f}{%
+           family={Capela-Marsal},
+           familyi={C\bibinithyphendelim M\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+        {{hash=7c209ec684fd76584d362b2e1ba47a54}{%
+           family={Roustan},
+           familyi={R\bibinitperiod},
+           given={Michel},
+           giveni={M\bibinitperiod}}}%
+        {{hash=4ef8100a87aa5ec5b1e72b9b7c7c743b}{%
+           family={Héduit},
+           familyi={H\bibinitperiod},
+           given={Alain},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{bd8535cde929fd5b9350e6c716590124}
+      \strng{fullhash}{774945bfd8765bd36e64472ff6db8673}
+      \strng{fullhashraw}{774945bfd8765bd36e64472ff6db8673}
+      \strng{bibnamehash}{774945bfd8765bd36e64472ff6db8673}
+      \strng{authorbibnamehash}{774945bfd8765bd36e64472ff6db8673}
+      \strng{authornamehash}{bd8535cde929fd5b9350e6c716590124}
+      \strng{authorfullhash}{774945bfd8765bd36e64472ff6db8673}
+      \strng{authorfullhashraw}{774945bfd8765bd36e64472ff6db8673}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{7}
+      \field{title}{Predicting oxygen transfer of fine bubble diffused aeration systems---model issued from dimensional analysis}
+      \field{volume}{39}
+      \field{year}{2005}
+      \field{pages}{1379\bibrangedash 1387}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1016/j.watres.2005.01.008
+      \endverb
+    \endentry
+    \entry{wagner1998}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=af831b3cdf9e39a84c1c0296209fad34}{%
+           family={Wagner},
+           familyi={W\bibinitperiod},
+           given={M.\bibnamedelimi R.},
+           giveni={M\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=7e370301f47b5ed7a2956e6583e69580}{%
+           family={Pöpel},
+           familyi={P\bibinitperiod},
+           given={H.\bibnamedelimi Johannes},
+           giveni={H\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \strng{namehash}{cf2c6b3876389eeec15ee029b4be8a21}
+      \strng{fullhash}{cf2c6b3876389eeec15ee029b4be8a21}
+      \strng{fullhashraw}{cf2c6b3876389eeec15ee029b4be8a21}
+      \strng{bibnamehash}{cf2c6b3876389eeec15ee029b4be8a21}
+      \strng{authorbibnamehash}{cf2c6b3876389eeec15ee029b4be8a21}
+      \strng{authornamehash}{cf2c6b3876389eeec15ee029b4be8a21}
+      \strng{authorfullhash}{cf2c6b3876389eeec15ee029b4be8a21}
+      \strng{authorfullhashraw}{cf2c6b3876389eeec15ee029b4be8a21}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Science and Technology}
+      \field{number}{3}
+      \field{title}{Oxygen transfer and aeration efficiency---influence of diffuser submergence, diffuser density, and blower type}
+      \field{volume}{38}
+      \field{year}{1998}
+      \field{pages}{1\bibrangedash 6}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.2166/wst.1998.0163
+      \endverb
+    \endentry
+    \entry{gravdahl1999surge}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=db7b58731e1d1406085236238be06461}{%
+           family={Gravdahl},
+           familyi={G\bibinitperiod},
+           given={Jan\bibnamedelima Tommy},
+           giveni={J\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=b9316c6aefaa8e5eb8470d4221e0fef1}{%
+           family={Egeland},
+           familyi={E\bibinitperiod},
+           given={Olav},
+           giveni={O\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {London}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{043e2b955a21fd3fe6f52aa87ef21f61}
+      \strng{fullhash}{043e2b955a21fd3fe6f52aa87ef21f61}
+      \strng{fullhashraw}{043e2b955a21fd3fe6f52aa87ef21f61}
+      \strng{bibnamehash}{043e2b955a21fd3fe6f52aa87ef21f61}
+      \strng{authorbibnamehash}{043e2b955a21fd3fe6f52aa87ef21f61}
+      \strng{authornamehash}{043e2b955a21fd3fe6f52aa87ef21f61}
+      \strng{authorfullhash}{043e2b955a21fd3fe6f52aa87ef21f61}
+      \strng{authorfullhashraw}{043e2b955a21fd3fe6f52aa87ef21f61}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Compressor Surge and Rotating Stall: Modeling and Control}
+      \field{year}{1999}
+    \endentry
+    \entry{dixon2014turbo}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=56b25532e0bac896e2912d9ba5152407}{%
+           family={Dixon},
+           familyi={D\bibinitperiod},
+           given={S.\bibnamedelimi Larry},
+           giveni={S\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+        {{hash=6fa948d2d5145597b16a22235f271df9}{%
+           family={Hall},
+           familyi={H\bibinitperiod},
+           given={Cesare\bibnamedelima A.},
+           giveni={C\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Oxford}%
+      }
+      \list{publisher}{1}{%
+        {Butterworth-Heinemann}%
+      }
+      \strng{namehash}{893400d3e20be4467c1c566bb642616b}
+      \strng{fullhash}{893400d3e20be4467c1c566bb642616b}
+      \strng{fullhashraw}{893400d3e20be4467c1c566bb642616b}
+      \strng{bibnamehash}{893400d3e20be4467c1c566bb642616b}
+      \strng{authorbibnamehash}{893400d3e20be4467c1c566bb642616b}
+      \strng{authornamehash}{893400d3e20be4467c1c566bb642616b}
+      \strng{authorfullhash}{893400d3e20be4467c1c566bb642616b}
+      \strng{authorfullhashraw}{893400d3e20be4467c1c566bb642616b}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{7}
+      \field{title}{Fluid Mechanics and Thermodynamics of Turbomachinery}
+      \field{year}{2014}
+    \endentry
+    \entry{iec60034}{standard}{}{}
+      \name{author}{1}{}{%
+        {{hash=1bfbc8812fd493bd4a6c196b196d1291}{%
+           family={{International Electrotechnical Commission}},
+           familyi={I\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Geneva}%
+      }
+      \strng{namehash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{fullhash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{fullhashraw}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{bibnamehash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{authorbibnamehash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{authornamehash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{authorfullhash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{authorfullhashraw}{1bfbc8812fd493bd4a6c196b196d1291}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{IEC} 60034-30-1: Rotating electrical machines --- {Part} 30-1: Efficiency classes of line operated {AC} motors}
+      \field{year}{2014}
+    \endentry
+    \entry{bemporad1999hybrid}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=08cd00186045f5193f38f238d6caee47}{%
+           family={Bemporad},
+           familyi={B\bibinitperiod},
+           given={Alberto},
+           giveni={A\bibinitperiod}}}%
+        {{hash=b2bb39eb75a828fec1d25d655c9d7372}{%
+           family={Morari},
+           familyi={M\bibinitperiod},
+           given={Manfred},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{8c2dec4ad3fc49570a340d0657f9b605}
+      \strng{fullhash}{8c2dec4ad3fc49570a340d0657f9b605}
+      \strng{fullhashraw}{8c2dec4ad3fc49570a340d0657f9b605}
+      \strng{bibnamehash}{8c2dec4ad3fc49570a340d0657f9b605}
+      \strng{authorbibnamehash}{8c2dec4ad3fc49570a340d0657f9b605}
+      \strng{authornamehash}{8c2dec4ad3fc49570a340d0657f9b605}
+      \strng{authorfullhash}{8c2dec4ad3fc49570a340d0657f9b605}
+      \strng{authorfullhashraw}{8c2dec4ad3fc49570a340d0657f9b605}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Automatica}
+      \field{number}{3}
+      \field{title}{Control of systems integrating logic, dynamics, and constraints}
+      \field{volume}{35}
+      \field{year}{1999}
+      \field{pages}{407\bibrangedash 427}
+      \range{pages}{21}
+      \verb{doi}
+      \verb 10.1016/S0005-1098(98)00178-2
+      \endverb
+    \endentry
+    \entry{cristea2011}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=9d022fd4ca9e2924ae4296892fe98106}{%
+           family={Cristea},
+           familyi={C\bibinitperiod},
+           given={Smaranda},
+           giveni={S\bibinitperiod}}}%
+        {{hash=af2504394bedc6e06e8cb686286e1c5c}{%
+           family={Prada},
+           familyi={P\bibinitperiod},
+           given={César},
+           giveni={C\bibinitperiod},
+           prefix={de},
+           prefixi={d\bibinitperiod}}}%
+        {{hash=3934352429fb9b20ceebc248148c38ba}{%
+           family={Sarabia},
+           familyi={S\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod}}}%
+        {{hash=4a9bd96156095b34df6508ace48f2d54}{%
+           family={Gutiérrez},
+           familyi={G\bibinitperiod},
+           given={Gloria},
+           giveni={G\bibinitperiod}}}%
+      }
+      \strng{namehash}{0f67af85eea4b0c6c4712e96aa611c36}
+      \strng{fullhash}{cf570e8d7e800116b7929ea940f07348}
+      \strng{fullhashraw}{cf570e8d7e800116b7929ea940f07348}
+      \strng{bibnamehash}{cf570e8d7e800116b7929ea940f07348}
+      \strng{authorbibnamehash}{cf570e8d7e800116b7929ea940f07348}
+      \strng{authornamehash}{0f67af85eea4b0c6c4712e96aa611c36}
+      \strng{authorfullhash}{cf570e8d7e800116b7929ea940f07348}
+      \strng{authorfullhashraw}{cf570e8d7e800116b7929ea940f07348}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers \& Chemical Engineering}
+      \field{number}{4}
+      \field{title}{Aeration control of a wastewater treatment plant using hybrid {NMPC}}
+      \field{volume}{35}
+      \field{year}{2011}
+      \field{pages}{638\bibrangedash 650}
+      \range{pages}{13}
+      \verb{doi}
+      \verb 10.1016/j.compchemeng.2010.07.021
+      \endverb
+    \endentry
+    \entry{olsson2012ica}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=d6bc91fd370b3132acf29ff0ecfadc92}{%
+           family={Olsson},
+           familyi={O\bibinitperiod},
+           given={Gustaf},
+           giveni={G\bibinitperiod}}}%
+      }
+      \strng{namehash}{d6bc91fd370b3132acf29ff0ecfadc92}
+      \strng{fullhash}{d6bc91fd370b3132acf29ff0ecfadc92}
+      \strng{fullhashraw}{d6bc91fd370b3132acf29ff0ecfadc92}
+      \strng{bibnamehash}{d6bc91fd370b3132acf29ff0ecfadc92}
+      \strng{authorbibnamehash}{d6bc91fd370b3132acf29ff0ecfadc92}
+      \strng{authornamehash}{d6bc91fd370b3132acf29ff0ecfadc92}
+      \strng{authorfullhash}{d6bc91fd370b3132acf29ff0ecfadc92}
+      \strng{authorfullhashraw}{d6bc91fd370b3132acf29ff0ecfadc92}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{6}
+      \field{title}{{ICA} and me -- {A} subjective review}
+      \field{volume}{46}
+      \field{year}{2012}
+      \field{pages}{1585\bibrangedash 1624}
+      \range{pages}{40}
+      \verb{doi}
+      \verb 10.1016/j.watres.2011.12.054
+      \endverb
+    \endentry
+    \entry{olsson2005ica}{book}{}{}
+      \name{author}{5}{}{%
+        {{hash=d6bc91fd370b3132acf29ff0ecfadc92}{%
+           family={Olsson},
+           familyi={O\bibinitperiod},
+           given={Gustaf},
+           giveni={G\bibinitperiod}}}%
+        {{hash=716257dcf0c91b21bcfc7c45b4c18c4a}{%
+           family={Nielsen},
+           familyi={N\bibinitperiod},
+           given={M.\bibnamedelimi K.},
+           giveni={M\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+        {{hash=a87429c055fb90c24bc3ca65842e993a}{%
+           family={Yuan},
+           familyi={Y\bibinitperiod},
+           given={Zhiguo},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=4cc69561ff135e0a20424b06b239fac5}{%
+           family={Lynggaard-Jensen},
+           familyi={L\bibinithyphendelim J\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+        {{hash=82d3afcbe54948e7923ac9e04b52321f}{%
+           family={Steyer},
+           familyi={S\bibinitperiod},
+           given={Jean-Philippe},
+           giveni={J\bibinithyphendelim P\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {London}%
+      }
+      \list{publisher}{1}{%
+        {IWA Publishing}%
+      }
+      \strng{namehash}{e1cd6b1b86e4e116a958956ec346a847}
+      \strng{fullhash}{6b253739ce55018aa7f8e628253ac18a}
+      \strng{fullhashraw}{6b253739ce55018aa7f8e628253ac18a}
+      \strng{bibnamehash}{6b253739ce55018aa7f8e628253ac18a}
+      \strng{authorbibnamehash}{6b253739ce55018aa7f8e628253ac18a}
+      \strng{authornamehash}{e1cd6b1b86e4e116a958956ec346a847}
+      \strng{authorfullhash}{6b253739ce55018aa7f8e628253ac18a}
+      \strng{authorfullhashraw}{6b253739ce55018aa7f8e628253ac18a}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Instrumentation, Control and Automation in Wastewater Systems}
+      \field{year}{2005}
+    \endentry
+    \entry{astrom2006pid}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=1b77956c091010989c5fc2426441bf07}{%
+           family={{Å}ström},
+           familyi={Å\bibinitperiod},
+           given={Karl\bibnamedelima J.},
+           giveni={K\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=44be1c7157500a148884377dae85210e}{%
+           family={Hägglund},
+           familyi={H\bibinitperiod},
+           given={Tore},
+           giveni={T\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Research Triangle Park}%
+      }
+      \list{publisher}{1}{%
+        {ISA}%
+      }
+      \strng{namehash}{69f57bfb420efc901b0e0fe6a4ef3c39}
+      \strng{fullhash}{69f57bfb420efc901b0e0fe6a4ef3c39}
+      \strng{fullhashraw}{69f57bfb420efc901b0e0fe6a4ef3c39}
+      \strng{bibnamehash}{69f57bfb420efc901b0e0fe6a4ef3c39}
+      \strng{authorbibnamehash}{69f57bfb420efc901b0e0fe6a4ef3c39}
+      \strng{authornamehash}{69f57bfb420efc901b0e0fe6a4ef3c39}
+      \strng{authorfullhash}{69f57bfb420efc901b0e0fe6a4ef3c39}
+      \strng{authorfullhashraw}{69f57bfb420efc901b0e0fe6a4ef3c39}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Advanced {PID} Control}
+      \field{year}{2006}
+    \endentry
+    \entry{skogestad2003pid}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=2ba290abb01c8d389cf61c92c215f56e}{%
+           family={Skogestad},
+           familyi={S\bibinitperiod},
+           given={Sigurd},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{2ba290abb01c8d389cf61c92c215f56e}
+      \strng{fullhash}{2ba290abb01c8d389cf61c92c215f56e}
+      \strng{fullhashraw}{2ba290abb01c8d389cf61c92c215f56e}
+      \strng{bibnamehash}{2ba290abb01c8d389cf61c92c215f56e}
+      \strng{authorbibnamehash}{2ba290abb01c8d389cf61c92c215f56e}
+      \strng{authornamehash}{2ba290abb01c8d389cf61c92c215f56e}
+      \strng{authorfullhash}{2ba290abb01c8d389cf61c92c215f56e}
+      \strng{authorfullhashraw}{2ba290abb01c8d389cf61c92c215f56e}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Process Control}
+      \field{number}{4}
+      \field{title}{Simple analytic rules for model reduction and {PID} controller tuning}
+      \field{volume}{13}
+      \field{year}{2003}
+      \field{pages}{291\bibrangedash 309}
+      \range{pages}{19}
+      \verb{doi}
+      \verb 10.1016/S0959-1524(02)00062-8
+      \endverb
+    \endentry
+    \entry{seborg2016}{book}{}{}
+      \name{author}{4}{}{%
+        {{hash=1386b7a5bd0410a4b55520c2f88473bf}{%
+           family={Seborg},
+           familyi={S\bibinitperiod},
+           given={Dale\bibnamedelima E.},
+           giveni={D\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=aa35ffca1a3fdd71191e96fc5e86edb6}{%
+           family={Edgar},
+           familyi={E\bibinitperiod},
+           given={Thomas\bibnamedelima F.},
+           giveni={T\bibinitperiod\bibinitdelim F\bibinitperiod}}}%
+        {{hash=ccbf3ca0c129d9dc6e9b50ac7fb71476}{%
+           family={Mellichamp},
+           familyi={M\bibinitperiod},
+           given={Duncan\bibnamedelima A.},
+           giveni={D\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=c1187d9a0128cb95a9c741163dadf512}{%
+           family={Doyle\bibnamedelima III},
+           familyi={D\bibinitperiod\bibinitdelim I\bibinitperiod},
+           given={Francis\bibnamedelima J.},
+           giveni={F\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Hoboken}%
+      }
+      \list{publisher}{1}{%
+        {Wiley}%
+      }
+      \strng{namehash}{270d919231d915b092a7af6c1770b437}
+      \strng{fullhash}{6a7c48ab8f148212726536c83c9a17d4}
+      \strng{fullhashraw}{6a7c48ab8f148212726536c83c9a17d4}
+      \strng{bibnamehash}{6a7c48ab8f148212726536c83c9a17d4}
+      \strng{authorbibnamehash}{6a7c48ab8f148212726536c83c9a17d4}
+      \strng{authornamehash}{270d919231d915b092a7af6c1770b437}
+      \strng{authorfullhash}{6a7c48ab8f148212726536c83c9a17d4}
+      \strng{authorfullhashraw}{6a7c48ab8f148212726536c83c9a17d4}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{4}
+      \field{title}{Process Dynamics and Control}
+      \field{year}{2016}
+    \endentry
+    \entry{rieger2014abac}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=504a75e9e313a9d57077d1bdac170546}{%
+           family={Rieger},
+           familyi={R\bibinitperiod},
+           given={Leiv},
+           giveni={L\bibinitperiod}}}%
+        {{hash=cf0c4e0e3d8c5ad45b3c1d2da9418bfa}{%
+           family={Jones},
+           familyi={J\bibinitperiod},
+           given={Richard\bibnamedelima M.},
+           giveni={R\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=b1ba141f26e55ea22c7f1b8392dae42c}{%
+           family={Dold},
+           familyi={D\bibinitperiod},
+           given={Peter\bibnamedelima L.},
+           giveni={P\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+        {{hash=7ba6c99bc4a594982e61e3ef70f21082}{%
+           family={Bott},
+           familyi={B\bibinitperiod},
+           given={Charles\bibnamedelima B.},
+           giveni={C\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+      }
+      \strng{namehash}{083f25fd005fdb141cef6c844890833f}
+      \strng{fullhash}{80a86070bace5e344531e21c8821080b}
+      \strng{fullhashraw}{80a86070bace5e344531e21c8821080b}
+      \strng{bibnamehash}{80a86070bace5e344531e21c8821080b}
+      \strng{authorbibnamehash}{80a86070bace5e344531e21c8821080b}
+      \strng{authornamehash}{083f25fd005fdb141cef6c844890833f}
+      \strng{authorfullhash}{80a86070bace5e344531e21c8821080b}
+      \strng{authorfullhashraw}{80a86070bace5e344531e21c8821080b}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Environment Research}
+      \field{number}{1}
+      \field{title}{Ammonia-based feedforward and feedback aeration control in activated sludge processes}
+      \field{volume}{86}
+      \field{year}{2014}
+      \field{pages}{63\bibrangedash 71}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.2175/106143013X13596524516987
+      \endverb
+    \endentry
+    \entry{amand2012optimal}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=351b7e2faf11a743913dd4eefc40350a}{%
+           family={{Å}mand},
+           familyi={Å\bibinitperiod},
+           given={Linda},
+           giveni={L\bibinitperiod}}}%
+        {{hash=3e62925fe1bca59d9beb50da1698221c}{%
+           family={Carlsson},
+           familyi={C\bibinitperiod},
+           given={Bengt},
+           giveni={B\bibinitperiod}}}%
+      }
+      \strng{namehash}{432719476bf7ac75b627bd75f86f8765}
+      \strng{fullhash}{432719476bf7ac75b627bd75f86f8765}
+      \strng{fullhashraw}{432719476bf7ac75b627bd75f86f8765}
+      \strng{bibnamehash}{432719476bf7ac75b627bd75f86f8765}
+      \strng{authorbibnamehash}{432719476bf7ac75b627bd75f86f8765}
+      \strng{authornamehash}{432719476bf7ac75b627bd75f86f8765}
+      \strng{authorfullhash}{432719476bf7ac75b627bd75f86f8765}
+      \strng{authorfullhashraw}{432719476bf7ac75b627bd75f86f8765}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{7}
+      \field{title}{Optimal aeration control in a nitrifying activated sludge process}
+      \field{volume}{46}
+      \field{year}{2012}
+      \field{pages}{2101\bibrangedash 2110}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.1016/j.watres.2012.01.023
+      \endverb
+    \endentry
+    \entry{samuelsson2007}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=a366ae92008e8230a35b6be29500aa39}{%
+           family={Samuelsson},
+           familyi={S\bibinitperiod},
+           given={Pär},
+           giveni={P\bibinitperiod}}}%
+        {{hash=a70f60e0b04bd97aae778187c3bc99d7}{%
+           family={Halvarsson},
+           familyi={H\bibinitperiod},
+           given={Björn},
+           giveni={B\bibinitperiod}}}%
+        {{hash=3e62925fe1bca59d9beb50da1698221c}{%
+           family={Carlsson},
+           familyi={C\bibinitperiod},
+           given={Bengt},
+           giveni={B\bibinitperiod}}}%
+      }
+      \strng{namehash}{fe27ca2b1c67f7fee99f04ef0235d0d3}
+      \strng{fullhash}{fe27ca2b1c67f7fee99f04ef0235d0d3}
+      \strng{fullhashraw}{fe27ca2b1c67f7fee99f04ef0235d0d3}
+      \strng{bibnamehash}{fe27ca2b1c67f7fee99f04ef0235d0d3}
+      \strng{authorbibnamehash}{fe27ca2b1c67f7fee99f04ef0235d0d3}
+      \strng{authornamehash}{fe27ca2b1c67f7fee99f04ef0235d0d3}
+      \strng{authorfullhash}{fe27ca2b1c67f7fee99f04ef0235d0d3}
+      \strng{authorfullhashraw}{fe27ca2b1c67f7fee99f04ef0235d0d3}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{11}
+      \field{title}{Cost-efficient operation of a denitrifying activated sludge process}
+      \field{volume}{41}
+      \field{year}{2007}
+      \field{pages}{2325\bibrangedash 2332}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1016/j.watres.2007.02.030
+      \endverb
+    \endentry
+    \entry{holenda2008}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=dce6e1126cd942c26945f481e17a9403}{%
+           family={Holenda},
+           familyi={H\bibinitperiod},
+           given={B.},
+           giveni={B\bibinitperiod}}}%
+        {{hash=3e0a9c9a88e9d094e84a3bffb54388ff}{%
+           family={Domokos},
+           familyi={D\bibinitperiod},
+           given={E.},
+           giveni={E\bibinitperiod}}}%
+        {{hash=16a3c7d3042b6ee1510872c6794959f8}{%
+           family={Rédey},
+           familyi={R\bibinitperiod},
+           given={Á.},
+           giveni={Á\bibinitperiod}}}%
+        {{hash=c56745518566ec82b3d699741d4f8b3b}{%
+           family={Fazakas},
+           familyi={F\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{d664a8d4b90ccdea3743e79df9adcb04}
+      \strng{fullhash}{9e76f4b11ec900f52606a89bf44cd2a6}
+      \strng{fullhashraw}{9e76f4b11ec900f52606a89bf44cd2a6}
+      \strng{bibnamehash}{9e76f4b11ec900f52606a89bf44cd2a6}
+      \strng{authorbibnamehash}{9e76f4b11ec900f52606a89bf44cd2a6}
+      \strng{authornamehash}{d664a8d4b90ccdea3743e79df9adcb04}
+      \strng{authorfullhash}{9e76f4b11ec900f52606a89bf44cd2a6}
+      \strng{authorfullhashraw}{9e76f4b11ec900f52606a89bf44cd2a6}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers \& Chemical Engineering}
+      \field{number}{6}
+      \field{title}{Dissolved oxygen control of the activated sludge wastewater treatment process using model predictive control}
+      \field{volume}{32}
+      \field{year}{2008}
+      \field{pages}{1270\bibrangedash 1278}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1016/j.compchemeng.2007.06.008
+      \endverb
+    \endentry
+    \entry{shen2008}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=88bebeec87bdd1737f83f9ee0d70b39f}{%
+           family={Shen},
+           familyi={S\bibinitperiod},
+           given={Wenhao},
+           giveni={W\bibinitperiod}}}%
+        {{hash=f5c861d2b8971815279614e014d3e1ee}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Xiaoquan},
+           giveni={X\bibinitperiod}}}%
+        {{hash=4f708cfc1784a846b22542d2ae9971df}{%
+           family={Corriou},
+           familyi={C\bibinitperiod},
+           given={Jean-Pierre},
+           giveni={J\bibinithyphendelim P\bibinitperiod}}}%
+      }
+      \strng{namehash}{da0574a679b4a1c22288f3f9d8786393}
+      \strng{fullhash}{da0574a679b4a1c22288f3f9d8786393}
+      \strng{fullhashraw}{da0574a679b4a1c22288f3f9d8786393}
+      \strng{bibnamehash}{da0574a679b4a1c22288f3f9d8786393}
+      \strng{authorbibnamehash}{da0574a679b4a1c22288f3f9d8786393}
+      \strng{authornamehash}{da0574a679b4a1c22288f3f9d8786393}
+      \strng{authorfullhash}{da0574a679b4a1c22288f3f9d8786393}
+      \strng{authorfullhashraw}{da0574a679b4a1c22288f3f9d8786393}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers \& Chemical Engineering}
+      \field{number}{12}
+      \field{title}{Application of model predictive control to the {BSM1} benchmark of wastewater treatment process}
+      \field{volume}{32}
+      \field{year}{2008}
+      \field{pages}{2849\bibrangedash 2856}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1016/j.compchemeng.2008.01.009
+      \endverb
+    \endentry
+    \entry{copp2002cost}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=f8064d9f7e682cb04f6985d6b1282e65}{%
+           family={Copp},
+           familyi={C\bibinitperiod},
+           given={John\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Luxembourg}%
+      }
+      \list{publisher}{1}{%
+        {Office for Official Publications of the European Communities}%
+      }
+      \strng{namehash}{f8064d9f7e682cb04f6985d6b1282e65}
+      \strng{fullhash}{f8064d9f7e682cb04f6985d6b1282e65}
+      \strng{fullhashraw}{f8064d9f7e682cb04f6985d6b1282e65}
+      \strng{bibnamehash}{f8064d9f7e682cb04f6985d6b1282e65}
+      \strng{authorbibnamehash}{f8064d9f7e682cb04f6985d6b1282e65}
+      \strng{authornamehash}{f8064d9f7e682cb04f6985d6b1282e65}
+      \strng{authorfullhash}{f8064d9f7e682cb04f6985d6b1282e65}
+      \strng{authorfullhashraw}{f8064d9f7e682cb04f6985d6b1282e65}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{The {COST} Simulation Benchmark: Description and Simulator Manual}
+      \field{year}{2002}
+    \endentry
+    \entry{jeppsson2004cost}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=71c24e19091b54088506b4e5f7700a5c}{%
+           family={Jeppsson},
+           familyi={J\bibinitperiod},
+           given={Ulf},
+           giveni={U\bibinitperiod}}}%
+        {{hash=1d5c10dcf9c93a435148d2f5019f89f6}{%
+           family={Pons},
+           familyi={P\bibinitperiod},
+           given={Marie-Noëlle},
+           giveni={M\bibinithyphendelim N\bibinitperiod}}}%
+      }
+      \strng{namehash}{22ffd42b1aa29674354e3f48419d90e9}
+      \strng{fullhash}{22ffd42b1aa29674354e3f48419d90e9}
+      \strng{fullhashraw}{22ffd42b1aa29674354e3f48419d90e9}
+      \strng{bibnamehash}{22ffd42b1aa29674354e3f48419d90e9}
+      \strng{authorbibnamehash}{22ffd42b1aa29674354e3f48419d90e9}
+      \strng{authornamehash}{22ffd42b1aa29674354e3f48419d90e9}
+      \strng{authorfullhash}{22ffd42b1aa29674354e3f48419d90e9}
+      \strng{authorfullhashraw}{22ffd42b1aa29674354e3f48419d90e9}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Control Engineering Practice}
+      \field{number}{3}
+      \field{title}{The {COST} benchmark simulation model---current state and future perspective}
+      \field{volume}{12}
+      \field{year}{2004}
+      \field{pages}{299\bibrangedash 304}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1016/j.conengprac.2003.07.005
+      \endverb
+    \endentry
+    \entry{ostace2011}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=33c2d551ea4ed80a9100e0431556af3b}{%
+           family={Ostace},
+           familyi={O\bibinitperiod},
+           given={George\bibnamedelima Simion},
+           giveni={G\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=2929ed7d041fc042235a0ee8c46b8f30}{%
+           family={Cristea},
+           familyi={C\bibinitperiod},
+           given={Vasile\bibnamedelima Mircea},
+           giveni={V\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=bc6489fe7359ddfbc25ebd46f320dc22}{%
+           family={Agachi},
+           familyi={A\bibinitperiod},
+           given={Paul\bibnamedelima Şerban},
+           giveni={P\bibinitperiod\bibinitdelim Ş\bibinitperiod}}}%
+      }
+      \strng{namehash}{af2fe234e8c65a6e8e5eb8c38a38363d}
+      \strng{fullhash}{af2fe234e8c65a6e8e5eb8c38a38363d}
+      \strng{fullhashraw}{af2fe234e8c65a6e8e5eb8c38a38363d}
+      \strng{bibnamehash}{af2fe234e8c65a6e8e5eb8c38a38363d}
+      \strng{authorbibnamehash}{af2fe234e8c65a6e8e5eb8c38a38363d}
+      \strng{authornamehash}{af2fe234e8c65a6e8e5eb8c38a38363d}
+      \strng{authorfullhash}{af2fe234e8c65a6e8e5eb8c38a38363d}
+      \strng{authorfullhashraw}{af2fe234e8c65a6e8e5eb8c38a38363d}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers \& Chemical Engineering}
+      \field{number}{11}
+      \field{title}{Cost reduction of the wastewater treatment plant operation by {MPC} based on modified {ASM1} with two-step nitrification/denitrification model}
+      \field{volume}{35}
+      \field{year}{2011}
+      \field{pages}{2469\bibrangedash 2479}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1016/j.compchemeng.2011.03.031
+      \endverb
+    \endentry
+    \entry{henze1987asm1}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=9e9eb6ea410e0c5ebf891b05d3de605d}{%
+           family={Henze},
+           familyi={H\bibinitperiod},
+           given={Mogens},
+           giveni={M\bibinitperiod}}}%
+        {{hash=4b50940b0acc6fab5330a2a835a0252f}{%
+           family={Grady\bibnamedelima Jr.},
+           familyi={G\bibinitperiod\bibinitdelim J\bibinitperiod},
+           given={C.\bibnamedelimi P.\bibnamedelimi Leslie},
+           giveni={C\bibinitperiod\bibinitdelim P\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+        {{hash=93c57a5a5580c9a6df685efc704cd1e2}{%
+           family={Gujer},
+           familyi={G\bibinitperiod},
+           given={Willi},
+           giveni={W\bibinitperiod}}}%
+        {{hash=cdf0673617554f3d5f364127d83040ea}{%
+           family={Marais},
+           familyi={M\bibinitperiod},
+           given={Gerrit\bibnamedelimb v.\bibnamedelimi R.},
+           giveni={G\bibinitperiod\bibinitdelim v\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=d1117eff8acb372641f412d591c6e8af}{%
+           family={Matsuo},
+           familyi={M\bibinitperiod},
+           given={Tomonori},
+           giveni={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{83b0847da92a2141db869313ce3830a5}
+      \strng{fullhash}{7e18520dfab7e4c1da7aa1a68d673385}
+      \strng{fullhashraw}{7e18520dfab7e4c1da7aa1a68d673385}
+      \strng{bibnamehash}{7e18520dfab7e4c1da7aa1a68d673385}
+      \strng{authorbibnamehash}{7e18520dfab7e4c1da7aa1a68d673385}
+      \strng{authornamehash}{83b0847da92a2141db869313ce3830a5}
+      \strng{authorfullhash}{7e18520dfab7e4c1da7aa1a68d673385}
+      \strng{authorfullhashraw}{7e18520dfab7e4c1da7aa1a68d673385}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{5}
+      \field{title}{A general model for single-sludge wastewater treatment systems}
+      \field{volume}{21}
+      \field{year}{1987}
+      \field{pages}{505\bibrangedash 515}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1016/0043-1354(87)90058-3
+      \endverb
+    \endentry
+    \entry{henze2000asm}{book}{}{}
+      \name{author}{4}{}{%
+        {{hash=9e9eb6ea410e0c5ebf891b05d3de605d}{%
+           family={Henze},
+           familyi={H\bibinitperiod},
+           given={Mogens},
+           giveni={M\bibinitperiod}}}%
+        {{hash=93c57a5a5580c9a6df685efc704cd1e2}{%
+           family={Gujer},
+           familyi={G\bibinitperiod},
+           given={Willi},
+           giveni={W\bibinitperiod}}}%
+        {{hash=d30ebeec477a7958a81118b0ce174582}{%
+           family={Mino},
+           familyi={M\bibinitperiod},
+           given={Takashi},
+           giveni={T\bibinitperiod}}}%
+        {{hash=13fea4af948a80ae8e72f3a3dd6ad8ba}{%
+           family={Loosdrecht},
+           familyi={L\bibinitperiod},
+           given={Mark},
+           giveni={M\bibinitperiod},
+           prefix={van},
+           prefixi={v\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {London}%
+      }
+      \list{publisher}{1}{%
+        {IWA Publishing}%
+      }
+      \strng{namehash}{83b0847da92a2141db869313ce3830a5}
+      \strng{fullhash}{fa131200a6386573de1d4c475b4102ca}
+      \strng{fullhashraw}{fa131200a6386573de1d4c475b4102ca}
+      \strng{bibnamehash}{fa131200a6386573de1d4c475b4102ca}
+      \strng{authorbibnamehash}{fa131200a6386573de1d4c475b4102ca}
+      \strng{authornamehash}{83b0847da92a2141db869313ce3830a5}
+      \strng{authorfullhash}{fa131200a6386573de1d4c475b4102ca}
+      \strng{authorfullhashraw}{fa131200a6386573de1d4c475b4102ca}
+      \field{extraname}{2}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{number}{9}
+      \field{series}{IWA Scientific and Technical Report}
+      \field{title}{Activated Sludge Models {ASM1}, {ASM2}, {ASM2d} and {ASM3}}
+      \field{year}{2000}
+    \endentry
+    \entry{vega2014}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=e0731eb9a83cd48e039908f4e900f16c}{%
+           family={Vega},
+           familyi={V\bibinitperiod},
+           given={Pastora},
+           giveni={P\bibinitperiod}}}%
+        {{hash=f99520b1c30ec49e9aeca9cf7c393a62}{%
+           family={Revollar},
+           familyi={R\bibinitperiod},
+           given={Silvana},
+           giveni={S\bibinitperiod}}}%
+        {{hash=3028fd10959f00b15fbbb80c9e969f96}{%
+           family={Francisco},
+           familyi={F\bibinitperiod},
+           given={Mario},
+           giveni={M\bibinitperiod}}}%
+        {{hash=be17e7fa37cd5f55cdda49686f67d7c4}{%
+           family={Martín},
+           familyi={M\bibinitperiod},
+           given={J.\bibnamedelimi M.},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{a7a592a45bcde859861bc9dd1e20aefe}
+      \strng{fullhash}{820d0ca81cc32a5d8d431ee4d2a363fa}
+      \strng{fullhashraw}{820d0ca81cc32a5d8d431ee4d2a363fa}
+      \strng{bibnamehash}{820d0ca81cc32a5d8d431ee4d2a363fa}
+      \strng{authorbibnamehash}{820d0ca81cc32a5d8d431ee4d2a363fa}
+      \strng{authornamehash}{a7a592a45bcde859861bc9dd1e20aefe}
+      \strng{authorfullhash}{820d0ca81cc32a5d8d431ee4d2a363fa}
+      \strng{authorfullhashraw}{820d0ca81cc32a5d8d431ee4d2a363fa}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers \& Chemical Engineering}
+      \field{title}{Integration of set point optimization techniques into nonlinear {MPC} for improving the operation of {WWTPs}}
+      \field{volume}{68}
+      \field{year}{2014}
+      \field{pages}{78\bibrangedash 95}
+      \range{pages}{18}
+      \verb{doi}
+      \verb 10.1016/j.compchemeng.2014.05.004
+      \endverb
+    \endentry
+    \entry{engell2007}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=f593c290c432f488e6232f627610ddaa}{%
+           family={Engell},
+           familyi={E\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{f593c290c432f488e6232f627610ddaa}
+      \strng{fullhash}{f593c290c432f488e6232f627610ddaa}
+      \strng{fullhashraw}{f593c290c432f488e6232f627610ddaa}
+      \strng{bibnamehash}{f593c290c432f488e6232f627610ddaa}
+      \strng{authorbibnamehash}{f593c290c432f488e6232f627610ddaa}
+      \strng{authornamehash}{f593c290c432f488e6232f627610ddaa}
+      \strng{authorfullhash}{f593c290c432f488e6232f627610ddaa}
+      \strng{authorfullhashraw}{f593c290c432f488e6232f627610ddaa}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Process Control}
+      \field{number}{3}
+      \field{title}{Feedback control for optimal process operation}
+      \field{volume}{17}
+      \field{year}{2007}
+      \field{pages}{203\bibrangedash 219}
+      \range{pages}{17}
+      \verb{doi}
+      \verb 10.1016/j.jprocont.2006.10.011
+      \endverb
+    \endentry
+    \entry{darby2011rto}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=0922edcb6113eb099607e900e85462c4}{%
+           family={Darby},
+           familyi={D\bibinitperiod},
+           given={Mark\bibnamedelima L.},
+           giveni={M\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+        {{hash=16ffda96d5163e699c96fae37ac434d9}{%
+           family={Nikolaou},
+           familyi={N\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=9226bfd57cc11a29f17bdf8c4b1a0de9}{%
+           family={Jones},
+           familyi={J\bibinitperiod},
+           given={James},
+           giveni={J\bibinitperiod}}}%
+        {{hash=244c97cc70756d976c08bc7b878c0314}{%
+           family={Nicholson},
+           familyi={N\bibinitperiod},
+           given={Doug},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{707a1c7f5deddd0d76f7fcc72c7f079f}
+      \strng{fullhash}{916310d0bcce8ab079d3fb476d6da3f9}
+      \strng{fullhashraw}{916310d0bcce8ab079d3fb476d6da3f9}
+      \strng{bibnamehash}{916310d0bcce8ab079d3fb476d6da3f9}
+      \strng{authorbibnamehash}{916310d0bcce8ab079d3fb476d6da3f9}
+      \strng{authornamehash}{707a1c7f5deddd0d76f7fcc72c7f079f}
+      \strng{authorfullhash}{916310d0bcce8ab079d3fb476d6da3f9}
+      \strng{authorfullhashraw}{916310d0bcce8ab079d3fb476d6da3f9}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Process Control}
+      \field{number}{6}
+      \field{title}{{RTO}: An overview and assessment of current practice}
+      \field{volume}{21}
+      \field{year}{2011}
+      \field{pages}{874\bibrangedash 884}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1016/j.jprocont.2011.03.018
+      \endverb
+    \endentry
+    \entry{zeng2015empc}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=cf9f836095da36ad44eec0ea68484beb}{%
+           family={Zeng},
+           familyi={Z\bibinitperiod},
+           given={Jing},
+           giveni={J\bibinitperiod}}}%
+        {{hash=b9b82cebc2f44820a25db204aead0230}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Jinfeng},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{0dd8f8957856d546b7f250e8223cfb0d}
+      \strng{fullhash}{0dd8f8957856d546b7f250e8223cfb0d}
+      \strng{fullhashraw}{0dd8f8957856d546b7f250e8223cfb0d}
+      \strng{bibnamehash}{0dd8f8957856d546b7f250e8223cfb0d}
+      \strng{authorbibnamehash}{0dd8f8957856d546b7f250e8223cfb0d}
+      \strng{authornamehash}{0dd8f8957856d546b7f250e8223cfb0d}
+      \strng{authorfullhash}{0dd8f8957856d546b7f250e8223cfb0d}
+      \strng{authorfullhashraw}{0dd8f8957856d546b7f250e8223cfb0d}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Industrial \& Engineering Chemistry Research}
+      \field{number}{21}
+      \field{title}{Economic model predictive control of wastewater treatment processes}
+      \field{volume}{54}
+      \field{year}{2015}
+      \field{pages}{5710\bibrangedash 5721}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.1021/ie504995n
+      \endverb
+    \endentry
+    \entry{ellis2014empc}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=2787a548df80e7fa1dd38981cfe090de}{%
+           family={Ellis},
+           familyi={E\bibinitperiod},
+           given={Matthew},
+           giveni={M\bibinitperiod}}}%
+        {{hash=6107581916c7bff42c7bac170bbaf940}{%
+           family={Durand},
+           familyi={D\bibinitperiod},
+           given={Helen},
+           giveni={H\bibinitperiod}}}%
+        {{hash=fc471541293715551aa11c3f9fa32046}{%
+           family={Christofides},
+           familyi={C\bibinitperiod},
+           given={Panagiotis\bibnamedelima D.},
+           giveni={P\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+      }
+      \strng{namehash}{f1d18709a7d9dd9d8888e6cdadd88cca}
+      \strng{fullhash}{f1d18709a7d9dd9d8888e6cdadd88cca}
+      \strng{fullhashraw}{f1d18709a7d9dd9d8888e6cdadd88cca}
+      \strng{bibnamehash}{f1d18709a7d9dd9d8888e6cdadd88cca}
+      \strng{authorbibnamehash}{f1d18709a7d9dd9d8888e6cdadd88cca}
+      \strng{authornamehash}{f1d18709a7d9dd9d8888e6cdadd88cca}
+      \strng{authorfullhash}{f1d18709a7d9dd9d8888e6cdadd88cca}
+      \strng{authorfullhashraw}{f1d18709a7d9dd9d8888e6cdadd88cca}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Process Control}
+      \field{number}{8}
+      \field{title}{A tutorial review of economic model predictive control methods}
+      \field{volume}{24}
+      \field{year}{2014}
+      \field{pages}{1156\bibrangedash 1178}
+      \range{pages}{23}
+      \verb{doi}
+      \verb 10.1016/j.jprocont.2014.03.010
+      \endverb
+    \endentry
+    \entry{revollar2017}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=f99520b1c30ec49e9aeca9cf7c393a62}{%
+           family={Revollar},
+           familyi={R\bibinitperiod},
+           given={Silvana},
+           giveni={S\bibinitperiod}}}%
+        {{hash=e0731eb9a83cd48e039908f4e900f16c}{%
+           family={Vega},
+           familyi={V\bibinitperiod},
+           given={Pastora},
+           giveni={P\bibinitperiod}}}%
+        {{hash=d02d946db05c5831b60f03eb5d974c07}{%
+           family={Vilanova},
+           familyi={V\bibinitperiod},
+           given={Ramon},
+           giveni={R\bibinitperiod}}}%
+        {{hash=3028fd10959f00b15fbbb80c9e969f96}{%
+           family={Francisco},
+           familyi={F\bibinitperiod},
+           given={Mario},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{dfbbc1bc667da636c23de0e23fe41e13}
+      \strng{fullhash}{7bdb5330ff9acc96e9a504323452a110}
+      \strng{fullhashraw}{7bdb5330ff9acc96e9a504323452a110}
+      \strng{bibnamehash}{7bdb5330ff9acc96e9a504323452a110}
+      \strng{authorbibnamehash}{7bdb5330ff9acc96e9a504323452a110}
+      \strng{authornamehash}{dfbbc1bc667da636c23de0e23fe41e13}
+      \strng{authorfullhash}{7bdb5330ff9acc96e9a504323452a110}
+      \strng{authorfullhashraw}{7bdb5330ff9acc96e9a504323452a110}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Applied Sciences}
+      \field{number}{8}
+      \field{title}{Optimal control of wastewater treatment plants using economic-oriented model predictive dynamic strategies}
+      \field{volume}{7}
+      \field{year}{2017}
+      \field{pages}{813}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3390/app7080813
+      \endverb
+    \endentry
+    \entry{santin2015jpc}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=eb00a6ea901451fcaf8ab77af41d6222}{%
+           family={Santín},
+           familyi={S\bibinitperiod},
+           given={I.},
+           giveni={I\bibinitperiod}}}%
+        {{hash=90d6e9e9ba8308c9a23ebd99a4aaabe1}{%
+           family={Pedret},
+           familyi={P\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod}}}%
+        {{hash=a60deb73929072d86d34228bb416a371}{%
+           family={Vilanova},
+           familyi={V\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{fullhash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{fullhashraw}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{bibnamehash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{authorbibnamehash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{authornamehash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{authorfullhash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{authorfullhashraw}{6664ee29c1c33847b2ff98231fb62750}
+      \field{extraname}{1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Process Control}
+      \field{title}{Applying variable dissolved oxygen set point in a two level hierarchical control structure to a wastewater treatment process}
+      \field{volume}{28}
+      \field{year}{2015}
+      \field{pages}{40\bibrangedash 55}
+      \range{pages}{16}
+      \verb{doi}
+      \verb 10.1016/j.jprocont.2015.02.005
+      \endverb
+    \endentry
+    \entry{santin2015iecr}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=eb00a6ea901451fcaf8ab77af41d6222}{%
+           family={Santín},
+           familyi={S\bibinitperiod},
+           given={I.},
+           giveni={I\bibinitperiod}}}%
+        {{hash=90d6e9e9ba8308c9a23ebd99a4aaabe1}{%
+           family={Pedret},
+           familyi={P\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod}}}%
+        {{hash=a60deb73929072d86d34228bb416a371}{%
+           family={Vilanova},
+           familyi={V\bibinitperiod},
+           given={R.},
+           giveni={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{fullhash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{fullhashraw}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{bibnamehash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{authorbibnamehash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{authornamehash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{authorfullhash}{6664ee29c1c33847b2ff98231fb62750}
+      \strng{authorfullhashraw}{6664ee29c1c33847b2ff98231fb62750}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Industrial \& Engineering Chemistry Research}
+      \field{number}{10}
+      \field{title}{Fuzzy control and model predictive control configurations for effluent violations removal in wastewater treatment plants}
+      \field{volume}{54}
+      \field{year}{2015}
+      \field{pages}{2763\bibrangedash 2775}
+      \range{pages}{13}
+      \verb{doi}
+      \verb 10.1021/ie5040795
+      \endverb
+    \endentry
+    \entry{gernaey2004state}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=921039cc040aea8156397cd767403acd}{%
+           family={Gernaey},
+           familyi={G\bibinitperiod},
+           given={Krist\bibnamedelima V.},
+           giveni={K\bibinitperiod\bibinitdelim V\bibinitperiod}}}%
+        {{hash=c1994aab2aa7c468319c9db842785eff}{%
+           family={Loosdrecht},
+           familyi={L\bibinitperiod},
+           given={Mark\bibnamedelimb C.\bibnamedelimi M.},
+           giveni={M\bibinitperiod\bibinitdelim C\bibinitperiod\bibinitdelim M\bibinitperiod},
+           prefix={van},
+           prefixi={v\bibinitperiod}}}%
+        {{hash=9e9eb6ea410e0c5ebf891b05d3de605d}{%
+           family={Henze},
+           familyi={H\bibinitperiod},
+           given={Mogens},
+           giveni={M\bibinitperiod}}}%
+        {{hash=6a92711cb95aba5f62cc5fc625c62822}{%
+           family={Lind},
+           familyi={L\bibinitperiod},
+           given={Morten},
+           giveni={M\bibinitperiod}}}%
+        {{hash=5710773d01a89a2d9fd74c1a4efed600}{%
+           family={J{ø}rgensen},
+           familyi={J\bibinitperiod},
+           given={Sten\bibnamedelima Bay},
+           giveni={S\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+      }
+      \strng{namehash}{9381d8cab765a61739ea5f49f005a52b}
+      \strng{fullhash}{89d8cb996722ae2a37e7f19bbd4189b1}
+      \strng{fullhashraw}{89d8cb996722ae2a37e7f19bbd4189b1}
+      \strng{bibnamehash}{89d8cb996722ae2a37e7f19bbd4189b1}
+      \strng{authorbibnamehash}{89d8cb996722ae2a37e7f19bbd4189b1}
+      \strng{authornamehash}{9381d8cab765a61739ea5f49f005a52b}
+      \strng{authorfullhash}{89d8cb996722ae2a37e7f19bbd4189b1}
+      \strng{authorfullhashraw}{89d8cb996722ae2a37e7f19bbd4189b1}
+      \field{extraname}{1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Environmental Modelling \& Software}
+      \field{number}{9}
+      \field{title}{Activated sludge wastewater treatment plant modelling and simulation: state of the art}
+      \field{volume}{19}
+      \field{year}{2004}
+      \field{pages}{763\bibrangedash 783}
+      \range{pages}{21}
+      \verb{doi}
+      \verb 10.1016/j.envsoft.2003.03.005
+      \endverb
+    \endentry
+    \entry{gernaey2014benchmarking}{book}{}{}
+      \name{author}{4}{}{%
+        {{hash=921039cc040aea8156397cd767403acd}{%
+           family={Gernaey},
+           familyi={G\bibinitperiod},
+           given={Krist\bibnamedelima V.},
+           giveni={K\bibinitperiod\bibinitdelim V\bibinitperiod}}}%
+        {{hash=71c24e19091b54088506b4e5f7700a5c}{%
+           family={Jeppsson},
+           familyi={J\bibinitperiod},
+           given={Ulf},
+           giveni={U\bibinitperiod}}}%
+        {{hash=285cafa0871bfaf066bf818823ca6666}{%
+           family={Vanrolleghem},
+           familyi={V\bibinitperiod},
+           given={Peter\bibnamedelima A.},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=f8064d9f7e682cb04f6985d6b1282e65}{%
+           family={Copp},
+           familyi={C\bibinitperiod},
+           given={John\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {London}%
+      }
+      \list{publisher}{1}{%
+        {IWA Publishing}%
+      }
+      \strng{namehash}{9381d8cab765a61739ea5f49f005a52b}
+      \strng{fullhash}{5885b825bc0d6e350eaceb8053231258}
+      \strng{fullhashraw}{5885b825bc0d6e350eaceb8053231258}
+      \strng{bibnamehash}{5885b825bc0d6e350eaceb8053231258}
+      \strng{authorbibnamehash}{5885b825bc0d6e350eaceb8053231258}
+      \strng{authornamehash}{9381d8cab765a61739ea5f49f005a52b}
+      \strng{authorfullhash}{5885b825bc0d6e350eaceb8053231258}
+      \strng{authorfullhashraw}{5885b825bc0d6e350eaceb8053231258}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{number}{23}
+      \field{series}{IWA Scientific and Technical Report}
+      \field{title}{Benchmarking of Control Strategies for Wastewater Treatment Plants}
+      \field{year}{2014}
+    \endentry
+    \entry{nopens2010bsm2}{article}{}{}
+      \name{author}{10}{}{%
+        {{hash=7124cc544fea70af93388736588bc597}{%
+           family={Nopens},
+           familyi={N\bibinitperiod},
+           given={Ingmar},
+           giveni={I\bibinitperiod}}}%
+        {{hash=511ccd70a981825f4391ffb67f3be04d}{%
+           family={Benedetti},
+           familyi={B\bibinitperiod},
+           given={Lorenzo},
+           giveni={L\bibinitperiod}}}%
+        {{hash=71c24e19091b54088506b4e5f7700a5c}{%
+           family={Jeppsson},
+           familyi={J\bibinitperiod},
+           given={Ulf},
+           giveni={U\bibinitperiod}}}%
+        {{hash=1d5c10dcf9c93a435148d2f5019f89f6}{%
+           family={Pons},
+           familyi={P\bibinitperiod},
+           given={Marie-Noëlle},
+           giveni={M\bibinithyphendelim N\bibinitperiod}}}%
+        {{hash=cad835bd0cb15c8e67428e3736f27c1c}{%
+           family={Alex},
+           familyi={A\bibinitperiod},
+           given={Jens},
+           giveni={J\bibinitperiod}}}%
+        {{hash=f8064d9f7e682cb04f6985d6b1282e65}{%
+           family={Copp},
+           familyi={C\bibinitperiod},
+           given={John\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=921039cc040aea8156397cd767403acd}{%
+           family={Gernaey},
+           familyi={G\bibinitperiod},
+           given={Krist\bibnamedelima V.},
+           giveni={K\bibinitperiod\bibinitdelim V\bibinitperiod}}}%
+        {{hash=37fdfe53c1662671d87b48ba93ddc401}{%
+           family={Rosen},
+           familyi={R\bibinitperiod},
+           given={Christian},
+           giveni={C\bibinitperiod}}}%
+        {{hash=82d3afcbe54948e7923ac9e04b52321f}{%
+           family={Steyer},
+           familyi={S\bibinitperiod},
+           given={Jean-Philippe},
+           giveni={J\bibinithyphendelim P\bibinitperiod}}}%
+        {{hash=285cafa0871bfaf066bf818823ca6666}{%
+           family={Vanrolleghem},
+           familyi={V\bibinitperiod},
+           given={Peter\bibnamedelima A.},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{33c92bf8f6a68377664520c91fe200d2}
+      \strng{fullhash}{b22d19bc7dd1663862c01737b067e8b7}
+      \strng{fullhashraw}{b22d19bc7dd1663862c01737b067e8b7}
+      \strng{bibnamehash}{33c92bf8f6a68377664520c91fe200d2}
+      \strng{authorbibnamehash}{33c92bf8f6a68377664520c91fe200d2}
+      \strng{authornamehash}{33c92bf8f6a68377664520c91fe200d2}
+      \strng{authorfullhash}{b22d19bc7dd1663862c01737b067e8b7}
+      \strng{authorfullhashraw}{b22d19bc7dd1663862c01737b067e8b7}
+      \field{extraname}{1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Science and Technology}
+      \field{number}{9}
+      \field{title}{Benchmark Simulation Model No.~2: finalisation of plant layout and default control strategy}
+      \field{volume}{62}
+      \field{year}{2010}
+      \field{pages}{1967\bibrangedash 1974}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.2166/wst.2010.044
+      \endverb
+    \endentry
+    \entry{vanrolleghem2002}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=285cafa0871bfaf066bf818823ca6666}{%
+           family={Vanrolleghem},
+           familyi={V\bibinitperiod},
+           given={Peter\bibnamedelima A.},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=93ac48009b9c90f6c1df8b0f985c2cf5}{%
+           family={Gillot},
+           familyi={G\bibinitperiod},
+           given={Sylvie},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{e92c52589bd4896088621ba6f2b71857}
+      \strng{fullhash}{e92c52589bd4896088621ba6f2b71857}
+      \strng{fullhashraw}{e92c52589bd4896088621ba6f2b71857}
+      \strng{bibnamehash}{e92c52589bd4896088621ba6f2b71857}
+      \strng{authorbibnamehash}{e92c52589bd4896088621ba6f2b71857}
+      \strng{authornamehash}{e92c52589bd4896088621ba6f2b71857}
+      \strng{authorfullhash}{e92c52589bd4896088621ba6f2b71857}
+      \strng{authorfullhashraw}{e92c52589bd4896088621ba6f2b71857}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Science and Technology}
+      \field{number}{4--5}
+      \field{title}{Robustness and economic measures as control benchmark performance criteria}
+      \field{volume}{45}
+      \field{year}{2002}
+      \field{pages}{117\bibrangedash 126}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.2166/wst.2002.0565
+      \endverb
+    \endentry
+    \entry{schraa2017}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=4722158ff0e81db7c7593ce0fe7d08c9}{%
+           family={Schraa},
+           familyi={S\bibinitperiod},
+           given={Oliver},
+           giveni={O\bibinitperiod}}}%
+        {{hash=504a75e9e313a9d57077d1bdac170546}{%
+           family={Rieger},
+           familyi={R\bibinitperiod},
+           given={Leiv},
+           giveni={L\bibinitperiod}}}%
+        {{hash=cad835bd0cb15c8e67428e3736f27c1c}{%
+           family={Alex},
+           familyi={A\bibinitperiod},
+           given={Jens},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{1af70dd9c39f010753be9698a6e7179b}
+      \strng{fullhash}{1af70dd9c39f010753be9698a6e7179b}
+      \strng{fullhashraw}{1af70dd9c39f010753be9698a6e7179b}
+      \strng{bibnamehash}{1af70dd9c39f010753be9698a6e7179b}
+      \strng{authorbibnamehash}{1af70dd9c39f010753be9698a6e7179b}
+      \strng{authornamehash}{1af70dd9c39f010753be9698a6e7179b}
+      \strng{authorfullhash}{1af70dd9c39f010753be9698a6e7179b}
+      \strng{authorfullhashraw}{1af70dd9c39f010753be9698a6e7179b}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Science and Technology}
+      \field{number}{3}
+      \field{title}{Development of a model for activated sludge aeration systems: linking air supply, distribution, and demand}
+      \field{volume}{75}
+      \field{year}{2017}
+      \field{pages}{552\bibrangedash 560}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.2166/wst.2016.481
+      \endverb
+    \endentry
+    \entry{brdys2008}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=a67325c94e54e45a27fad146d9d75e8b}{%
+           family={Brdys},
+           familyi={B\bibinitperiod},
+           given={Mieczyslaw\bibnamedelima A.},
+           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=4c15c575b41de9e61581429feae632d4}{%
+           family={Grochowski},
+           familyi={G\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=09e015583190b4206f2e9144c03ac399}{%
+           family={Gminski},
+           familyi={G\bibinitperiod},
+           given={T.},
+           giveni={T\bibinitperiod}}}%
+        {{hash=95b1add6301a6826cbd68cfe1d9fe898}{%
+           family={Konarczak},
+           familyi={K\bibinitperiod},
+           given={K.},
+           giveni={K\bibinitperiod}}}%
+        {{hash=efcf162527229f41197ad298635133c3}{%
+           family={Drewa},
+           familyi={D\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{ba758ecc58f2bfd1ee23999cba365005}
+      \strng{fullhash}{f4c3722ac522d216d34d635c8a2dc3ae}
+      \strng{fullhashraw}{f4c3722ac522d216d34d635c8a2dc3ae}
+      \strng{bibnamehash}{f4c3722ac522d216d34d635c8a2dc3ae}
+      \strng{authorbibnamehash}{f4c3722ac522d216d34d635c8a2dc3ae}
+      \strng{authornamehash}{ba758ecc58f2bfd1ee23999cba365005}
+      \strng{authorfullhash}{f4c3722ac522d216d34d635c8a2dc3ae}
+      \strng{authorfullhashraw}{f4c3722ac522d216d34d635c8a2dc3ae}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Control Engineering Practice}
+      \field{number}{7}
+      \field{title}{Hierarchical predictive control of integrated wastewater treatment systems}
+      \field{volume}{16}
+      \field{year}{2008}
+      \field{pages}{751\bibrangedash 767}
+      \range{pages}{17}
+      \verb{doi}
+      \verb 10.1016/j.conengprac.2007.01.008
+      \endverb
+    \endentry
+    \entry{piotrowski2008}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=767447e19c43cf70ebfc22cdf8a32b87}{%
+           family={Piotrowski},
+           familyi={P\bibinitperiod},
+           given={Robert},
+           giveni={R\bibinitperiod}}}%
+        {{hash=a67325c94e54e45a27fad146d9d75e8b}{%
+           family={Brdys},
+           familyi={B\bibinitperiod},
+           given={Mieczyslaw\bibnamedelima A.},
+           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=7b56ee81ac9886b0e2071547a863a8f9}{%
+           family={Konarczak},
+           familyi={K\bibinitperiod},
+           given={Konrad},
+           giveni={K\bibinitperiod}}}%
+        {{hash=8b345005fe58cf1cd73ae974d00a2a26}{%
+           family={Duzinkiewicz},
+           familyi={D\bibinitperiod},
+           given={Kazimierz},
+           giveni={K\bibinitperiod}}}%
+        {{hash=857469b3ab8bf7dfd389c34fce641e1a}{%
+           family={Chotkowski},
+           familyi={C\bibinitperiod},
+           given={Wojciech},
+           giveni={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{fbe26e7cab3d1a54342995f7fa1b7da2}
+      \strng{fullhash}{2aa95fe56ca97786eb981099b922364f}
+      \strng{fullhashraw}{2aa95fe56ca97786eb981099b922364f}
+      \strng{bibnamehash}{2aa95fe56ca97786eb981099b922364f}
+      \strng{authorbibnamehash}{2aa95fe56ca97786eb981099b922364f}
+      \strng{authornamehash}{fbe26e7cab3d1a54342995f7fa1b7da2}
+      \strng{authorfullhash}{2aa95fe56ca97786eb981099b922364f}
+      \strng{authorfullhashraw}{2aa95fe56ca97786eb981099b922364f}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Control Engineering Practice}
+      \field{number}{1}
+      \field{title}{Hierarchical dissolved oxygen control for activated sludge processes}
+      \field{volume}{16}
+      \field{year}{2008}
+      \field{pages}{114\bibrangedash 131}
+      \range{pages}{18}
+      \verb{doi}
+      \verb 10.1016/j.conengprac.2007.04.005
+      \endverb
+    \endentry
+    \entry{obrien2011}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=4c422f5a24fbc7bcd3403ec7a46b3756}{%
+           family={O'Brien},
+           familyi={O\bibinitperiod},
+           given={M.},
+           giveni={M\bibinitperiod}}}%
+        {{hash=1075d6995263d0b1bf7f927f2bdc1693}{%
+           family={Mack},
+           familyi={M\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+        {{hash=9a50efa48e58f84db50ed5708fce1744}{%
+           family={Lennox},
+           familyi={L\bibinitperiod},
+           given={B.},
+           giveni={B\bibinitperiod}}}%
+        {{hash=556c469ff05c2d7f9fdc49a0555dd931}{%
+           family={Lovett},
+           familyi={L\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod}}}%
+        {{hash=1ef7015a8476ba5207577a981a836cba}{%
+           family={Wall},
+           familyi={W\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{050890f07056d7092eda38d93a3e9219}
+      \strng{fullhash}{7c9b471049e75e182e2572940a436de4}
+      \strng{fullhashraw}{7c9b471049e75e182e2572940a436de4}
+      \strng{bibnamehash}{7c9b471049e75e182e2572940a436de4}
+      \strng{authorbibnamehash}{7c9b471049e75e182e2572940a436de4}
+      \strng{authornamehash}{050890f07056d7092eda38d93a3e9219}
+      \strng{authorfullhash}{7c9b471049e75e182e2572940a436de4}
+      \strng{authorfullhashraw}{7c9b471049e75e182e2572940a436de4}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Control Engineering Practice}
+      \field{number}{1}
+      \field{title}{Model predictive control of an activated sludge process: A case study}
+      \field{volume}{19}
+      \field{year}{2011}
+      \field{pages}{54\bibrangedash 61}
+      \range{pages}{8}
+      \verb{doi}
+      \verb 10.1016/j.conengprac.2010.09.001
+      \endverb
+    \endentry
+    \entry{iratni2019}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=f0d46ce48efc9f5e84b1453be49a52fe}{%
+           family={Iratni},
+           familyi={I\bibinitperiod},
+           given={Abdelhamid},
+           giveni={A\bibinitperiod}}}%
+        {{hash=fb87e53a5b197bcc948d0df9e133ceb4}{%
+           family={Chang},
+           familyi={C\bibinitperiod},
+           given={Ni-Bin},
+           giveni={N\bibinithyphendelim B\bibinitperiod}}}%
+      }
+      \strng{namehash}{98fa4cb3722fa903acfb0b4fecf89273}
+      \strng{fullhash}{98fa4cb3722fa903acfb0b4fecf89273}
+      \strng{fullhashraw}{98fa4cb3722fa903acfb0b4fecf89273}
+      \strng{bibnamehash}{98fa4cb3722fa903acfb0b4fecf89273}
+      \strng{authorbibnamehash}{98fa4cb3722fa903acfb0b4fecf89273}
+      \strng{authornamehash}{98fa4cb3722fa903acfb0b4fecf89273}
+      \strng{authorfullhash}{98fa4cb3722fa903acfb0b4fecf89273}
+      \strng{authorfullhashraw}{98fa4cb3722fa903acfb0b4fecf89273}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE/CAA Journal of Automatica Sinica}
+      \field{number}{2}
+      \field{title}{Advances in control technologies for wastewater treatment processes: Status, challenges, and perspectives}
+      \field{volume}{6}
+      \field{year}{2019}
+      \field{pages}{337\bibrangedash 363}
+      \range{pages}{27}
+      \verb{doi}
+      \verb 10.1109/JAS.2019.1911372
+      \endverb
+    \endentry
+    \entry{stare2007}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=978b0af60314b35ccdb3af35a1ef6fe0}{%
+           family={Stare},
+           familyi={S\bibinitperiod},
+           given={Aljaž},
+           giveni={A\bibinitperiod}}}%
+        {{hash=13a41fad2d9fa07053c4bf86ec3db807}{%
+           family={Vrečko},
+           familyi={V\bibinitperiod},
+           given={Darko},
+           giveni={D\bibinitperiod}}}%
+        {{hash=12dd41272e78b61c9c8a7524812499f4}{%
+           family={Hvala},
+           familyi={H\bibinitperiod},
+           given={Nadja},
+           giveni={N\bibinitperiod}}}%
+        {{hash=ddc7db3a354b89d4759c3e114ec24149}{%
+           family={Strmčnik},
+           familyi={S\bibinitperiod},
+           given={Stanko},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{602d5dfebd10aa5b41a1320ee80ebda6}
+      \strng{fullhash}{a8d4ab964815f20ecbfeed1836ddfce4}
+      \strng{fullhashraw}{a8d4ab964815f20ecbfeed1836ddfce4}
+      \strng{bibnamehash}{a8d4ab964815f20ecbfeed1836ddfce4}
+      \strng{authorbibnamehash}{a8d4ab964815f20ecbfeed1836ddfce4}
+      \strng{authornamehash}{602d5dfebd10aa5b41a1320ee80ebda6}
+      \strng{authorfullhash}{a8d4ab964815f20ecbfeed1836ddfce4}
+      \strng{authorfullhashraw}{a8d4ab964815f20ecbfeed1836ddfce4}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{9}
+      \field{title}{Comparison of control strategies for nitrogen removal in an activated sludge process in terms of operating costs: A simulation study}
+      \field{volume}{41}
+      \field{year}{2007}
+      \field{pages}{2004\bibrangedash 2014}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1016/j.watres.2007.01.029
+      \endverb
+    \endentry
+    \entry{pannocchia2003offset}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=7e3448820c2183c4de14a48342a068f9}{%
+           family={Pannocchia},
+           familyi={P\bibinitperiod},
+           given={Gabriele},
+           giveni={G\bibinitperiod}}}%
+        {{hash=a28ab6b1da316879310a82410e4e8dc4}{%
+           family={Rawlings},
+           familyi={R\bibinitperiod},
+           given={James\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+      }
+      \strng{namehash}{168b6377b89f055d8bea8be3d0fb9ade}
+      \strng{fullhash}{168b6377b89f055d8bea8be3d0fb9ade}
+      \strng{fullhashraw}{168b6377b89f055d8bea8be3d0fb9ade}
+      \strng{bibnamehash}{168b6377b89f055d8bea8be3d0fb9ade}
+      \strng{authorbibnamehash}{168b6377b89f055d8bea8be3d0fb9ade}
+      \strng{authornamehash}{168b6377b89f055d8bea8be3d0fb9ade}
+      \strng{authorfullhash}{168b6377b89f055d8bea8be3d0fb9ade}
+      \strng{authorfullhashraw}{168b6377b89f055d8bea8be3d0fb9ade}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{AIChE Journal}
+      \field{number}{2}
+      \field{title}{Disturbance models for offset-free model-predictive control}
+      \field{volume}{49}
+      \field{year}{2003}
+      \field{pages}{426\bibrangedash 437}
+      \range{pages}{12}
+      \verb{doi}
+      \verb 10.1002/aic.690490213
+      \endverb
+    \endentry
+    \entry{rawlings2017mpc}{book}{}{}
+      \name{author}{3}{}{%
+        {{hash=a28ab6b1da316879310a82410e4e8dc4}{%
+           family={Rawlings},
+           familyi={R\bibinitperiod},
+           given={James\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=6c38c35a89eea5106453dfc184f884e7}{%
+           family={Mayne},
+           familyi={M\bibinitperiod},
+           given={David\bibnamedelima Q.},
+           giveni={D\bibinitperiod\bibinitdelim Q\bibinitperiod}}}%
+        {{hash=5ebda09826c79d41f09f9d3c6cf85ce9}{%
+           family={Diehl},
+           familyi={D\bibinitperiod},
+           given={Moritz\bibnamedelima M.},
+           giveni={M\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Madison, WI}%
+      }
+      \list{publisher}{1}{%
+        {Nob Hill Publishing}%
+      }
+      \strng{namehash}{d66551b47d480483dfb21f2de51ff12f}
+      \strng{fullhash}{d66551b47d480483dfb21f2de51ff12f}
+      \strng{fullhashraw}{d66551b47d480483dfb21f2de51ff12f}
+      \strng{bibnamehash}{d66551b47d480483dfb21f2de51ff12f}
+      \strng{authorbibnamehash}{d66551b47d480483dfb21f2de51ff12f}
+      \strng{authornamehash}{d66551b47d480483dfb21f2de51ff12f}
+      \strng{authorfullhash}{d66551b47d480483dfb21f2de51ff12f}
+      \strng{authorfullhashraw}{d66551b47d480483dfb21f2de51ff12f}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2}
+      \field{title}{Model Predictive Control: Theory, Computation, and Design}
+      \field{year}{2017}
+    \endentry
+    \entry{maciejowski2002}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=08184b343a2793a975a8d619c342ee3a}{%
+           family={Maciejowski},
+           familyi={M\bibinitperiod},
+           given={Jan\bibnamedelima M.},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Harlow}%
+      }
+      \list{publisher}{1}{%
+        {Prentice Hall}%
+      }
+      \strng{namehash}{08184b343a2793a975a8d619c342ee3a}
+      \strng{fullhash}{08184b343a2793a975a8d619c342ee3a}
+      \strng{fullhashraw}{08184b343a2793a975a8d619c342ee3a}
+      \strng{bibnamehash}{08184b343a2793a975a8d619c342ee3a}
+      \strng{authorbibnamehash}{08184b343a2793a975a8d619c342ee3a}
+      \strng{authornamehash}{08184b343a2793a975a8d619c342ee3a}
+      \strng{authorfullhash}{08184b343a2793a975a8d619c342ee3a}
+      \strng{authorfullhashraw}{08184b343a2793a975a8d619c342ee3a}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Predictive Control with Constraints}
+      \field{year}{2002}
+    \endentry
+    \entry{mayne2000mpc}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=6c38c35a89eea5106453dfc184f884e7}{%
+           family={Mayne},
+           familyi={M\bibinitperiod},
+           given={David\bibnamedelima Q.},
+           giveni={D\bibinitperiod\bibinitdelim Q\bibinitperiod}}}%
+        {{hash=a28ab6b1da316879310a82410e4e8dc4}{%
+           family={Rawlings},
+           familyi={R\bibinitperiod},
+           given={James\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=962b275f0f4b7a93b0809f745064d5df}{%
+           family={Rao},
+           familyi={R\bibinitperiod},
+           given={Christopher\bibnamedelima V.},
+           giveni={C\bibinitperiod\bibinitdelim V\bibinitperiod}}}%
+        {{hash=0764d63e7de8aa234aa67f74bc3cc1a0}{%
+           family={Scokaert},
+           familyi={S\bibinitperiod},
+           given={Pierre\bibnamedelimb O.\bibnamedelimi M.},
+           giveni={P\bibinitperiod\bibinitdelim O\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{0863587215d328a6e40966e470cf86d7}
+      \strng{fullhash}{a4dbe939da5b63773b08da8455f48d80}
+      \strng{fullhashraw}{a4dbe939da5b63773b08da8455f48d80}
+      \strng{bibnamehash}{a4dbe939da5b63773b08da8455f48d80}
+      \strng{authorbibnamehash}{a4dbe939da5b63773b08da8455f48d80}
+      \strng{authornamehash}{0863587215d328a6e40966e470cf86d7}
+      \strng{authorfullhash}{a4dbe939da5b63773b08da8455f48d80}
+      \strng{authorfullhashraw}{a4dbe939da5b63773b08da8455f48d80}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Automatica}
+      \field{number}{6}
+      \field{title}{Constrained model predictive control: Stability and optimality}
+      \field{volume}{36}
+      \field{year}{2000}
+      \field{pages}{789\bibrangedash 814}
+      \range{pages}{26}
+      \verb{doi}
+      \verb 10.1016/S0005-1098(99)00214-9
+      \endverb
+    \endentry
+    \entry{qin2003mpc}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=955774b6cbb1b6630808e0013931e996}{%
+           family={Qin},
+           familyi={Q\bibinitperiod},
+           given={S.\bibnamedelimi Joe},
+           giveni={S\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=d6201ab1f73de90be05b37409ae40f0b}{%
+           family={Badgwell},
+           familyi={B\bibinitperiod},
+           given={Thomas\bibnamedelima A.},
+           giveni={T\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{68b7c14f6e458ce9bf835792c32712b0}
+      \strng{fullhash}{68b7c14f6e458ce9bf835792c32712b0}
+      \strng{fullhashraw}{68b7c14f6e458ce9bf835792c32712b0}
+      \strng{bibnamehash}{68b7c14f6e458ce9bf835792c32712b0}
+      \strng{authorbibnamehash}{68b7c14f6e458ce9bf835792c32712b0}
+      \strng{authornamehash}{68b7c14f6e458ce9bf835792c32712b0}
+      \strng{authorfullhash}{68b7c14f6e458ce9bf835792c32712b0}
+      \strng{authorfullhashraw}{68b7c14f6e458ce9bf835792c32712b0}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Control Engineering Practice}
+      \field{number}{7}
+      \field{title}{A survey of industrial model predictive control technology}
+      \field{volume}{11}
+      \field{year}{2003}
+      \field{pages}{733\bibrangedash 764}
+      \range{pages}{32}
+      \verb{doi}
+      \verb 10.1016/S0967-0661(02)00186-7
+      \endverb
+    \endentry
+    \entry{garcia1989mpc}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=d19fe411a708efe18977a731469e4c85}{%
+           family={García},
+           familyi={G\bibinitperiod},
+           given={Carlos\bibnamedelima E.},
+           giveni={C\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=01ffd685e8be046bc691a72c87a6ee4d}{%
+           family={Prett},
+           familyi={P\bibinitperiod},
+           given={David\bibnamedelima M.},
+           giveni={D\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=b2bb39eb75a828fec1d25d655c9d7372}{%
+           family={Morari},
+           familyi={M\bibinitperiod},
+           given={Manfred},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{5b7ebb6ac3a05d1a1063488ec93835a1}
+      \strng{fullhash}{5b7ebb6ac3a05d1a1063488ec93835a1}
+      \strng{fullhashraw}{5b7ebb6ac3a05d1a1063488ec93835a1}
+      \strng{bibnamehash}{5b7ebb6ac3a05d1a1063488ec93835a1}
+      \strng{authorbibnamehash}{5b7ebb6ac3a05d1a1063488ec93835a1}
+      \strng{authornamehash}{5b7ebb6ac3a05d1a1063488ec93835a1}
+      \strng{authorfullhash}{5b7ebb6ac3a05d1a1063488ec93835a1}
+      \strng{authorfullhashraw}{5b7ebb6ac3a05d1a1063488ec93835a1}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Automatica}
+      \field{number}{3}
+      \field{title}{Model predictive control: Theory and practice---{A} survey}
+      \field{volume}{25}
+      \field{year}{1989}
+      \field{pages}{335\bibrangedash 348}
+      \range{pages}{14}
+      \verb{doi}
+      \verb 10.1016/0005-1098(89)90002-2
+      \endverb
+    \endentry
+    \entry{camacho2007mpc}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=15ba64c29210ce6f6ade73c5d69ac3ae}{%
+           family={Camacho},
+           familyi={C\bibinitperiod},
+           given={Eduardo\bibnamedelima F.},
+           giveni={E\bibinitperiod\bibinitdelim F\bibinitperiod}}}%
+        {{hash=afffb6ded8f4576b41f45b7e6998955e}{%
+           family={Bordons},
+           familyi={B\bibinitperiod},
+           given={Carlos},
+           giveni={C\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {London}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{5acefe3acf95863766150a121e12e231}
+      \strng{fullhash}{5acefe3acf95863766150a121e12e231}
+      \strng{fullhashraw}{5acefe3acf95863766150a121e12e231}
+      \strng{bibnamehash}{5acefe3acf95863766150a121e12e231}
+      \strng{authorbibnamehash}{5acefe3acf95863766150a121e12e231}
+      \strng{authornamehash}{5acefe3acf95863766150a121e12e231}
+      \strng{authorfullhash}{5acefe3acf95863766150a121e12e231}
+      \strng{authorfullhashraw}{5acefe3acf95863766150a121e12e231}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2}
+      \field{title}{Model Predictive Control}
+      \field{year}{2007}
+    \endentry
+    \entry{diehl2002nmpc}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=ec732fd9120f390fd38c8132a3079900}{%
+           family={Diehl},
+           familyi={D\bibinitperiod},
+           given={Moritz},
+           giveni={M\bibinitperiod}}}%
+        {{hash=8bd49d87209da434da28626048e76aaa}{%
+           family={Bock},
+           familyi={B\bibinitperiod},
+           given={H.\bibnamedelimi Georg},
+           giveni={H\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=6bccdf1b1aa7df46db089dab7b970230}{%
+           family={Schlöder},
+           familyi={S\bibinitperiod},
+           given={Johannes\bibnamedelima P.},
+           giveni={J\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{hash=cafa0666847adef4d293bfeb9125ca66}{%
+           family={Findeisen},
+           familyi={F\bibinitperiod},
+           given={Rolf},
+           giveni={R\bibinitperiod}}}%
+        {{hash=fbe1f492185e4a9e8c18f0354c67320a}{%
+           family={Nagy},
+           familyi={N\bibinitperiod},
+           given={Zoltan},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=54579c78a50c27b4cf79935bfa16236a}{%
+           family={Allgöwer},
+           familyi={A\bibinitperiod},
+           given={Frank},
+           giveni={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{4476e0f92f59cc7249f941fe4d19afce}
+      \strng{fullhash}{ef584a855fe9d421b3cd471940303fd8}
+      \strng{fullhashraw}{ef584a855fe9d421b3cd471940303fd8}
+      \strng{bibnamehash}{ef584a855fe9d421b3cd471940303fd8}
+      \strng{authorbibnamehash}{ef584a855fe9d421b3cd471940303fd8}
+      \strng{authornamehash}{4476e0f92f59cc7249f941fe4d19afce}
+      \strng{authorfullhash}{ef584a855fe9d421b3cd471940303fd8}
+      \strng{authorfullhashraw}{ef584a855fe9d421b3cd471940303fd8}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Process Control}
+      \field{number}{4}
+      \field{title}{Real-time optimization and nonlinear model predictive control of processes governed by differential-algebraic equations}
+      \field{volume}{12}
+      \field{year}{2002}
+      \field{pages}{577\bibrangedash 585}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1016/S0959-1524(01)00023-3
+      \endverb
+    \endentry
+    \entry{andersson2019casadi}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=09710eddb25e528b0d0bae5a6fd11eb9}{%
+           family={Andersson},
+           familyi={A\bibinitperiod},
+           given={Joel\bibnamedelimb A.\bibnamedelimi E.},
+           giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=2ffda07362b7874e2f74f66dc2a225ac}{%
+           family={Gillis},
+           familyi={G\bibinitperiod},
+           given={Joris},
+           giveni={J\bibinitperiod}}}%
+        {{hash=0fa126623a6142cf731907bb8a8df131}{%
+           family={Horn},
+           familyi={H\bibinitperiod},
+           given={Greg},
+           giveni={G\bibinitperiod}}}%
+        {{hash=a28ab6b1da316879310a82410e4e8dc4}{%
+           family={Rawlings},
+           familyi={R\bibinitperiod},
+           given={James\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=ec732fd9120f390fd38c8132a3079900}{%
+           family={Diehl},
+           familyi={D\bibinitperiod},
+           given={Moritz},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{b04d0d55940f67bd98ae0c9236807a4e}
+      \strng{fullhash}{d4ec04d8cc225f8dfb9d40f7c454951a}
+      \strng{fullhashraw}{d4ec04d8cc225f8dfb9d40f7c454951a}
+      \strng{bibnamehash}{d4ec04d8cc225f8dfb9d40f7c454951a}
+      \strng{authorbibnamehash}{d4ec04d8cc225f8dfb9d40f7c454951a}
+      \strng{authornamehash}{b04d0d55940f67bd98ae0c9236807a4e}
+      \strng{authorfullhash}{d4ec04d8cc225f8dfb9d40f7c454951a}
+      \strng{authorfullhashraw}{d4ec04d8cc225f8dfb9d40f7c454951a}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Mathematical Programming Computation}
+      \field{number}{1}
+      \field{title}{{CasADi}: a software framework for nonlinear optimization and optimal control}
+      \field{volume}{11}
+      \field{year}{2019}
+      \field{pages}{1\bibrangedash 36}
+      \range{pages}{36}
+      \verb{doi}
+      \verb 10.1007/s12532-018-0139-4
+      \endverb
+    \endentry
+    \entry{wachter2006ipopt}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=dc724f071bd0fcc1e9eabf5f96209481}{%
+           family={Wächter},
+           familyi={W\bibinitperiod},
+           given={Andreas},
+           giveni={A\bibinitperiod}}}%
+        {{hash=b4cf951e494c45f4de462df04ec3b5df}{%
+           family={Biegler},
+           familyi={B\bibinitperiod},
+           given={Lorenz\bibnamedelima T.},
+           giveni={L\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \strng{namehash}{842d46b1a24346d113a0e8274fa09dd0}
+      \strng{fullhash}{842d46b1a24346d113a0e8274fa09dd0}
+      \strng{fullhashraw}{842d46b1a24346d113a0e8274fa09dd0}
+      \strng{bibnamehash}{842d46b1a24346d113a0e8274fa09dd0}
+      \strng{authorbibnamehash}{842d46b1a24346d113a0e8274fa09dd0}
+      \strng{authornamehash}{842d46b1a24346d113a0e8274fa09dd0}
+      \strng{authorfullhash}{842d46b1a24346d113a0e8274fa09dd0}
+      \strng{authorfullhashraw}{842d46b1a24346d113a0e8274fa09dd0}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Mathematical Programming}
+      \field{number}{1}
+      \field{title}{On the implementation of an interior-point filter line-search algorithm for large-scale nonlinear programming}
+      \field{volume}{106}
+      \field{year}{2006}
+      \field{pages}{25\bibrangedash 57}
+      \range{pages}{33}
+      \verb{doi}
+      \verb 10.1007/s10107-004-0559-y
+      \endverb
+    \endentry
+    \entry{nocedal2006}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=88a342d927bf795b0d92af8a5613da31}{%
+           family={Nocedal},
+           familyi={N\bibinitperiod},
+           given={Jorge},
+           giveni={J\bibinitperiod}}}%
+        {{hash=c49efb16d3fa7eef002cc3620d42ab8a}{%
+           family={Wright},
+           familyi={W\bibinitperiod},
+           given={Stephen\bibnamedelima J.},
+           giveni={S\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {New York}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{fullhash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{fullhashraw}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{bibnamehash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{authorbibnamehash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{authornamehash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{authorfullhash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{authorfullhashraw}{5b8fd28f6245ae8b0af119560622fa4f}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2}
+      \field{title}{Numerical Optimization}
+      \field{year}{2006}
+    \endentry
+    \entry{boyd2004convex}{book}{}{}
+      \name{author}{2}{}{%
+        {{hash=ec94d94cc487dd71939a90cbeaaf47d0}{%
+           family={Boyd},
+           familyi={B\bibinitperiod},
+           given={Stephen},
+           giveni={S\bibinitperiod}}}%
+        {{hash=2608d599a0bc2a784c301329a8da5f7b}{%
+           family={Vandenberghe},
+           familyi={V\bibinitperiod},
+           given={Lieven},
+           giveni={L\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Cambridge}%
+      }
+      \list{publisher}{1}{%
+        {Cambridge University Press}%
+      }
+      \strng{namehash}{436abed3bce8d1b1d30640d4e5ff3d58}
+      \strng{fullhash}{436abed3bce8d1b1d30640d4e5ff3d58}
+      \strng{fullhashraw}{436abed3bce8d1b1d30640d4e5ff3d58}
+      \strng{bibnamehash}{436abed3bce8d1b1d30640d4e5ff3d58}
+      \strng{authorbibnamehash}{436abed3bce8d1b1d30640d4e5ff3d58}
+      \strng{authornamehash}{436abed3bce8d1b1d30640d4e5ff3d58}
+      \strng{authorfullhash}{436abed3bce8d1b1d30640d4e5ff3d58}
+      \strng{authorfullhashraw}{436abed3bce8d1b1d30640d4e5ff3d58}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Convex Optimization}
+      \field{year}{2004}
+    \endentry
+    \entry{harjunkoski2014}{article}{}{}
+      \name{author}{10}{}{%
+        {{hash=248a20009be9f061a4df5ffe14a0b713}{%
+           family={Harjunkoski},
+           familyi={H\bibinitperiod},
+           given={Iiro},
+           giveni={I\bibinitperiod}}}%
+        {{hash=58d58bb97e9ad6b9a79721724b777c8e}{%
+           family={Maravelias},
+           familyi={M\bibinitperiod},
+           given={Christos\bibnamedelima T.},
+           giveni={C\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=94bb9a0d21a9313fcbcad76596b89b69}{%
+           family={Bongers},
+           familyi={B\bibinitperiod},
+           given={Peter},
+           giveni={P\bibinitperiod}}}%
+        {{hash=4d5d5efdc36bcfc70a9b2a83a92d88c0}{%
+           family={Castro},
+           familyi={C\bibinitperiod},
+           given={Pedro\bibnamedelima M.},
+           giveni={P\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=f593c290c432f488e6232f627610ddaa}{%
+           family={Engell},
+           familyi={E\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod}}}%
+        {{hash=9a39a2eac2d858d35e3c0d94e4e8d4b6}{%
+           family={Grossmann},
+           familyi={G\bibinitperiod},
+           given={Ignacio\bibnamedelima E.},
+           giveni={I\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=6e6577085f2cd61dec80252ebe6e4171}{%
+           family={Hooker},
+           familyi={H\bibinitperiod},
+           given={John},
+           giveni={J\bibinitperiod}}}%
+        {{hash=741344e8f33542d3e90834851049941d}{%
+           family={Méndez},
+           familyi={M\bibinitperiod},
+           given={Carlos},
+           giveni={C\bibinitperiod}}}%
+        {{hash=bb67aad79afd751c271f2f8c878e5d33}{%
+           family={Sand},
+           familyi={S\bibinitperiod},
+           given={Guido},
+           giveni={G\bibinitperiod}}}%
+        {{hash=f40ec1b9d7b4b62099e586a4e069fe90}{%
+           family={Wassick},
+           familyi={W\bibinitperiod},
+           given={John},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{692bc9ed519ebe287b047b650e78855d}
+      \strng{fullhash}{b27c6bf738c70aec38a9f229e5d29ebe}
+      \strng{fullhashraw}{b27c6bf738c70aec38a9f229e5d29ebe}
+      \strng{bibnamehash}{692bc9ed519ebe287b047b650e78855d}
+      \strng{authorbibnamehash}{692bc9ed519ebe287b047b650e78855d}
+      \strng{authornamehash}{692bc9ed519ebe287b047b650e78855d}
+      \strng{authorfullhash}{b27c6bf738c70aec38a9f229e5d29ebe}
+      \strng{authorfullhashraw}{b27c6bf738c70aec38a9f229e5d29ebe}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers \& Chemical Engineering}
+      \field{title}{Scope for industrial applications of production scheduling models and solution methods}
+      \field{volume}{62}
+      \field{year}{2014}
+      \field{pages}{161\bibrangedash 193}
+      \range{pages}{33}
+      \verb{doi}
+      \verb 10.1016/j.compchemeng.2013.12.001
+      \endverb
+    \endentry
+    \entry{goode2013fouling}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=394faf47ea02c96a2aa833032fe682c9}{%
+           family={Goode},
+           familyi={G\bibinitperiod},
+           given={Kylee\bibnamedelima R.},
+           giveni={K\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=7243aaf22233a07f4c36e0dc1f658d07}{%
+           family={Asteriadou},
+           familyi={A\bibinitperiod},
+           given={Konstantia},
+           giveni={K\bibinitperiod}}}%
+        {{hash=23908309e4f3ab821a51dca0c76dd023}{%
+           family={Robbins},
+           familyi={R\bibinitperiod},
+           given={Phillip\bibnamedelima T.},
+           giveni={P\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=19f335f851608774953ca8093a74644b}{%
+           family={Fryer},
+           familyi={F\bibinitperiod},
+           given={Peter\bibnamedelima J.},
+           giveni={P\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \strng{namehash}{28ded30c94885e9f5def95fa83b09600}
+      \strng{fullhash}{ee3eeb9f8ec47ca4a2fb9e3fee229e52}
+      \strng{fullhashraw}{ee3eeb9f8ec47ca4a2fb9e3fee229e52}
+      \strng{bibnamehash}{ee3eeb9f8ec47ca4a2fb9e3fee229e52}
+      \strng{authorbibnamehash}{ee3eeb9f8ec47ca4a2fb9e3fee229e52}
+      \strng{authornamehash}{28ded30c94885e9f5def95fa83b09600}
+      \strng{authorfullhash}{ee3eeb9f8ec47ca4a2fb9e3fee229e52}
+      \strng{authorfullhashraw}{ee3eeb9f8ec47ca4a2fb9e3fee229e52}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Comprehensive Reviews in Food Science and Food Safety}
+      \field{number}{2}
+      \field{title}{Fouling and cleaning studies in the food and beverage industry classified by cleaning type}
+      \field{volume}{12}
+      \field{year}{2013}
+      \field{pages}{121\bibrangedash 143}
+      \range{pages}{23}
+      \verb{doi}
+      \verb 10.1111/1541-4337.12000
+      \endverb
+    \endentry
+    \entry{pettigrew2015cip}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=97b47ab1ca3ed090193be01631d88e6c}{%
+           family={Pettigrew},
+           familyi={P\bibinitperiod},
+           given={L.},
+           giveni={L\bibinitperiod}}}%
+        {{hash=58181e4d4956c421ad8906120fb68545}{%
+           family={Blomenhofer},
+           familyi={B\bibinitperiod},
+           given={V.},
+           giveni={V\bibinitperiod}}}%
+        {{hash=7d7da5cd7617462812b2c0af1af3371e}{%
+           family={Hubert},
+           familyi={H\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+        {{hash=0b669a94e3e5e3f398a60f922d12322d}{%
+           family={Gro{ß}},
+           familyi={G\bibinitperiod},
+           given={F.},
+           giveni={F\bibinitperiod}}}%
+        {{hash=c36d45debd06ff0127d26799599fbf74}{%
+           family={Delgado},
+           familyi={D\bibinitperiod},
+           given={A.},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{da13506868806b10465f127381443651}
+      \strng{fullhash}{901b70d849988b0f3feb1082ed4ac338}
+      \strng{fullhashraw}{901b70d849988b0f3feb1082ed4ac338}
+      \strng{bibnamehash}{901b70d849988b0f3feb1082ed4ac338}
+      \strng{authorbibnamehash}{901b70d849988b0f3feb1082ed4ac338}
+      \strng{authornamehash}{da13506868806b10465f127381443651}
+      \strng{authorfullhash}{901b70d849988b0f3feb1082ed4ac338}
+      \strng{authorfullhashraw}{901b70d849988b0f3feb1082ed4ac338}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Cleaner Production}
+      \field{title}{Optimisation of water usage in a brewery clean-in-place system using reference nets}
+      \field{volume}{87}
+      \field{year}{2015}
+      \field{pages}{583\bibrangedash 593}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1016/j.jclepro.2014.10.072
+      \endverb
+    \endentry
+    \entry{rieger2003sensors}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=504a75e9e313a9d57077d1bdac170546}{%
+           family={Rieger},
+           familyi={R\bibinitperiod},
+           given={Leiv},
+           giveni={L\bibinitperiod}}}%
+        {{hash=cad835bd0cb15c8e67428e3736f27c1c}{%
+           family={Alex},
+           familyi={A\bibinitperiod},
+           given={Jens},
+           giveni={J\bibinitperiod}}}%
+        {{hash=a6a0742432c3b739d1707beb7cc0693f}{%
+           family={Winkler},
+           familyi={W\bibinitperiod},
+           given={Sylvia},
+           giveni={S\bibinitperiod}}}%
+        {{hash=044494fdf70af552ffa5b463d7a5ec88}{%
+           family={Boehler},
+           familyi={B\bibinitperiod},
+           given={Marc},
+           giveni={M\bibinitperiod}}}%
+        {{hash=c5d4c0640c6e2626e154c104f16daec4}{%
+           family={Thomann},
+           familyi={T\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+        {{hash=2513fbb1531738ff5a14f26468eb3543}{%
+           family={Siegrist},
+           familyi={S\bibinitperiod},
+           given={Hansruedi},
+           giveni={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{083f25fd005fdb141cef6c844890833f}
+      \strng{fullhash}{92076c3cbff0fbdd615384ddd9e7c056}
+      \strng{fullhashraw}{92076c3cbff0fbdd615384ddd9e7c056}
+      \strng{bibnamehash}{92076c3cbff0fbdd615384ddd9e7c056}
+      \strng{authorbibnamehash}{92076c3cbff0fbdd615384ddd9e7c056}
+      \strng{authornamehash}{083f25fd005fdb141cef6c844890833f}
+      \strng{authorfullhash}{92076c3cbff0fbdd615384ddd9e7c056}
+      \strng{authorfullhashraw}{92076c3cbff0fbdd615384ddd9e7c056}
+      \field{extraname}{2}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Science and Technology}
+      \field{number}{2}
+      \field{title}{Progress in sensor technology -- progress in process control? {Part I}: sensor property investigation and classification}
+      \field{volume}{47}
+      \field{year}{2003}
+      \field{pages}{103\bibrangedash 112}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.2166/wst.2003.0096
+      \endverb
+    \endentry
+    \entry{redmon1983}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=8b3408f4a18596f0411ea9a270f7e62e}{%
+           family={Redmon},
+           familyi={R\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod}}}%
+        {{hash=5438e85588c1d4608517660f81170417}{%
+           family={Boyle},
+           familyi={B\bibinitperiod},
+           given={William\bibnamedelima C.},
+           giveni={W\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=59a7e0250794f8e751e3bcabb3266b3c}{%
+           family={Ewing},
+           familyi={E\bibinitperiod},
+           given={Lloyd},
+           giveni={L\bibinitperiod}}}%
+      }
+      \strng{namehash}{898979c343bdd13c683b267d5bbc87fd}
+      \strng{fullhash}{898979c343bdd13c683b267d5bbc87fd}
+      \strng{fullhashraw}{898979c343bdd13c683b267d5bbc87fd}
+      \strng{bibnamehash}{898979c343bdd13c683b267d5bbc87fd}
+      \strng{authorbibnamehash}{898979c343bdd13c683b267d5bbc87fd}
+      \strng{authornamehash}{898979c343bdd13c683b267d5bbc87fd}
+      \strng{authorfullhash}{898979c343bdd13c683b267d5bbc87fd}
+      \strng{authorfullhashraw}{898979c343bdd13c683b267d5bbc87fd}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal (Water Pollution Control Federation)}
+      \field{number}{11}
+      \field{title}{Oxygen transfer efficiency measurements in mixed liquor using off-gas techniques}
+      \field{volume}{55}
+      \field{year}{1983}
+      \field{pages}{1338\bibrangedash 1347}
+      \range{pages}{10}
+    \endentry
+    \entry{leu2009}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=893eaafbc5c7fc050c9e9fce4fa38ad2}{%
+           family={Leu},
+           familyi={L\bibinitperiod},
+           given={Shao-Yuan},
+           giveni={S\bibinithyphendelim Y\bibinitperiod}}}%
+        {{hash=facfeb6cb095b4546f79709f5d1c979c}{%
+           family={Rosso},
+           familyi={R\bibinitperiod},
+           given={Diego},
+           giveni={D\bibinitperiod}}}%
+        {{hash=cf61b16ae0777a05df5f3f25509eab0e}{%
+           family={Larson},
+           familyi={L\bibinitperiod},
+           given={L.\bibnamedelimi E.},
+           giveni={L\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=d663dd9eb52090915f34719894ff04a4}{%
+           family={Stenstrom},
+           familyi={S\bibinitperiod},
+           given={Michael\bibnamedelima K.},
+           giveni={M\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+      }
+      \strng{namehash}{3e18011aaff12a56a639d098b7b8112c}
+      \strng{fullhash}{8ac9660d76a42ced8fad09da2d9cabdc}
+      \strng{fullhashraw}{8ac9660d76a42ced8fad09da2d9cabdc}
+      \strng{bibnamehash}{8ac9660d76a42ced8fad09da2d9cabdc}
+      \strng{authorbibnamehash}{8ac9660d76a42ced8fad09da2d9cabdc}
+      \strng{authornamehash}{3e18011aaff12a56a639d098b7b8112c}
+      \strng{authorfullhash}{8ac9660d76a42ced8fad09da2d9cabdc}
+      \strng{authorfullhashraw}{8ac9660d76a42ced8fad09da2d9cabdc}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Environment Research}
+      \field{number}{12}
+      \field{title}{Real-time aeration efficiency monitoring in the activated sludge process and methods to reduce energy consumption and operating costs}
+      \field{volume}{81}
+      \field{year}{2009}
+      \field{pages}{2471\bibrangedash 2481}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.2175/106143009X425906
+      \endverb
+    \endentry
+    \entry{krampe2003}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=2cd253d1c90ad9cbc5898a12ce530de2}{%
+           family={Krampe},
+           familyi={K\bibinitperiod},
+           given={Jörg},
+           giveni={J\bibinitperiod}}}%
+        {{hash=fef81d1ef8c8e861cd797371163d4120}{%
+           family={Krauth},
+           familyi={K\bibinitperiod},
+           given={Karl},
+           giveni={K\bibinitperiod}}}%
+      }
+      \strng{namehash}{a584ceb98738b2d287eb9b740a284587}
+      \strng{fullhash}{a584ceb98738b2d287eb9b740a284587}
+      \strng{fullhashraw}{a584ceb98738b2d287eb9b740a284587}
+      \strng{bibnamehash}{a584ceb98738b2d287eb9b740a284587}
+      \strng{authorbibnamehash}{a584ceb98738b2d287eb9b740a284587}
+      \strng{authornamehash}{a584ceb98738b2d287eb9b740a284587}
+      \strng{authorfullhash}{a584ceb98738b2d287eb9b740a284587}
+      \strng{authorfullhashraw}{a584ceb98738b2d287eb9b740a284587}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Science and Technology}
+      \field{number}{11}
+      \field{title}{Oxygen transfer into activated sludge with high {MLSS} concentrations}
+      \field{volume}{47}
+      \field{year}{2003}
+      \field{pages}{297\bibrangedash 303}
+      \range{pages}{7}
+      \verb{doi}
+      \verb 10.2166/wst.2003.0618
+      \endverb
+    \endentry
+    \entry{haimi2013soft}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=4b92ab4c8bc556d5993fdb4eed5f59f8}{%
+           family={Haimi},
+           familyi={H\bibinitperiod},
+           given={Henri},
+           giveni={H\bibinitperiod}}}%
+        {{hash=ab38174f525ccd7239b58ce1807d41eb}{%
+           family={Mulas},
+           familyi={M\bibinitperiod},
+           given={Michela},
+           giveni={M\bibinitperiod}}}%
+        {{hash=4f9e2b5e89dfed562408387ef69f5e29}{%
+           family={Corona},
+           familyi={C\bibinitperiod},
+           given={Francesco},
+           giveni={F\bibinitperiod}}}%
+        {{hash=59985e7be8224f68242aa80dec8d9a06}{%
+           family={Vahala},
+           familyi={V\bibinitperiod},
+           given={Riku},
+           giveni={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{2e09a4dbc03e3f5d0fc856cb1974e631}
+      \strng{fullhash}{00497f9e98cf5b88fcd2324b4ce15635}
+      \strng{fullhashraw}{00497f9e98cf5b88fcd2324b4ce15635}
+      \strng{bibnamehash}{00497f9e98cf5b88fcd2324b4ce15635}
+      \strng{authorbibnamehash}{00497f9e98cf5b88fcd2324b4ce15635}
+      \strng{authornamehash}{2e09a4dbc03e3f5d0fc856cb1974e631}
+      \strng{authorfullhash}{00497f9e98cf5b88fcd2324b4ce15635}
+      \strng{authorfullhashraw}{00497f9e98cf5b88fcd2324b4ce15635}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Environmental Modelling \& Software}
+      \field{title}{Data-derived soft-sensors for biological wastewater treatment plants: An overview}
+      \field{volume}{47}
+      \field{year}{2013}
+      \field{pages}{88\bibrangedash 107}
+      \range{pages}{20}
+      \verb{doi}
+      \verb 10.1016/j.envsoft.2013.05.009
+      \endverb
+    \endentry
+    \entry{durrenmatt2012}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=142b5af4d0d1ec86b416f5e7b05a3311}{%
+           family={Dürrenmatt},
+           familyi={D\bibinitperiod},
+           given={David\bibnamedelima J.},
+           giveni={D\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=93c57a5a5580c9a6df685efc704cd1e2}{%
+           family={Gujer},
+           familyi={G\bibinitperiod},
+           given={Willi},
+           giveni={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{6c29ce7979b3f157888ad589f24f41fc}
+      \strng{fullhash}{6c29ce7979b3f157888ad589f24f41fc}
+      \strng{fullhashraw}{6c29ce7979b3f157888ad589f24f41fc}
+      \strng{bibnamehash}{6c29ce7979b3f157888ad589f24f41fc}
+      \strng{authorbibnamehash}{6c29ce7979b3f157888ad589f24f41fc}
+      \strng{authornamehash}{6c29ce7979b3f157888ad589f24f41fc}
+      \strng{authorfullhash}{6c29ce7979b3f157888ad589f24f41fc}
+      \strng{authorfullhashraw}{6c29ce7979b3f157888ad589f24f41fc}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Environmental Modelling \& Software}
+      \field{title}{Data-driven modeling approaches to support wastewater treatment plant operation}
+      \field{volume}{30}
+      \field{year}{2012}
+      \field{pages}{47\bibrangedash 56}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.1016/j.envsoft.2011.11.007
+      \endverb
+    \endentry
+    \entry{newhart2019}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=c9cd053f5c1571fd54bcafb9021f8eb0}{%
+           family={Newhart},
+           familyi={N\bibinitperiod},
+           given={Kathryn\bibnamedelima B.},
+           giveni={K\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=b244ec9f4322e578d5ec8fc07c9d14c0}{%
+           family={Holloway},
+           familyi={H\bibinitperiod},
+           given={Ryan\bibnamedelima W.},
+           giveni={R\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=33914a9db298afddbf0d2d88e7503195}{%
+           family={Hering},
+           familyi={H\bibinitperiod},
+           given={Amanda\bibnamedelima S.},
+           giveni={A\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=4d71e09b85bbcbb023b43a067bcb72f6}{%
+           family={Cath},
+           familyi={C\bibinitperiod},
+           given={Tzahi\bibnamedelima Y.},
+           giveni={T\bibinitperiod\bibinitdelim Y\bibinitperiod}}}%
+      }
+      \strng{namehash}{c1ec7ca6bddf3c26f9a63cc3c252347e}
+      \strng{fullhash}{482a784ca50b16492413b0e650085137}
+      \strng{fullhashraw}{482a784ca50b16492413b0e650085137}
+      \strng{bibnamehash}{482a784ca50b16492413b0e650085137}
+      \strng{authorbibnamehash}{482a784ca50b16492413b0e650085137}
+      \strng{authornamehash}{c1ec7ca6bddf3c26f9a63cc3c252347e}
+      \strng{authorfullhash}{482a784ca50b16492413b0e650085137}
+      \strng{authorfullhashraw}{482a784ca50b16492413b0e650085137}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{title}{Data-driven performance analyses of wastewater treatment plants: A review}
+      \field{volume}{157}
+      \field{year}{2019}
+      \field{pages}{498\bibrangedash 513}
+      \range{pages}{16}
+      \verb{doi}
+      \verb 10.1016/j.watres.2019.03.030
+      \endverb
+    \endentry
+    \entry{corominas2018}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=dd37703d2ca69be3cbef239d50f88548}{%
+           family={Corominas},
+           familyi={C\bibinitperiod},
+           given={Lluís},
+           giveni={L\bibinitperiod}}}%
+        {{hash=aec46f4a484d513785e3e0818ee0d006}{%
+           family={Garrido-Baserba},
+           familyi={G\bibinithyphendelim B\bibinitperiod},
+           given={Manel},
+           giveni={M\bibinitperiod}}}%
+        {{hash=1809a17ed108b4ffd1136e3f84b67e45}{%
+           family={Villez},
+           familyi={V\bibinitperiod},
+           given={Kris},
+           giveni={K\bibinitperiod}}}%
+        {{hash=d6bc91fd370b3132acf29ff0ecfadc92}{%
+           family={Olsson},
+           familyi={O\bibinitperiod},
+           given={Gustaf},
+           giveni={G\bibinitperiod}}}%
+        {{hash=b10b6e1d1084e3186f063002cda53fb7}{%
+           family={Cortés},
+           familyi={C\bibinitperiod},
+           given={Ulises},
+           giveni={U\bibinitperiod}}}%
+        {{hash=9f8c7fb819ee754f29abab96a1c4a856}{%
+           family={Poch},
+           familyi={P\bibinitperiod},
+           given={Manel},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{9f18a644cbd9422cd383414d884bab34}
+      \strng{fullhash}{cbc557763becd749ac8ff61afd3dafe2}
+      \strng{fullhashraw}{cbc557763becd749ac8ff61afd3dafe2}
+      \strng{bibnamehash}{cbc557763becd749ac8ff61afd3dafe2}
+      \strng{authorbibnamehash}{cbc557763becd749ac8ff61afd3dafe2}
+      \strng{authornamehash}{9f18a644cbd9422cd383414d884bab34}
+      \strng{authorfullhash}{cbc557763becd749ac8ff61afd3dafe2}
+      \strng{authorfullhashraw}{cbc557763becd749ac8ff61afd3dafe2}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Environmental Modelling \& Software}
+      \field{title}{Transforming data into knowledge for improved wastewater treatment operation: A critical review of techniques}
+      \field{volume}{106}
+      \field{year}{2018}
+      \field{pages}{89\bibrangedash 103}
+      \range{pages}{15}
+      \verb{doi}
+      \verb 10.1016/j.envsoft.2018.05.003
+      \endverb
+    \endentry
+    \entry{koksal2024}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=a63f6e61145c5ac24ca0d4eb126bceef}{%
+           family={Koksal},
+           familyi={K\bibinitperiod},
+           given={Ece\bibnamedelima Serenat},
+           giveni={E\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=8af8fdda14c5af9d05d697e0a093b490}{%
+           family={Aydin},
+           familyi={A\bibinitperiod},
+           given={Erdal},
+           giveni={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{4ea1346e70a3954bfe29a4ab8d4cf89f}
+      \strng{fullhash}{4ea1346e70a3954bfe29a4ab8d4cf89f}
+      \strng{fullhashraw}{4ea1346e70a3954bfe29a4ab8d4cf89f}
+      \strng{bibnamehash}{4ea1346e70a3954bfe29a4ab8d4cf89f}
+      \strng{authorbibnamehash}{4ea1346e70a3954bfe29a4ab8d4cf89f}
+      \strng{authornamehash}{4ea1346e70a3954bfe29a4ab8d4cf89f}
+      \strng{authorfullhash}{4ea1346e70a3954bfe29a4ab8d4cf89f}
+      \strng{authorfullhashraw}{4ea1346e70a3954bfe29a4ab8d4cf89f}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Chemical Engineering Science}
+      \field{title}{A hybrid approach of transfer learning and physics-informed modelling: Improving dissolved oxygen concentration prediction in an industrial wastewater treatment plant}
+      \field{year}{2024}
+      \field{pages}{121088}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1016/j.ces.2024.121088
+      \endverb
+    \endentry
+    \entry{pan2010transfer}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=224c02b5d289fefd08d4f9f1a83c5d0c}{%
+           family={Pan},
+           familyi={P\bibinitperiod},
+           given={Sinno\bibnamedelima Jialin},
+           giveni={S\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=55242d2a60270145342841e4d4238da0}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Qiang},
+           giveni={Q\bibinitperiod}}}%
+      }
+      \strng{namehash}{770fc1d95710074c9506ab4f7d386573}
+      \strng{fullhash}{770fc1d95710074c9506ab4f7d386573}
+      \strng{fullhashraw}{770fc1d95710074c9506ab4f7d386573}
+      \strng{bibnamehash}{770fc1d95710074c9506ab4f7d386573}
+      \strng{authorbibnamehash}{770fc1d95710074c9506ab4f7d386573}
+      \strng{authornamehash}{770fc1d95710074c9506ab4f7d386573}
+      \strng{authorfullhash}{770fc1d95710074c9506ab4f7d386573}
+      \strng{authorfullhashraw}{770fc1d95710074c9506ab4f7d386573}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Knowledge and Data Engineering}
+      \field{number}{10}
+      \field{title}{A survey on transfer learning}
+      \field{volume}{22}
+      \field{year}{2010}
+      \field{pages}{1345\bibrangedash 1359}
+      \range{pages}{15}
+      \verb{doi}
+      \verb 10.1109/TKDE.2009.191
+      \endverb
+    \endentry
+    \entry{ljung1999}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=f7cffd38dd9d98d3fd91ec52f00c4c77}{%
+           family={Ljung},
+           familyi={L\bibinitperiod},
+           given={Lennart},
+           giveni={L\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Upper Saddle River}%
+      }
+      \list{publisher}{1}{%
+        {Prentice Hall}%
+      }
+      \strng{namehash}{f7cffd38dd9d98d3fd91ec52f00c4c77}
+      \strng{fullhash}{f7cffd38dd9d98d3fd91ec52f00c4c77}
+      \strng{fullhashraw}{f7cffd38dd9d98d3fd91ec52f00c4c77}
+      \strng{bibnamehash}{f7cffd38dd9d98d3fd91ec52f00c4c77}
+      \strng{authorbibnamehash}{f7cffd38dd9d98d3fd91ec52f00c4c77}
+      \strng{authornamehash}{f7cffd38dd9d98d3fd91ec52f00c4c77}
+      \strng{authorfullhash}{f7cffd38dd9d98d3fd91ec52f00c4c77}
+      \strng{authorfullhashraw}{f7cffd38dd9d98d3fd91ec52f00c4c77}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{2}
+      \field{title}{System Identification: Theory for the User}
+      \field{year}{1999}
+    \endentry
+    \entry{kalman1960}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=a32c80cc5a0f50b3e16df8d642c19dd8}{%
+           family={Kalman},
+           familyi={K\bibinitperiod},
+           given={Rudolph\bibnamedelima E.},
+           giveni={R\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+      }
+      \strng{namehash}{a32c80cc5a0f50b3e16df8d642c19dd8}
+      \strng{fullhash}{a32c80cc5a0f50b3e16df8d642c19dd8}
+      \strng{fullhashraw}{a32c80cc5a0f50b3e16df8d642c19dd8}
+      \strng{bibnamehash}{a32c80cc5a0f50b3e16df8d642c19dd8}
+      \strng{authorbibnamehash}{a32c80cc5a0f50b3e16df8d642c19dd8}
+      \strng{authornamehash}{a32c80cc5a0f50b3e16df8d642c19dd8}
+      \strng{authorfullhash}{a32c80cc5a0f50b3e16df8d642c19dd8}
+      \strng{authorfullhashraw}{a32c80cc5a0f50b3e16df8d642c19dd8}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Basic Engineering}
+      \field{number}{1}
+      \field{title}{A new approach to linear filtering and prediction problems}
+      \field{volume}{82}
+      \field{year}{1960}
+      \field{pages}{35\bibrangedash 45}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1115/1.3662552
+      \endverb
+    \endentry
+    \entry{rao2003mhe}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=962b275f0f4b7a93b0809f745064d5df}{%
+           family={Rao},
+           familyi={R\bibinitperiod},
+           given={Christopher\bibnamedelima V.},
+           giveni={C\bibinitperiod\bibinitdelim V\bibinitperiod}}}%
+        {{hash=a28ab6b1da316879310a82410e4e8dc4}{%
+           family={Rawlings},
+           familyi={R\bibinitperiod},
+           given={James\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=6c38c35a89eea5106453dfc184f884e7}{%
+           family={Mayne},
+           familyi={M\bibinitperiod},
+           given={David\bibnamedelima Q.},
+           giveni={D\bibinitperiod\bibinitdelim Q\bibinitperiod}}}%
+      }
+      \strng{namehash}{11a8ca1b195b6fc9e794d76b69cec874}
+      \strng{fullhash}{11a8ca1b195b6fc9e794d76b69cec874}
+      \strng{fullhashraw}{11a8ca1b195b6fc9e794d76b69cec874}
+      \strng{bibnamehash}{11a8ca1b195b6fc9e794d76b69cec874}
+      \strng{authorbibnamehash}{11a8ca1b195b6fc9e794d76b69cec874}
+      \strng{authornamehash}{11a8ca1b195b6fc9e794d76b69cec874}
+      \strng{authorfullhash}{11a8ca1b195b6fc9e794d76b69cec874}
+      \strng{authorfullhashraw}{11a8ca1b195b6fc9e794d76b69cec874}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{IEEE Transactions on Automatic Control}
+      \field{number}{2}
+      \field{title}{Constrained state estimation for nonlinear discrete-time systems: stability and moving horizon approximations}
+      \field{volume}{48}
+      \field{year}{2003}
+      \field{pages}{246\bibrangedash 258}
+      \range{pages}{13}
+      \verb{doi}
+      \verb 10.1109/TAC.2002.808470
+      \endverb
+    \endentry
+    \entry{raissi2019pinn}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=95a17c39168b9e6b8812f207b4e036c1}{%
+           family={Raissi},
+           familyi={R\bibinitperiod},
+           given={Maziar},
+           giveni={M\bibinitperiod}}}%
+        {{hash=197d71332633e07aa578718628fdc405}{%
+           family={Perdikaris},
+           familyi={P\bibinitperiod},
+           given={Paris},
+           giveni={P\bibinitperiod}}}%
+        {{hash=9aae361c2be63ce52bc98112e2a2fffa}{%
+           family={Karniadakis},
+           familyi={K\bibinitperiod},
+           given={George\bibnamedelima E.},
+           giveni={G\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+      }
+      \strng{namehash}{93ae6c4ff4235c02057fbd439fa964f6}
+      \strng{fullhash}{93ae6c4ff4235c02057fbd439fa964f6}
+      \strng{fullhashraw}{93ae6c4ff4235c02057fbd439fa964f6}
+      \strng{bibnamehash}{93ae6c4ff4235c02057fbd439fa964f6}
+      \strng{authorbibnamehash}{93ae6c4ff4235c02057fbd439fa964f6}
+      \strng{authornamehash}{93ae6c4ff4235c02057fbd439fa964f6}
+      \strng{authorfullhash}{93ae6c4ff4235c02057fbd439fa964f6}
+      \strng{authorfullhashraw}{93ae6c4ff4235c02057fbd439fa964f6}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Computational Physics}
+      \field{title}{Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations}
+      \field{volume}{378}
+      \field{year}{2019}
+      \field{pages}{686\bibrangedash 707}
+      \range{pages}{22}
+      \verb{doi}
+      \verb 10.1016/j.jcp.2018.10.045
+      \endverb
+    \endentry
+    \entry{karniadakis2021piml}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=bfaf154b1f300f885a75adce4c6b773e}{%
+           family={Karniadakis},
+           familyi={K\bibinitperiod},
+           given={George\bibnamedelima Em},
+           giveni={G\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=6724128bc20ba35122214b84fa281063}{%
+           family={Kevrekidis},
+           familyi={K\bibinitperiod},
+           given={Ioannis\bibnamedelima G.},
+           giveni={I\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=6f6f1357e5a7fb658e3e9c999886ce83}{%
+           family={Lu},
+           familyi={L\bibinitperiod},
+           given={Lu},
+           giveni={L\bibinitperiod}}}%
+        {{hash=197d71332633e07aa578718628fdc405}{%
+           family={Perdikaris},
+           familyi={P\bibinitperiod},
+           given={Paris},
+           giveni={P\bibinitperiod}}}%
+        {{hash=15db674b3efc6848f40514aa0034717a}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Sifan},
+           giveni={S\bibinitperiod}}}%
+        {{hash=13b67d4d83b1d3002d9480fa84cdc9ee}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Liu},
+           giveni={L\bibinitperiod}}}%
+      }
+      \strng{namehash}{0ca376f95d5378ee9091f725b7c83175}
+      \strng{fullhash}{f60a0a5b39f53a61a153afd70f5530c7}
+      \strng{fullhashraw}{f60a0a5b39f53a61a153afd70f5530c7}
+      \strng{bibnamehash}{f60a0a5b39f53a61a153afd70f5530c7}
+      \strng{authorbibnamehash}{f60a0a5b39f53a61a153afd70f5530c7}
+      \strng{authornamehash}{0ca376f95d5378ee9091f725b7c83175}
+      \strng{authorfullhash}{f60a0a5b39f53a61a153afd70f5530c7}
+      \strng{authorfullhashraw}{f60a0a5b39f53a61a153afd70f5530c7}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nature Reviews Physics}
+      \field{title}{Physics-informed machine learning}
+      \field{volume}{3}
+      \field{year}{2021}
+      \field{pages}{422\bibrangedash 440}
+      \range{pages}{19}
+      \verb{doi}
+      \verb 10.1038/s42254-021-00314-5
+      \endverb
+    \endentry
+    \entry{wang2021gradient}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=15db674b3efc6848f40514aa0034717a}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Sifan},
+           giveni={S\bibinitperiod}}}%
+        {{hash=00a1efab84cff4f68ff48983d8397f76}{%
+           family={Teng},
+           familyi={T\bibinitperiod},
+           given={Yujun},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=197d71332633e07aa578718628fdc405}{%
+           family={Perdikaris},
+           familyi={P\bibinitperiod},
+           given={Paris},
+           giveni={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{cd1083c1f65115a089ff8588b82928cf}
+      \strng{fullhash}{cd1083c1f65115a089ff8588b82928cf}
+      \strng{fullhashraw}{cd1083c1f65115a089ff8588b82928cf}
+      \strng{bibnamehash}{cd1083c1f65115a089ff8588b82928cf}
+      \strng{authorbibnamehash}{cd1083c1f65115a089ff8588b82928cf}
+      \strng{authornamehash}{cd1083c1f65115a089ff8588b82928cf}
+      \strng{authorfullhash}{cd1083c1f65115a089ff8588b82928cf}
+      \strng{authorfullhashraw}{cd1083c1f65115a089ff8588b82928cf}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{SIAM Journal on Scientific Computing}
+      \field{number}{5}
+      \field{title}{Understanding and mitigating gradient flow pathologies in physics-informed neural networks}
+      \field{volume}{43}
+      \field{year}{2021}
+      \field{pages}{A3055\bibrangedash A3081}
+      \range{pages}{-1}
+      \verb{doi}
+      \verb 10.1137/20M1318043
+      \endverb
+    \endentry
+    \entry{cuomo2022}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=a149dbc0c7d8c7b44289299d659521f4}{%
+           family={Cuomo},
+           familyi={C\bibinitperiod},
+           given={Salvatore},
+           giveni={S\bibinitperiod}}}%
+        {{hash=d8310f78a6acc62b53d3fdaa57b0a84d}{%
+           family={Di\bibnamedelima Cola},
+           familyi={D\bibinitperiod\bibinitdelim C\bibinitperiod},
+           given={Vincenzo\bibnamedelima Schiano},
+           giveni={V\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=07970330b2a43b5c2e55ae13af5a7097}{%
+           family={Giampaolo},
+           familyi={G\bibinitperiod},
+           given={Fabio},
+           giveni={F\bibinitperiod}}}%
+        {{hash=2b969effc2e931cc3f6118c144824d3f}{%
+           family={Rozza},
+           familyi={R\bibinitperiod},
+           given={Gianluigi},
+           giveni={G\bibinitperiod}}}%
+        {{hash=95a17c39168b9e6b8812f207b4e036c1}{%
+           family={Raissi},
+           familyi={R\bibinitperiod},
+           given={Maziar},
+           giveni={M\bibinitperiod}}}%
+        {{hash=5e071190ec9de33600de48969adb345b}{%
+           family={Piccialli},
+           familyi={P\bibinitperiod},
+           given={Francesco},
+           giveni={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{ecacc4512ae1bd881356a9535bcb4121}
+      \strng{fullhash}{1d6d8c2f135c688c54626fb90cff5b07}
+      \strng{fullhashraw}{1d6d8c2f135c688c54626fb90cff5b07}
+      \strng{bibnamehash}{1d6d8c2f135c688c54626fb90cff5b07}
+      \strng{authorbibnamehash}{1d6d8c2f135c688c54626fb90cff5b07}
+      \strng{authornamehash}{ecacc4512ae1bd881356a9535bcb4121}
+      \strng{authorfullhash}{1d6d8c2f135c688c54626fb90cff5b07}
+      \strng{authorfullhashraw}{1d6d8c2f135c688c54626fb90cff5b07}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Scientific Computing}
+      \field{title}{Scientific machine learning through physics-informed neural networks: Where we are and what's next}
+      \field{volume}{92}
+      \field{year}{2022}
+      \field{pages}{88}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1007/s10915-022-01939-z
+      \endverb
+    \endentry
+    \entry{lu2021deepxde}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=6f6f1357e5a7fb658e3e9c999886ce83}{%
+           family={Lu},
+           familyi={L\bibinitperiod},
+           given={Lu},
+           giveni={L\bibinitperiod}}}%
+        {{hash=1428f666f3f6f857d3ebcd69597b7b29}{%
+           family={Meng},
+           familyi={M\bibinitperiod},
+           given={Xuhui},
+           giveni={X\bibinitperiod}}}%
+        {{hash=4b932ac8e0209cf315dc740bb2a82a6e}{%
+           family={Mao},
+           familyi={M\bibinitperiod},
+           given={Zhiping},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=bfaf154b1f300f885a75adce4c6b773e}{%
+           family={Karniadakis},
+           familyi={K\bibinitperiod},
+           given={George\bibnamedelima Em},
+           giveni={G\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+      }
+      \strng{namehash}{fdebff66447a2ecc33abe80490823209}
+      \strng{fullhash}{36662ab8224c904e894be0536b790b44}
+      \strng{fullhashraw}{36662ab8224c904e894be0536b790b44}
+      \strng{bibnamehash}{36662ab8224c904e894be0536b790b44}
+      \strng{authorbibnamehash}{36662ab8224c904e894be0536b790b44}
+      \strng{authornamehash}{fdebff66447a2ecc33abe80490823209}
+      \strng{authorfullhash}{36662ab8224c904e894be0536b790b44}
+      \strng{authorfullhashraw}{36662ab8224c904e894be0536b790b44}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{SIAM Review}
+      \field{number}{1}
+      \field{title}{{DeepXDE}: A deep learning library for solving differential equations}
+      \field{volume}{63}
+      \field{year}{2021}
+      \field{pages}{208\bibrangedash 228}
+      \range{pages}{21}
+      \verb{doi}
+      \verb 10.1137/19M1274067
+      \endverb
+    \endentry
+    \entry{chen2018node}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{hash=9db211fe28b9db15bc04d29bedf2e03f}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Ricky\bibnamedelimb T.\bibnamedelimi Q.},
+           giveni={R\bibinitperiod\bibinitdelim T\bibinitperiod\bibinitdelim Q\bibinitperiod}}}%
+        {{hash=d7891653274cb8d85e3a83b41a0c2067}{%
+           family={Rubanova},
+           familyi={R\bibinitperiod},
+           given={Yulia},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=e650d1ee2429750c5268681b050d69f8}{%
+           family={Bettencourt},
+           familyi={B\bibinitperiod},
+           given={Jesse},
+           giveni={J\bibinitperiod}}}%
+        {{hash=834f50f5d5a332c21effd10f07daf79e}{%
+           family={Duvenaud},
+           familyi={D\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{20ad419b4fe3ed70cfc4fb491e988f54}
+      \strng{fullhash}{bb5e65ad0a1ad185a1b51a7c31fe22b3}
+      \strng{fullhashraw}{bb5e65ad0a1ad185a1b51a7c31fe22b3}
+      \strng{bibnamehash}{bb5e65ad0a1ad185a1b51a7c31fe22b3}
+      \strng{authorbibnamehash}{bb5e65ad0a1ad185a1b51a7c31fe22b3}
+      \strng{authornamehash}{20ad419b4fe3ed70cfc4fb491e988f54}
+      \strng{authorfullhash}{bb5e65ad0a1ad185a1b51a7c31fe22b3}
+      \strng{authorfullhashraw}{bb5e65ad0a1ad185a1b51a7c31fe22b3}
+      \field{extraname}{1}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Advances in Neural Information Processing Systems}
+      \field{title}{Neural ordinary differential equations}
+      \field{volume}{31}
+      \field{year}{2018}
+    \endentry
+    \entry{hochreiter1997lstm}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=41b31e29fb2bdbf9f5c9c1b0d5b3e815}{%
+           family={Hochreiter},
+           familyi={H\bibinitperiod},
+           given={Sepp},
+           giveni={S\bibinitperiod}}}%
+        {{hash=288bdbcfe1b91ad7484d7a24f74f99ed}{%
+           family={Schmidhuber},
+           familyi={S\bibinitperiod},
+           given={Jürgen},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{4c2e1e2e1ac91e1df9d4f7b85ebe39b4}
+      \strng{fullhash}{4c2e1e2e1ac91e1df9d4f7b85ebe39b4}
+      \strng{fullhashraw}{4c2e1e2e1ac91e1df9d4f7b85ebe39b4}
+      \strng{bibnamehash}{4c2e1e2e1ac91e1df9d4f7b85ebe39b4}
+      \strng{authorbibnamehash}{4c2e1e2e1ac91e1df9d4f7b85ebe39b4}
+      \strng{authornamehash}{4c2e1e2e1ac91e1df9d4f7b85ebe39b4}
+      \strng{authorfullhash}{4c2e1e2e1ac91e1df9d4f7b85ebe39b4}
+      \strng{authorfullhashraw}{4c2e1e2e1ac91e1df9d4f7b85ebe39b4}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Neural Computation}
+      \field{number}{8}
+      \field{title}{Long short-term memory}
+      \field{volume}{9}
+      \field{year}{1997}
+      \field{pages}{1735\bibrangedash 1780}
+      \range{pages}{46}
+      \verb{doi}
+      \verb 10.1162/neco.1997.9.8.1735
+      \endverb
+    \endentry
+    \entry{goodfellow2016deep}{book}{}{}
+      \name{author}{3}{}{%
+        {{hash=5d2585c11210cf1d4512e6e0a03ec315}{%
+           family={Goodfellow},
+           familyi={G\bibinitperiod},
+           given={Ian},
+           giveni={I\bibinitperiod}}}%
+        {{hash=40a8e4774982146adc2688546f54efb2}{%
+           family={Bengio},
+           familyi={B\bibinitperiod},
+           given={Yoshua},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=ccec1ccd2e1aa86960eb2e872c6b7020}{%
+           family={Courville},
+           familyi={C\bibinitperiod},
+           given={Aaron},
+           giveni={A\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Cambridge, MA}%
+      }
+      \list{publisher}{1}{%
+        {MIT Press}%
+      }
+      \strng{namehash}{3ae53fe582e8a815b118d26947eaa326}
+      \strng{fullhash}{3ae53fe582e8a815b118d26947eaa326}
+      \strng{fullhashraw}{3ae53fe582e8a815b118d26947eaa326}
+      \strng{bibnamehash}{3ae53fe582e8a815b118d26947eaa326}
+      \strng{authorbibnamehash}{3ae53fe582e8a815b118d26947eaa326}
+      \strng{authornamehash}{3ae53fe582e8a815b118d26947eaa326}
+      \strng{authorfullhash}{3ae53fe582e8a815b118d26947eaa326}
+      \strng{authorfullhashraw}{3ae53fe582e8a815b118d26947eaa326}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Deep Learning}
+      \field{year}{2016}
+    \endentry
+    \entry{shao2008asbr}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=22720bb8821433272a7b826716708fd6}{%
+           family={Shao},
+           familyi={S\bibinitperiod},
+           given={Xiangwen},
+           giveni={X\bibinitperiod}}}%
+        {{hash=eb2a2eb7080b5a3108b212cb3f818dc8}{%
+           family={Peng},
+           familyi={P\bibinitperiod},
+           given={Dangcong},
+           giveni={D\bibinitperiod}}}%
+        {{hash=9c4cababfd5778693d613f22d9aff208}{%
+           family={Teng},
+           familyi={T\bibinitperiod},
+           given={Zhaohua},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=d5417f618f03d3107cfd00638b377a07}{%
+           family={Ju},
+           familyi={J\bibinitperiod},
+           given={Xinghua},
+           giveni={X\bibinitperiod}}}%
+      }
+      \strng{namehash}{6e76ca97b5a95bbe00da7aea896f783c}
+      \strng{fullhash}{e908fb47ec682727154d28437752cdc3}
+      \strng{fullhashraw}{e908fb47ec682727154d28437752cdc3}
+      \strng{bibnamehash}{e908fb47ec682727154d28437752cdc3}
+      \strng{authorbibnamehash}{e908fb47ec682727154d28437752cdc3}
+      \strng{authornamehash}{6e76ca97b5a95bbe00da7aea896f783c}
+      \strng{authorfullhash}{e908fb47ec682727154d28437752cdc3}
+      \strng{authorfullhashraw}{e908fb47ec682727154d28437752cdc3}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Bioresource Technology}
+      \field{number}{8}
+      \field{title}{Treatment of brewery wastewater using anaerobic sequencing batch reactor ({ASBR})}
+      \field{volume}{99}
+      \field{year}{2008}
+      \field{pages}{3182\bibrangedash 3186}
+      \range{pages}{5}
+      \verb{doi}
+      \verb 10.1016/j.biortech.2007.05.050
+      \endverb
+    \endentry
+    \entry{chen2016anmbr}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=f2eeb4d1930b35c2210ca55f676650f8}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Han},
+           giveni={H\bibinitperiod}}}%
+        {{hash=18d4da0f3d26c48c3dbde624c70f6270}{%
+           family={Chang},
+           familyi={C\bibinitperiod},
+           given={Sheng},
+           giveni={S\bibinitperiod}}}%
+        {{hash=e1bc78f93e84ef65282496f0d2d5cace}{%
+           family={Guo},
+           familyi={G\bibinitperiod},
+           given={Qingbin},
+           giveni={Q\bibinitperiod}}}%
+        {{hash=8d52f15de459f5eb263fe8751efe04e5}{%
+           family={Hong},
+           familyi={H\bibinitperiod},
+           given={Youngseck},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=69a26a546040595ee3547c72ac9be2af}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Ping},
+           giveni={P\bibinitperiod}}}%
+      }
+      \strng{namehash}{bb775c70b72115b70c08b8ac0a6d4198}
+      \strng{fullhash}{139b992d7515efaf3acc94f34ad3ad4c}
+      \strng{fullhashraw}{139b992d7515efaf3acc94f34ad3ad4c}
+      \strng{bibnamehash}{139b992d7515efaf3acc94f34ad3ad4c}
+      \strng{authorbibnamehash}{139b992d7515efaf3acc94f34ad3ad4c}
+      \strng{authornamehash}{bb775c70b72115b70c08b8ac0a6d4198}
+      \strng{authorfullhash}{139b992d7515efaf3acc94f34ad3ad4c}
+      \strng{authorfullhashraw}{139b992d7515efaf3acc94f34ad3ad4c}
+      \field{extraname}{2}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biochemical Engineering Journal}
+      \field{title}{Brewery wastewater treatment using an anaerobic membrane bioreactor}
+      \field{volume}{105}
+      \field{year}{2016}
+      \field{pages}{321\bibrangedash 331}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1016/j.bej.2015.10.006
+      \endverb
+    \endentry
+    \entry{ince2000}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=190a75d09a90454032647c284057a94b}{%
+           family={Ince},
+           familyi={I\bibinitperiod},
+           given={Bahar\bibnamedelima Kasapgil},
+           giveni={B\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+        {{hash=40fe9fe4eb10923883968e695832e8eb}{%
+           family={Ince},
+           familyi={I\bibinitperiod},
+           given={Orhan},
+           giveni={O\bibinitperiod}}}%
+        {{hash=ef5cc6546b076e33f58d4b3de1cc27db}{%
+           family={Sallis},
+           familyi={S\bibinitperiod},
+           given={Paul\bibnamedelima J.},
+           giveni={P\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=eceea923185a18b7cec774c9a812b758}{%
+           family={Anderson},
+           familyi={A\bibinitperiod},
+           given={G.\bibnamedelimi K.},
+           giveni={G\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+      }
+      \strng{namehash}{27977e6fec76d20e82347d48e85211ab}
+      \strng{fullhash}{ac7a2a111ed66109704ae82bf5f97ee4}
+      \strng{fullhashraw}{ac7a2a111ed66109704ae82bf5f97ee4}
+      \strng{bibnamehash}{ac7a2a111ed66109704ae82bf5f97ee4}
+      \strng{authorbibnamehash}{ac7a2a111ed66109704ae82bf5f97ee4}
+      \strng{authornamehash}{27977e6fec76d20e82347d48e85211ab}
+      \strng{authorfullhash}{ac7a2a111ed66109704ae82bf5f97ee4}
+      \strng{authorfullhashraw}{ac7a2a111ed66109704ae82bf5f97ee4}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{16}
+      \field{title}{Inert {COD} production in a membrane anaerobic reactor treating brewery wastewater}
+      \field{volume}{34}
+      \field{year}{2000}
+      \field{pages}{3943\bibrangedash 3948}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1016/S0043-1354(00)00170-6
+      \endverb
+    \endentry
+    \entry{bernard2001}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=487c05719cf89d345653c28c72a167d5}{%
+           family={Bernard},
+           familyi={B\bibinitperiod},
+           given={Olivier},
+           giveni={O\bibinitperiod}}}%
+        {{hash=927fa13c15afef4d4a143e3b6900fa38}{%
+           family={Hadj-Sadok},
+           familyi={H\bibinithyphendelim S\bibinitperiod},
+           given={Zakaria},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=64980a14c86178c725b5a3c11d7c5e78}{%
+           family={Dochain},
+           familyi={D\bibinitperiod},
+           given={Denis},
+           giveni={D\bibinitperiod}}}%
+        {{hash=6acd1b68815fa056253a98ba3344a6bc}{%
+           family={Genovesi},
+           familyi={G\bibinitperiod},
+           given={Antoine},
+           giveni={A\bibinitperiod}}}%
+        {{hash=82d3afcbe54948e7923ac9e04b52321f}{%
+           family={Steyer},
+           familyi={S\bibinitperiod},
+           given={Jean-Philippe},
+           giveni={J\bibinithyphendelim P\bibinitperiod}}}%
+      }
+      \strng{namehash}{3d61f40939893e2344523180026291cf}
+      \strng{fullhash}{cb6872e177d7a03aa96ef58986a732c4}
+      \strng{fullhashraw}{cb6872e177d7a03aa96ef58986a732c4}
+      \strng{bibnamehash}{cb6872e177d7a03aa96ef58986a732c4}
+      \strng{authorbibnamehash}{cb6872e177d7a03aa96ef58986a732c4}
+      \strng{authornamehash}{3d61f40939893e2344523180026291cf}
+      \strng{authorfullhash}{cb6872e177d7a03aa96ef58986a732c4}
+      \strng{authorfullhashraw}{cb6872e177d7a03aa96ef58986a732c4}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biotechnology and Bioengineering}
+      \field{number}{4}
+      \field{title}{Dynamical model development and parameter identification for an anaerobic wastewater treatment process}
+      \field{volume}{75}
+      \field{year}{2001}
+      \field{pages}{424\bibrangedash 438}
+      \range{pages}{15}
+      \verb{doi}
+      \verb 10.1002/bit.10036
+      \endverb
+    \endentry
+    \entry{nopens2009interface}{article}{}{}
+      \name{author}{7}{}{%
+        {{hash=7124cc544fea70af93388736588bc597}{%
+           family={Nopens},
+           familyi={N\bibinitperiod},
+           given={Ingmar},
+           giveni={I\bibinitperiod}}}%
+        {{hash=17bfd588d6f6b96ae84c6639a88f7480}{%
+           family={Batstone},
+           familyi={B\bibinitperiod},
+           given={Damien\bibnamedelima J.},
+           giveni={D\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=f8064d9f7e682cb04f6985d6b1282e65}{%
+           family={Copp},
+           familyi={C\bibinitperiod},
+           given={John\bibnamedelima B.},
+           giveni={J\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=71c24e19091b54088506b4e5f7700a5c}{%
+           family={Jeppsson},
+           familyi={J\bibinitperiod},
+           given={Ulf},
+           giveni={U\bibinitperiod}}}%
+        {{hash=bddec04869f061d5dc51e2646efbe60a}{%
+           family={Volcke},
+           familyi={V\bibinitperiod},
+           given={Eveline},
+           giveni={E\bibinitperiod}}}%
+        {{hash=cad835bd0cb15c8e67428e3736f27c1c}{%
+           family={Alex},
+           familyi={A\bibinitperiod},
+           given={Jens},
+           giveni={J\bibinitperiod}}}%
+        {{hash=285cafa0871bfaf066bf818823ca6666}{%
+           family={Vanrolleghem},
+           familyi={V\bibinitperiod},
+           given={Peter\bibnamedelima A.},
+           giveni={P\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{33c92bf8f6a68377664520c91fe200d2}
+      \strng{fullhash}{a58f2e2b835185983d67cb1af8d9de6b}
+      \strng{fullhashraw}{a58f2e2b835185983d67cb1af8d9de6b}
+      \strng{bibnamehash}{a58f2e2b835185983d67cb1af8d9de6b}
+      \strng{authorbibnamehash}{a58f2e2b835185983d67cb1af8d9de6b}
+      \strng{authornamehash}{33c92bf8f6a68377664520c91fe200d2}
+      \strng{authorfullhash}{a58f2e2b835185983d67cb1af8d9de6b}
+      \strng{authorfullhashraw}{a58f2e2b835185983d67cb1af8d9de6b}
+      \field{extraname}{2}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{7}
+      \field{title}{An {ASM/ADM} model interface for dynamic plant-wide simulation}
+      \field{volume}{43}
+      \field{year}{2009}
+      \field{pages}{1913\bibrangedash 1923}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1016/j.watres.2009.02.028
+      \endverb
+    \endentry
+    \entry{eu1991uwwtd}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=96fd08a915f588d3771688368c4136e7}{%
+           family={{Council of the European Communities}},
+           familyi={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{96fd08a915f588d3771688368c4136e7}
+      \strng{fullhash}{96fd08a915f588d3771688368c4136e7}
+      \strng{fullhashraw}{96fd08a915f588d3771688368c4136e7}
+      \strng{bibnamehash}{96fd08a915f588d3771688368c4136e7}
+      \strng{authorbibnamehash}{96fd08a915f588d3771688368c4136e7}
+      \strng{authornamehash}{96fd08a915f588d3771688368c4136e7}
+      \strng{authorfullhash}{96fd08a915f588d3771688368c4136e7}
+      \strng{authorfullhashraw}{96fd08a915f588d3771688368c4136e7}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Official Journal of the European Communities, L 135, 30 May 1991, pp. 40--52}
+      \field{title}{Council Directive 91/271/{EEC} concerning urban waste water treatment}
+      \field{year}{1991}
+    \endentry
+    \entry{takacs1991}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=77db9c8a7c6887bd52330a84122ebebc}{%
+           family={Takács},
+           familyi={T\bibinitperiod},
+           given={Imre},
+           giveni={I\bibinitperiod}}}%
+        {{hash=1ac08972bc17f51a3ee8fe914930e53a}{%
+           family={Patry},
+           familyi={P\bibinitperiod},
+           given={Gilles\bibnamedelima G.},
+           giveni={G\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=6bf90b807039d93af3c0286af611501d}{%
+           family={Nolasco},
+           familyi={N\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{de2c611de52a45367a4cca971876269b}
+      \strng{fullhash}{de2c611de52a45367a4cca971876269b}
+      \strng{fullhashraw}{de2c611de52a45367a4cca971876269b}
+      \strng{bibnamehash}{de2c611de52a45367a4cca971876269b}
+      \strng{authorbibnamehash}{de2c611de52a45367a4cca971876269b}
+      \strng{authornamehash}{de2c611de52a45367a4cca971876269b}
+      \strng{authorfullhash}{de2c611de52a45367a4cca971876269b}
+      \strng{authorfullhashraw}{de2c611de52a45367a4cca971876269b}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Water Research}
+      \field{number}{10}
+      \field{title}{A dynamic model of the clarification-thickening process}
+      \field{volume}{25}
+      \field{year}{1991}
+      \field{pages}{1263\bibrangedash 1271}
+      \range{pages}{9}
+      \verb{doi}
+      \verb 10.1016/0043-1354(91)90066-Y
+      \endverb
+    \endentry
+    \entry{isa95}{standard}{}{}
+      \name{author}{1}{}{%
+        {{hash=840feb1e75c083510bdb5d501eb62ebe}{%
+           family={{International Society of Automation}},
+           familyi={I\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Research Triangle Park}%
+      }
+      \strng{namehash}{840feb1e75c083510bdb5d501eb62ebe}
+      \strng{fullhash}{840feb1e75c083510bdb5d501eb62ebe}
+      \strng{fullhashraw}{840feb1e75c083510bdb5d501eb62ebe}
+      \strng{bibnamehash}{840feb1e75c083510bdb5d501eb62ebe}
+      \strng{authorbibnamehash}{840feb1e75c083510bdb5d501eb62ebe}
+      \strng{authornamehash}{840feb1e75c083510bdb5d501eb62ebe}
+      \strng{authorfullhash}{840feb1e75c083510bdb5d501eb62ebe}
+      \strng{authorfullhashraw}{840feb1e75c083510bdb5d501eb62ebe}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{ANSI/ISA-95.00.01-2010}: Enterprise-Control System Integration --- {Part} 1: Models and Terminology}
+      \field{year}{2010}
+    \endentry
+    \entry{kingma2015adam}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{hash=b6fbd171848aad4edf3925543f1f1522}{%
+           family={Kingma},
+           familyi={K\bibinitperiod},
+           given={Diederik\bibnamedelima P.},
+           giveni={D\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+        {{hash=8aa66e8231cc2fdbe67aa4f18ca970c6}{%
+           family={Ba},
+           familyi={B\bibinitperiod},
+           given={Jimmy},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{a09df9f123146b8e2c7f1134c9496932}
+      \strng{fullhash}{a09df9f123146b8e2c7f1134c9496932}
+      \strng{fullhashraw}{a09df9f123146b8e2c7f1134c9496932}
+      \strng{bibnamehash}{a09df9f123146b8e2c7f1134c9496932}
+      \strng{authorbibnamehash}{a09df9f123146b8e2c7f1134c9496932}
+      \strng{authornamehash}{a09df9f123146b8e2c7f1134c9496932}
+      \strng{authorfullhash}{a09df9f123146b8e2c7f1134c9496932}
+      \strng{authorfullhashraw}{a09df9f123146b8e2c7f1134c9496932}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{International Conference on Learning Representations}
+      \field{title}{Adam: A method for stochastic optimization}
+      \field{year}{2015}
+    \endentry
+    \entry{iec61131}{standard}{}{}
+      \name{author}{1}{}{%
+        {{hash=1bfbc8812fd493bd4a6c196b196d1291}{%
+           family={{International Electrotechnical Commission}},
+           familyi={I\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Geneva}%
+      }
+      \strng{namehash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{fullhash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{fullhashraw}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{bibnamehash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{authorbibnamehash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{authornamehash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{authorfullhash}{1bfbc8812fd493bd4a6c196b196d1291}
+      \strng{authorfullhashraw}{1bfbc8812fd493bd4a6c196b196d1291}
+      \field{extraname}{2}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{IEC} 61131-3: Programmable controllers --- {Part} 3: Programming languages}
+      \field{year}{2013}
+    \endentry
+    \entry{mahnke2009opc}{book}{}{}
+      \name{author}{3}{}{%
+        {{hash=931245d6edf8b2d3c24e8d91960e8f47}{%
+           family={Mahnke},
+           familyi={M\bibinitperiod},
+           given={Wolfgang},
+           giveni={W\bibinitperiod}}}%
+        {{hash=3021571bbf12b049669758799b870552}{%
+           family={Leitner},
+           familyi={L\bibinitperiod},
+           given={Stefan-Helmut},
+           giveni={S\bibinithyphendelim H\bibinitperiod}}}%
+        {{hash=cb259ea1cc02ec0d011b1396b42d566e}{%
+           family={Damm},
+           familyi={D\bibinitperiod},
+           given={Matthias},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Berlin}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{258c0719b6261bdbf609c923e5a49e72}
+      \strng{fullhash}{258c0719b6261bdbf609c923e5a49e72}
+      \strng{fullhashraw}{258c0719b6261bdbf609c923e5a49e72}
+      \strng{bibnamehash}{258c0719b6261bdbf609c923e5a49e72}
+      \strng{authorbibnamehash}{258c0719b6261bdbf609c923e5a49e72}
+      \strng{authornamehash}{258c0719b6261bdbf609c923e5a49e72}
+      \strng{authorfullhash}{258c0719b6261bdbf609c923e5a49e72}
+      \strng{authorfullhashraw}{258c0719b6261bdbf609c923e5a49e72}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{OPC} Unified Architecture}
+      \field{year}{2009}
+    \endentry
+    \entry{amca210}{standard}{}{}
+      \name{author}{1}{}{%
+        {{hash=8829623ea4fffc08d6e3e161ba0d7ad0}{%
+           family={{Air Movement and Control Association}},
+           familyi={A\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Arlington Heights}%
+      }
+      \strng{namehash}{8829623ea4fffc08d6e3e161ba0d7ad0}
+      \strng{fullhash}{8829623ea4fffc08d6e3e161ba0d7ad0}
+      \strng{fullhashraw}{8829623ea4fffc08d6e3e161ba0d7ad0}
+      \strng{bibnamehash}{8829623ea4fffc08d6e3e161ba0d7ad0}
+      \strng{authorbibnamehash}{8829623ea4fffc08d6e3e161ba0d7ad0}
+      \strng{authornamehash}{8829623ea4fffc08d6e3e161ba0d7ad0}
+      \strng{authorfullhash}{8829623ea4fffc08d6e3e161ba0d7ad0}
+      \strng{authorfullhashraw}{8829623ea4fffc08d6e3e161ba0d7ad0}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{AMCA} 210-16: Laboratory Methods of Testing Fans for Certified Aerodynamic Performance Rating}
+      \field{year}{2016}
+    \endentry
+    \entry{grady2011}{book}{}{}
+      \name{author}{4}{}{%
+        {{hash=4b50940b0acc6fab5330a2a835a0252f}{%
+           family={Grady\bibnamedelima Jr.},
+           familyi={G\bibinitperiod\bibinitdelim J\bibinitperiod},
+           given={C.\bibnamedelimi P.\bibnamedelimi Leslie},
+           giveni={C\bibinitperiod\bibinitdelim P\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+        {{hash=e2d3bde9aa77a586043075da63fbb15e}{%
+           family={Daigger},
+           familyi={D\bibinitperiod},
+           given={Glen\bibnamedelima T.},
+           giveni={G\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=bcf184466e690fb0b7f6fecad25fcf42}{%
+           family={Love},
+           familyi={L\bibinitperiod},
+           given={Nancy\bibnamedelima G.},
+           giveni={N\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=54078096d4db63f7d65195fdbed2aa4a}{%
+           family={Filipe},
+           familyi={F\bibinitperiod},
+           given={Carlos\bibnamedelimb D.\bibnamedelimi M.},
+           giveni={C\bibinitperiod\bibinitdelim D\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Boca Raton}%
+      }
+      \list{publisher}{1}{%
+        {CRC Press}%
+      }
+      \strng{namehash}{efa4463cb20bddb6f8a0403df9f9ebab}
+      \strng{fullhash}{393619084f18db1a58600fe0009c1e8a}
+      \strng{fullhashraw}{393619084f18db1a58600fe0009c1e8a}
+      \strng{bibnamehash}{393619084f18db1a58600fe0009c1e8a}
+      \strng{authorbibnamehash}{393619084f18db1a58600fe0009c1e8a}
+      \strng{authornamehash}{efa4463cb20bddb6f8a0403df9f9ebab}
+      \strng{authorfullhash}{393619084f18db1a58600fe0009c1e8a}
+      \strng{authorfullhashraw}{393619084f18db1a58600fe0009c1e8a}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{3}
+      \field{title}{Biological Wastewater Treatment}
+      \field{year}{2011}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

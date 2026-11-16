@@ -1,0 +1,13 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Rule table for the proportional increment $\Delta K_p$. Rows are the scaled error. Columns are the scaled error increment.}}{29}{table.caption.11}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Design parameters used by both the controllers and the numerical estimation.}}{39}{table.caption.13}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Predicted cost $J$ for nominal red oak at a 6~Hz terrain frequency. Lower is better. Vacuum is in kPa and frequency in Hz.}}{44}{table.caption.15}%
+\contentsline {table}{\numberline {2.4}{\ignorespaces Failures, the detection the design really has, and the command that remains.}}{47}{table.caption.16}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Sensors, rates, and the loop allowed to consume each signal.}}{56}{table.caption.18}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Tasks, periods, and the action on a missed deadline.}}{57}{table.caption.19}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Red oak, $v=1.10$~m/s, level ground, terrain frequency 6~Hz. Energy is the mean per event of $0.08\omega ^2+0.012 f^2+0.02 P^2$ in the units of the script.}}{61}{table.caption.20}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Red oak, $v=1.10$~m/s, level ground, terrain frequency 16~Hz.}}{63}{table.caption.22}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Remaining red-oak runs. Speed is in m/s, slope in degrees, terrain frequency in Hz.}}{69}{table.caption.24}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Planting efficiency $\eta _{\mathrm {E}}$ in percent for every estimated scenario. Terrain frequency $f_{\mathrm {dist}}$ is in hertz and slope is in degrees. Speed is in m/s.}}{71}{table.caption.25}%

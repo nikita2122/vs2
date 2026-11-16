@@ -1,0 +1,140 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.35cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,tabularx,array,longtable}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,fit,decorations.pathreplacing}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{siunitx}
+\sisetup{detect-all=true}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\setlength{\parskip}{0.25em}
+\setlength{\parindent}{1.4em}
+\setlength{\emergencystretch}{2.2em}
+\setlist[enumerate]{itemsep=0.25em,topsep=0.4em}
+\setlist[itemize]{itemsep=0.25em,topsep=0.4em}
+\captionsetup{font=small,labelfont=bf,skip=6pt}
+\pgfplotsset{every axis/.append style={label style={font=\small}, tick label style={font=\small}, title style={font=\small}}}
+
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{proposition}{Proposition}[chapter]
+\newtheorem{assumption}{Assumption}[chapter]
+
+\newcommand{\qfi}{\mathrm{QFI}}
+\newcommand{\mis}{\mathrm{MIS}}
+\newcommand{\mul}{\mathrm{MUL}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\diag}{diag}
+
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+\title{Research for Improving Placement Accuracy and Energy Use of Wooden Seed-Planting Machines by Using Vision-Guided Metering Control and Terrain-Aware Model Predictive Optimization}
+\author{Computer Science Thesis\\System Design and Optimization}
+\date{}
+
+\begin{document}
+\pagenumbering{roman}
+\begin{titlepage}
+\centering
+\vspace*{1.6cm}
+{\Large Computer Science Thesis}\\[0.4em]
+{\large System Design and Optimization}\\[2.2cm]
+{\LARGE\bfseries Research for Improving Placement Accuracy and Energy Use of Wooden Seed-Planting Machines by Using Vision-Guided Metering Control and Terrain-Aware Model Predictive Optimization\par}
+\vspace{1.6cm}
+\begin{minipage}{0.86\textwidth}
+\centering
+Two technical innovations for machines that sow woody seed from a laminated-timber chassis:\\[0.8em]
+\textit{Compliance-aware vision metering}, and\\
+\textit{singulation-constrained terrain model-predictive coverage}.
+\end{minipage}
+\vfill
+{\large A design thesis in three chapters}\\[0.6em]
+Previous work \textperiodcentered\ Proposed technologies \textperiodcentered\ System build and estimation
+\vspace{1.2cm}
+\end{titlepage}
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+Wooden seed, in the sense used here, means seed of woody plants---trees and shrubs sown in agroforestry and restoration---and it also means the material of the machine that carries that seed. A planter built from laminated timber can be made where steel fabrication is scarce, it stores less kinetic energy in a light chassis, and its row unit dissipates vibration more readily than a welded steel parallelogram. The same compliance that damps impact also moves the boot and the seed tube while a seed is falling. Irregular woody seeds already singulate poorly on plates and vacuum orifices that were proportioned for maize. The result is a placement error with two coupled causes: the meter releases the wrong number of seeds, and the wooden arm releases them from a moving gate at the wrong depth.
+
+This thesis proposes two technologies and joins them at a single interface, the admissible ground speed. The first technology, compliance-aware vision metering, watches the seed plate and the upper seed tube with a detector of the YOLO family, fuses that observation with boot force, an ultrasonic soil range and an inertial measurement of the arm, and commands plate speed and boot depth. A structural model of the timber flexure tells the filter when a miss is a true empty cell and when it is a seed whose exit time was shifted by vibration. The second technology, singulation-constrained terrain model-predictive coverage, chooses the heading on a digital elevation model and then tracks the resulting swaths with a linearised model-predictive controller. The stage cost penalises grade-dependent traction work, time, and a miss probability that rises with speed, with acceleration, and with proximity to the resonance of the wooden arm. Speed is therefore not an independent set-point. It is the variable through which coverage respects the latency and the resonance limits of the meter.
+
+The thesis is organised in three chapters. Chapter~1 reviews metering measurement, vision, wooden and manual woody-seed tools, coverage planning and agricultural model-predictive tracking, and closes with a formal problem set. Chapter~2 derives both technologies, including the filter, the feedback law, the energy model and the predictive program. Chapter~3 specifies a four-row build and reports a numerical estimation on a \num{1.44}~hectare field at an eight-percent grade. The estimation is not a field trial. It evaluates the Chapter~2 models with coefficients placed inside ranges published by the works reviewed in Chapter~1. On that model, the joint design at \SI{1.4}{m/s} on a heading \ang{55} from the uphill axis reaches a quality-of-feed index of \num{0.978} and a depth root-mean-square error of \SI{2.15}{mm}, against \num{0.808} and \SI{7.35}{mm} for an open-loop meter run at \SI{1.6}{m/s} along the slope, and it lowers non-conservative mechanical work by about eight percent relative to that uphill heading. A faster open-loop run near the timber resonance, at \SI{2.4}{m/s}, is estimated to destroy establishment even though it finishes sooner.
+
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+The technical argument rests on published measurement of seed singulation, on published coverage and tracking controllers, and on the wood-engineering data of the Forest Products Laboratory. No claim in Chapter~3 should be read as a substitute for a bench test of a particular timber layup or for a germination trial of a named species.
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter*{Nomenclature}
+\addcontentsline{toc}{chapter}{Nomenclature}
+\setstretch{1.15}
+\begin{longtable}{@{}lp{0.72\textwidth}@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+\endhead
+$x_{\mathrm{ref}}$ & Target in-row seed spacing \\
+$v$ & Ground speed of the row unit \\
+$a$ & Longitudinal acceleration \\
+$\qfi,\mis,\mul$ & Quality-of-feed, miss and multiple indices \\
+$N$ & Number of cells on the metering plate \\
+$\omega$ & Plate angular speed \\
+$H$ & Vertical drop from release gate to the furrow bottom \\
+$t_f$ & Flight time of a seed through the tube and the air gap \\
+$k$ & Equivalent stiffness of the timber flexure at the boot \\
+$m_{\mathrm{eq}}$ & Equivalent mass of the row unit at the boot \\
+$\zeta$ & Viscous damping ratio of the timber flexure \\
+$f_n$ & Undamped natural frequency in hertz \\
+$\delta$ & Boot displacement from the nominal depth \\
+$\tau_v,\tau_a$ & Vision latency and actuator latency \\
+$c$ & Fraction of misses that the loop still has time to repair \\
+$\mathbf{x},\mathbf{u}$ & Vehicle state and input used by the predictive controller \\
+$\beta$ & Heading measured from the uphill direction \\
+$\alpha$ & Local slope angle \\
+$J$ & Coverage cost: work, time and failed placements \\
+CAVM & Compliance-aware vision metering (first technology) \\
+SCT-MPC & Singulation-constrained terrain model-predictive coverage (second technology) \\
+DEM & Digital elevation model \\
+UKF & Unscented Kalman filter \\
+\bottomrule
+\end{longtable}
+\setstretch{1.5}
+
+\pagenumbering{arabic}
+
+\input{ch01}
+\input{ch02}
+\input{ch03}
+\input{refs}
+
+\end{document}

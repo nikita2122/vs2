@@ -1,0 +1,996 @@
+==========================================================================================
+                 HOW THE STUDENT MODEL IS OBTAINED FROM THE TEACHER MODEL                 
+                 A beginner-friendly explainer on knowledge distillation                  
+==========================================================================================
+
+Paper: Wang, W.-J., Su, C., Han, G., & Zhang, H. (2023). A lightweight crack segmentation
+network based on knowledge distillation. Journal of Building Engineering, 76, 107200. DOI
+10.1016/j.jobe.2023.107200
+
+Thesis study notes - November 2026 - plain-text edition of
+How_Student_Model_Is_Obtained_From_Teacher.docx
+
+Legend:  [CONFIRMED]       = stated in the paper's title/metadata/reference list
+         [LIKELY]          = inferred from the paper's reference list - verify
+         [GENERAL METHOD]  = standard KD recipe, not necessarily the paper's settings
+         !!! CHECK IN PAPER !!! boxes = values deliberately left blank - fill from the PDF
+Equations are written in ASCII: x_i = subscript, x^t = superscript (t = teacher,
+s = student), sum_{i=1..N} = summation, || p || q || = KL direction, ~ = approximately.
+
+CONTENTS
+--------
+  1. HOW TO READ THIS DOCUMENT
+    1.1  Important: what this document is (and is not) based on
+    1.2  The one-sentence answer
+  2. BACKGROUND YOU NEED FIRST
+    2.1  Segmentation is classification, once per pixel
+    2.2  Logits, softmax and probabilities
+    2.3  Hard labels vs. soft labels
+  3. WHAT KNOWLEDGE DISTILLATION IS, AND WHY USE IT
+    3.1  Definition
+    3.2  Why it is needed for crack segmentation
+    3.3  The three kinds of "knowledge"
+  4. THE TEACHER MODEL
+    4.1  Role of the teacher
+    4.2  Likely architecture: Swin Transformer + UPerNet
+    4.3  How the teacher is trained, then frozen
+  5. THE STUDENT MODEL
+    5.1  Role of the student
+    5.2  Likely architecture: MobileNet-style CNN
+    5.3  The student is NOT pruned from the teacher
+  6. WHAT KNOWLEDGE IS TRANSFERRED, AND HOW (WITH EQUATIONS)
+    6.1  Response (logit) distillation with temperature
+    6.2  Feature (intermediate) distillation
+    6.3  Variant A: Knowledge Review (Chen et al., 2021; ref. 36)
+    6.4  Variant B: Pearson-correlation feature distillation (PKD, Cao et al., 2022;
+           ref. 43)
+    6.5  The supervised (ground-truth) segmentation loss
+  7. THE TOTAL LOSS: PUTTING IT TOGETHER
+  8. STEP-BY-STEP TRAINING PROCEDURE
+    8.1  Pseudocode (PyTorch-style)
+  9. TRAINING VS. INFERENCE
+  10. WHY THE STUDENT IS SMALLER AND FASTER
+    10.1  Depthwise-separable convolutions (MobileNet)
+    10.2  No (or much less) self-attention
+    10.3  Fewer channels, layers and a lighter decoder
+  11. WORKED TOY EXAMPLE: WHAT TEMPERATURE DOES
+    11.1  Step 1: soften with different temperatures
+    11.2  Step 2: what to notice
+  12. COMMON CONFUSIONS (FAQ)
+  13. CHECKLIST: WHAT TO VERIFY IN THE PAPER'S METHOD SECTION
+  14. A TEMPLATE PARAGRAPH FOR YOUR THESIS
+  15. REFERENCES
+
+==========================================================================================
+1. HOW TO READ THIS DOCUMENT
+==========================================================================================
+
+This explainer covers the part of the paper that is usually hardest to follow: how the
+small "student" network is produced from the large "teacher" network. It starts from zero
+and builds up to the equations, a training procedure, pseudocode and a numeric example.
+
+1.1  Important: what this document is (and is not) based on
+-----------------------------------------------------------
+
+The paper's full text was not accessible when this document was written. It is behind
+Elsevier's paywall, and no open-access copy, abstract or preprint was available. So
+everything below comes from three kinds of evidence, and every section is tagged with one
+of these labels:
+
++------------------+----------------------------------+----------------------------------+
+| Tag              | Meaning                          | How much to trust it             |
++==================+==================================+==================================+
+| [CONFIRMED]      | Stated in the paper's title or   | Safe to state in your thesis.    |
+|                  | published metadata: title,       |                                  |
+|                  | authors, journal, the fact that  |                                  |
+|                  | it uses knowledge distillation   |                                  |
+|                  | for lightweight crack            |                                  |
+|                  | segmentation, and its reference  |                                  |
+|                  | list.                            |                                  |
+| [LIKELY]         | Inferred from the paper's        | Plausible, but verify against    |
+|                  | reference list. For example, the | the Method section before        |
+|                  | paper cites Swin Transformer,    | writing it as fact.              |
+|                  | UPerNet and MobileNetV2, so      |                                  |
+|                  | these are very probably the      |                                  |
+|                  | teacher and student building     |                                  |
+|                  | blocks.                          |                                  |
+| [GENERAL METHOD] | The standard, textbook           | Correct as an explanation of how |
+|                  | knowledge-distillation recipe    | KD works, but not necessarily    |
+|                  | (Hinton et al., 2015; Gou et     | the paper's exact settings.      |
+|                  | al., 2021) and the methods in    |                                  |
+|                  | the cited references.            |                                  |
++------------------+----------------------------------+----------------------------------+
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: Boxes like this one mark paper-specific values that are            !
+  ! deliberately left blank, such as the temperature, the loss weights, the exact      !
+  ! model variants, parameter counts and accuracy. No numbers from the paper were      !
+  ! invented. Fill these in from your own copy, which you can get through your         !
+  ! university library.                                                                !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+1.2  The one-sentence answer
+----------------------------
+
+The student is not cut, pruned or compressed out of the teacher. It is a separate, much
+smaller network that is trained from scratch, or from ImageNet weights, to (1) predict the
+true crack masks and (2) imitate the outputs and internal features of an already-trained,
+frozen teacher. After training, the teacher is thrown away and only the student is
+deployed. [GENERAL METHOD]
+
+==========================================================================================
+2. BACKGROUND YOU NEED FIRST
+==========================================================================================
+
+2.1  Segmentation is classification, once per pixel
+---------------------------------------------------
+
+[GENERAL METHOD] A crack segmentation network takes an image of size H x W and outputs a
+mask of the same size. Each pixel gets a class, for example crack or background. So
+segmentation is really H x W small classification problems solved together.
+
+2.2  Logits, softmax and probabilities
+--------------------------------------
+
+For every pixel i, the last layer of the network outputs one raw score per class. These
+scores are called logits, written z_(i,c) for class c. Logits can be any real number. To
+turn them into probabilities, we use the softmax function:
+
+        p_(i,c) = exp(z_(i,c)) / sum_{k=1..C} exp(z_(i,k))
+
+where C is the number of classes (C = 2 for crack vs. background). The probabilities for a
+pixel are all positive and add up to 1.
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: Does the network output 2 channels with softmax, or 1 channel with !
+  ! a sigmoid? The KD equations below work for both (see the binary version in Section !
+  ! 6.1), but you should use the form the paper uses.                                  !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+2.3  Hard labels vs. soft labels
+--------------------------------
+
+  - A hard label (the ground truth) says only "this pixel is crack (1)" or "this pixel is
+    background (0)".
+  - A soft label is a probability, for example "this pixel is 70% crack, 30% background".
+    A trained teacher produces soft labels. They carry extra information: how confident
+    the teacher is, which pixels are ambiguous (blurred crack edges, hairline cracks,
+    stains that look like cracks), and how similar the classes are. Hinton et al. (2015)
+    call this extra information "dark knowledge".
+
+This difference is the whole reason knowledge distillation works.
+
+==========================================================================================
+3. WHAT KNOWLEDGE DISTILLATION IS, AND WHY USE IT
+==========================================================================================
+
+3.1  Definition
+---------------
+
+[GENERAL METHOD] Knowledge distillation (KD) is a training technique. A small model (the
+student) is trained to reproduce the behaviour of a large, accurate model (the teacher).
+It was popularised by Hinton, Vinyals & Dean (2015, the paper's ref. 42). Gou et al.
+(2021, ref. 28) survey it in detail.
+
+3.2  Why it is needed for crack segmentation
+--------------------------------------------
+
+[CONFIRMED] The paper's goal, stated in its title, is a lightweight crack segmentation
+network. [GENERAL METHOD] The usual motivation is this:
+
+  1. Large models (for example transformers) segment cracks accurately, but they are slow
+     and memory-hungry. That makes them hard to run on drones, inspection robots, phones
+     or embedded boards.
+  2. Small models (for example MobileNet-based CNNs) are fast, but when trained only on
+     labels they are less accurate. This is especially true on thin cracks and crack
+     boundaries.
+  3. KD closes part of this gap. The small model gets a richer training signal from the
+     teacher, so it ends up more accurate than the same small model trained alone, while
+     it keeps its small size and high speed.
+
+3.3  The three kinds of "knowledge"
+-----------------------------------
+
+The KD survey (Gou et al., 2021) groups the transferable knowledge into three families:
+
++----------------+-----------------------------------+-----------------------------------+
+| Family         | What is copied                    | Example in segmentation           |
++================+===================================+===================================+
+| Response-based | The teacher's final outputs (soft | Per-pixel soft crack              |
+|                | logits)                           | probabilities (Hinton-style KD)   |
+| Feature-based  | The teacher's intermediate        | Matching encoder/decoder features |
+|                | feature maps                      | (FitNets-style hints, Knowledge   |
+|                |                                   | Review, PKD)                      |
+| Relation-based | Relations between pixels,         | Pairwise pixel similarity,        |
+|                | channels or samples               | correlation structure             |
++----------------+-----------------------------------+-----------------------------------+
+
+The survey also groups training schemes. In offline KD, which is the most common, the
+teacher is trained first and then frozen. In online KD, teacher and student are trained
+together. In self-distillation, a network teaches itself. [LIKELY] This paper most likely
+uses offline KD, the standard setting.
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: Which families does the paper use: response, feature, relation, or !
+  ! a combination? Is the teacher pre-trained and frozen (offline KD)?                 !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+==========================================================================================
+4. THE TEACHER MODEL
+==========================================================================================
+
+4.1  Role of the teacher
+------------------------
+
+[GENERAL METHOD] The teacher is a large, high-capacity, accurate model. Its only job is to
+be a good "source of knowledge" during the student's training. Its speed does not matter,
+because it is never deployed.
+
+4.2  Likely architecture: Swin Transformer + UPerNet
+----------------------------------------------------
+
+[LIKELY] The paper's reference list includes:
+
+  - Swin Transformer (Liu et al., 2021; ref. 30). This is a hierarchical vision
+    transformer that computes self-attention inside shifted local windows.
+  - Layer Normalization (ref. 31) and GELU (ref. 32). These are the normalisation and
+    activation functions used inside Swin blocks.
+  - Feature Pyramid Networks (ref. 33) and UPerNet / Unified Perceptual Parsing (ref. 47).
+    UPerNet is the decoder the Swin authors used for semantic segmentation.
+
+Together, these strongly suggest a Swin Transformer backbone with an UPerNet (FPN +
+pyramid pooling) decoder as the teacher. This is the standard "Swin + UPerNet" segmenter.
+A transformer suits a crack teacher because self-attention captures long-range context,
+and cracks are long, thin and continuous structures.
+
+For a sense of scale, the Swin paper itself reports these sizes for its UPerNet segmenters
+on ADE20K. These are the Swin authors' numbers, not this paper's numbers.
+
++----------------------------------------------+------------+------------------------+
+| Teacher candidate (from Swin paper, Table 3) | Parameters | FLOPs (512×2048 input) |
++==============================================+============+========================+
+| UPerNet + Swin-T                             | 60 M       | 945 G                  |
+| UPerNet + Swin-S                             | 81 M       | 1038 G                 |
+| UPerNet + Swin-B                             | 121 M      | 1841 G                 |
++----------------------------------------------+------------+------------------------+
+
+4.3  How the teacher is trained, then frozen
+--------------------------------------------
+
+[GENERAL METHOD]
+
+  1. Initialise the Swin backbone, usually with ImageNet pre-trained weights.
+  2. Train the teacher normally on the crack dataset with a standard segmentation loss
+     (cross-entropy and/or Dice) until it converges.
+  3. Freeze it: put it in evaluation mode, turn off gradient computation, and never update
+     its weights again.
+
+From this point on, the teacher is a fixed function. It only provides targets for the
+student.
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: Exact teacher variant (Swin-T/S/B?), decoder (UPerNet or other),   !
+  ! pre-training, training epochs, teacher accuracy (mIoU/F1) and size                 !
+  ! (parameters/FLOPs). Also check whether the teacher is trained by the authors or    !
+  ! taken pre-trained.                                                                 !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+==========================================================================================
+5. THE STUDENT MODEL
+==========================================================================================
+
+5.1  Role of the student
+------------------------
+
+The student is the model the paper actually delivers: the "lightweight crack segmentation
+network" of the title [CONFIRMED]. It must be small and fast, and as accurate as possible.
+
+5.2  Likely architecture: MobileNet-style CNN
+---------------------------------------------
+
+[LIKELY] The paper cites MobileNets (Howard et al., 2017; ref. 35) and MobileNetV2
+(Sandler et al., 2018; ref. 34). It also cites classic segmentation designs: FCN (ref.
+45), U-Net (ref. 46) and DeepLabv3+ (ref. 48). The student is therefore very likely a
+MobileNet(V2)-based encoder with a light decoder, possibly in an FCN/U-Net/DeepLabv3+
+style. For reference, the MobileNetV2 classification backbone has about 3.4 M parameters
+and 300 M multiply-adds at 224×224 (Sandler et al., 2018, Table 4). Again, this is not the
+paper's number.
+
+5.3  The student is NOT pruned from the teacher
+-----------------------------------------------
+
+This is the most common misunderstanding, so it is worth stating clearly. [GENERAL METHOD]
+
+  - Pruning removes weights or channels from an existing network. The result is a thinner
+    version of the same network.
+  - Distillation trains a different, independently designed network. The teacher (a
+    transformer) and the student (a CNN) can have completely different architectures. No
+    weights are copied from the teacher to the student. Only training signals (soft
+    outputs and features) flow from teacher to student.
+
+The student's weights start either randomly or from ImageNet pre-training of its own
+backbone. They are never initialised from the teacher.
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: Exact student architecture (MobileNetV1 or V2? width multiplier?   !
+  ! which decoder?), its initialisation (random or ImageNet), and its size/speed       !
+  ! (parameters, FLOPs, FPS) compared with the teacher.                                !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+==========================================================================================
+6. WHAT KNOWLEDGE IS TRANSFERRED, AND HOW (WITH EQUATIONS)
+==========================================================================================
+
+Figure 1 shows the whole picture. The same image goes into both networks. The frozen
+teacher produces soft outputs and features. The student is pushed to match them, and also
+to match the ground truth.
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  [ Crack image ]
+                                   |           |
+                 +-----------------+           +-----------------+
+                 v                                               v
+  +------------------------------+              +------------------------------+
+  | TEACHER (frozen, no grads)   |              | STUDENT (trainable)          |
+  | likely Swin Transformer      |              | likely MobileNet-style       |
+  | + UPerNet decoder            |              | encoder + light decoder      |
+  | large, accurate, slow        |              | small, fast                  |
+  +------------------------------+              +------------------------------+
+     | features F^t   | logits z^t                 | features F^s | logits z^s
+     |                |                            v              |
+     |                |                    [ 1x1 adapter phi ]    |
+     |                |                            |              |
+     v                v                            v              v
+  +------------------------------------------------------------------------------+
+  | (A) RESPONSE LOSS  L_KD   = T^2 * KL( softmax(z^t/T) || softmax(z^s/T) )     |
+  | (B) FEATURE LOSS   L_feat = d( phi(F^s), F^t )   (MSE / Pearson / Review)    |
+  | (C) SEGMENT. LOSS  L_seg  = CE / Dice( student prediction, ground-truth mask )|
+  +------------------------------------------------------------------------------+
+                                         |
+                                         v
+            L_total = lambda1 * L_seg + lambda2 * L_KD + lambda3 * L_feat
+                                         |
+                                         v
+         back-propagation: update the STUDENT (+ adapters) only, never the teacher
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Figure 1. Teacher–student knowledge-distillation pipeline. The teacher is frozen;
+    gradients from all losses update only the student and its adapters. Model names are
+    "likely" (inferred from references).
+
+6.1  Response (logit) distillation with temperature
+---------------------------------------------------
+
+[GENERAL METHOD] This is Hinton et al.'s (2015) original idea (ref. 42), applied
+independently at every pixel.
+
+Step 1: soften both networks' outputs with a temperature T >= 1. Let z^t_(i,c) and
+z^s_(i,c) be the teacher's and student's logits at pixel i for class c:
+
+        p^t_(i,c)(T) = exp(z^t_(i,c) / T) / sum_{k=1..C} exp(z^t_(i,k) / T)
+        p^s_(i,c)(T) = exp(z^s_(i,c) / T) / sum_{k=1..C} exp(z^s_(i,k) / T)
+
+  - With T = 1 you get the normal softmax.
+  - With a larger T, the probabilities become softer, meaning closer to each other. The
+    teacher's small differences (its "dark knowledge") become visible instead of being
+    squashed to 0 or 1.
+
+Step 2: measure how different the two distributions are, using the Kullback–Leibler (KL)
+divergence at each pixel:
+
+        KL( p^t_i || p^s_i )
+            = sum_{c=1..C} p^t_(i,c)(T) * log( p^t_(i,c)(T) / p^s_(i,c)(T) )
+
+KL is 0 when the student's soft output exactly equals the teacher's, and positive
+otherwise. Note the direction: the teacher is the target distribution.
+
+Step 3: average over all pixels and multiply by T^2:
+
+        L_KD = (T^2 / N) * sum_{i=1..N} KL( p^t_i(T) || p^s_i(T) ),
+               N = H x W (x batch size)
+
+Why multiply by T^2? Dividing logits by T makes the gradients of the KL term shrink by
+roughly 1/T^2. Hinton et al. multiply by T^2 so that the KD term keeps about the same
+strength whatever temperature you choose. Then you can change T without re-tuning the loss
+weight. Section 11 shows this with numbers.
+
+Why it helps (intuition). The gradient of KL with respect to the student's logit is simply
+
+        d KL / d z^s_(i,c) = (1/T) * ( p^s_(i,c)(T) - p^t_(i,c)(T) )
+
+So at every pixel, the student is pushed toward exactly the teacher's level of confidence.
+That includes "the teacher is only 60% sure this edge pixel is crack". A hard label cannot
+say this.
+
+Binary (sigmoid) version. If the network outputs a single crack logit z_i per pixel, the
+same idea uses a tempered sigmoid q_i = sigmoid(z_i/T) = 1 / (1 + exp(-z_i/T)) and binary
+cross-entropy (or binary KL) between teacher and student:
+
+        L_KD_bin = (T^2 / N) * sum_i [ q^t_i * log(q^t_i / q^s_i)
+                                      + (1 - q^t_i) * log((1 - q^t_i) / (1 - q^s_i)) ],
+           where q_i = sigmoid(z_i / T)
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: Is pixel-wise logit KD used? What is the value of T? Is the loss   !
+  ! multiplied by T²? Is KL or another divergence used? Is it computed on all pixels   !
+  ! or only some of them?                                                              !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+6.2  Feature (intermediate) distillation
+----------------------------------------
+
+[GENERAL METHOD] Matching only the final output is a weak signal for a deep network.
+Feature distillation gives the student "hints" in its middle layers: its intermediate
+feature maps are trained to resemble the teacher's. This idea goes back to FitNets (Romero
+et al., 2015), which this paper does not cite.
+
+A generic feature-distillation loss for matched stages l = 1,...,L is:
+
+        L_feat = sum_{l=1..L} (1 / |F^t_l|) * || phi_l(F^s_l) - F^t_l ||_2^2
+
+where
+
+  - F^s_l and F^t_l are the student's and teacher's feature maps at stage l;
+  - phi_l is a small adapter, typically a 1 x 1 convolution (sometimes with BatchNorm),
+    plus resizing if needed. It maps the student's channel count and resolution to the
+    teacher's. The adapter is trained together with the student and discarded after
+    training;
+  - |F^t_l| is the number of elements, so the loss is a mean squared error.
+
+Why this is harder for a transformer teacher and a CNN student. The two are heterogeneous:
+their features have different channel counts, value ranges (magnitudes) and statistics.
+Plain MSE can then be dominated by the scale mismatch rather than by the actual "content".
+The two methods the paper cites, described next, address exactly this. [LIKELY]
+
+6.3  Variant A: Knowledge Review (Chen et al., 2021; ref. 36)
+-------------------------------------------------------------
+
+[GENERAL METHOD] In standard feature KD, stage l of the student copies stage l of the
+teacher. Knowledge Review observes that a student's deeper stage should also learn from
+the teacher's shallower stages ("reviewing" old knowledge). To make this efficient, it:
+
+  1. Fuses student features from deep to shallow with an Attention-Based Fusion (ABF)
+     module. ABF merges the current-stage feature with the already-fused deeper feature,
+     using learned spatial attention maps.
+  2. Compares each fused student feature with the teacher feature of the same level, using
+     a Hierarchical Context Loss (HCL). HCL spatially pyramid-pools both feature maps at
+     several scales and sums the L_2 distances at every scale. This transfers both fine
+     detail and global context.
+
+Schematically:
+
+        L_review = sum_{j=1..n} HCL( ABF(F^s_j, ..., F^s_n), F^t_j )
+        HCL(A, B) = sum_k || pool_k(A) - pool_k(B) ||_2^2
+
+6.4  Variant B: Pearson-correlation feature distillation (PKD, Cao et al., 2022; ref. 43)
+-----------------------------------------------------------------------------------------
+
+[GENERAL METHOD] PKD was designed for heterogeneous teacher–student pairs, where feature
+magnitudes differ. It normalises each channel of the student and teacher features to zero
+mean and unit variance, computed over the batch and spatial positions. Then it minimises
+the MSE between the normalised features:
+
+        s_hat = (s - mu_s) / sigma_s        t_hat = (t - mu_t) / sigma_t
+        L_PKD = (1/m) * sum_{i=1..m} (s_hat_i - t_hat_i)^2
+
+This is mathematically equivalent to maximising the Pearson correlation coefficient r
+between the raw features, because (1/m) * sum_i (s_hat_i - t_hat_i)^2 = 2 * (1 - r). So
+the student learns the pattern of the teacher's activations (where they are high and where
+they are low) without having to copy their scale. That makes it a natural fit for a Swin
+teacher and a MobileNet student.
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: Which feature-distillation scheme is used (plain MSE, Knowledge    !
+  ! Review ABF/HCL, Pearson/PKD, or the authors' own)? Which stages/layers are paired  !
+  ! between teacher and student? What adapter is used? Is there an attention or        !
+  ! relation-based term? The paper may also propose its own module, so read the Method !
+  ! section carefully.                                                                 !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+6.5  The supervised (ground-truth) segmentation loss
+----------------------------------------------------
+
+[GENERAL METHOD] The student also learns from the real masks y_(i,c) in {0,1}, at normal
+temperature T=1.
+
+Cross-entropy:
+
+        L_CE = -(1/N) * sum_{i=1..N} sum_{c=1..C} y_(i,c) * log p^s_(i,c)
+
+Dice loss. This loss is useful because crack pixels are rare (often only a few percent of
+the image), so plain CE can be dominated by background:
+
+        L_Dice = 1 - ( 2 * sum_i p^s_i * y_i + eps ) / ( sum_i p^s_i + sum_i y_i + eps )
+
+where p^s_i is the student's crack probability, y_i the true crack label, and eps a small
+constant. A common choice is L_seg = L_CE + L_Dice, or a weighted combination of the two.
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: Which segmentation loss is used: CE, weighted CE, BCE, Dice,       !
+  ! focal, or a combination?                                                           !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+==========================================================================================
+7. THE TOTAL LOSS: PUTTING IT TOGETHER
+==========================================================================================
+
+[GENERAL METHOD] The student is trained on a weighted sum of the three signals:
+
+        L_total = lambda1 * L_seg(p^s, y)
+                + lambda2 * L_KD(p^t(T), p^s(T))
+                + lambda3 * L_feat(F^s, F^t)
+
+Hinton's original formulation often writes the first two terms as (1-alpha) L_seg + alpha
+L_KD with alpha in [0,1]. This is the same idea with different notation.
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  WHAT IS COMPARED             LOSS TERM                           WEIGHT
+  ---------------------------  ----------------------------------  -----------
+  Student prediction vs.   --> L_seg  = L_CE + L_Dice              x lambda1 --+
+  ground truth                 ("learn the right answer")                      |
+                                                                               |
+  Student vs. teacher      --> L_KD   = T^2 * KL(p^t_T || p^s_T)   x lambda2 --+-> L_total
+  softened outputs             ("learn how sure to be")                        |
+                                                                               |
+  Student vs. teacher      --> L_feat = sum d(phi(F^s), F^t)       x lambda3 --+
+  intermediate features        ("learn how to see")
+
+          (the weights lambda and the temperature T: CHECK IN PAPER)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Figure 2. How the total training loss of the student is composed (general form).
+
++---------------------------+-----------------------------+------------------------------+
+| Symbol                    | Meaning                     | Typical role                 |
++===========================+=============================+==============================+
+| L_seg                     | Student vs. ground truth    | Keeps the student correct;   |
+|                           |                             | the teacher can be wrong     |
+| L_KD                      | Student vs. teacher soft    | Transfers confidence / dark  |
+|                           | outputs                     | knowledge                    |
+| L_feat                    | Student vs. teacher         | Transfers internal           |
+|                           | features                    | representations ("how to     |
+|                           |                             | see")                        |
+| lambda1, lambda2, lambda3 | Loss weights                | Balance labels vs. teacher;  |
+|                           |                             | tuned experimentally         |
+| T                         | Temperature                 | Controls softness of the     |
+|                           |                             | outputs; used only in L_KD   |
++---------------------------+-----------------------------+------------------------------+
+
+Why keep the ground-truth loss? The teacher is not perfect. If the student learned only
+from the teacher, it would copy the teacher's mistakes. The label term anchors the student
+to the truth, and the teacher terms add extra guidance on top.
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: The exact total-loss equation and the values of the weights (λ₁,   !
+  ! λ₂, λ₃ or α, β) and of T. Look also for an ablation table showing the effect of    !
+  ! each term.                                                                         !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+==========================================================================================
+8. STEP-BY-STEP TRAINING PROCEDURE
+==========================================================================================
+
+[GENERAL METHOD] with details marked [LIKELY] where they come from the reference list.
+
+  1. Prepare the data. Split the crack images and masks into train/validation/test sets,
+     and apply data augmentation such as flips, rotations, crops and colour jitter.
+     [LIKELY] The paper cites a concrete crack segmentation dataset (Özgenel et al., ref.
+     39) and an augmentation survey (Shorten & Khoshgoftaar, ref. 40).
+  2. Stage 1: train the teacher. Train the Swin+UPerNet teacher on the crack data with
+     L_seg only. Keep the best checkpoint.
+  3. Freeze the teacher. Set it to evaluation mode and disable gradients. Its weights will
+     not change again.
+  4. Build the student. Create the MobileNet-based student, initialised randomly or from
+     ImageNet weights, plus small adapters phi_l for every feature pair that will be
+     distilled.
+  5. Stage 2: distillation training loop. For each mini-batch:
+      a. Feed the images to the teacher (forward pass only, no gradients). Store its
+         logits z^t and features F^t.
+      b. Feed the same images to the student. Get its logits z^s and features F^s.
+      c. Compute L_seg (student vs. masks), L_KD (softened student vs. softened teacher)
+         and L_feat (adapted student features vs. teacher features).
+      d. Combine them into L_total and back-propagate.
+      e. Update only the student and the adapters with the optimiser. [LIKELY] The
+         optimiser is AdamW (Loshchilov & Hutter, ref. 38) and the framework is PyTorch
+         (ref. 37).
+  6. Validate the student on the validation set (mIoU, F1, precision/recall) and keep the
+     best checkpoint.
+  7. Compare. A good KD paper reports at least three models: the teacher, the student
+     trained without KD (baseline), and the student trained with KD. The KD gain is the
+     difference between the last two. [LIKELY] The paper also cites Grad-CAM (ref. 49),
+     probably to visualise where the student "looks".
+  8. Deploy only the student. Discard the teacher and the adapters.
+
+8.1  Pseudocode (PyTorch-style)
+-------------------------------
+
+    ------------------------------------------------------------
+    # ---------- Stage 1: teacher (trained beforehand) ----------
+    teacher = SwinUPerNet(...)            # likely; check paper
+    teacher.load_state_dict(torch.load("teacher_best.pth"))
+    teacher.eval()
+    for p in teacher.parameters():
+        p.requires_grad = False          # FREEZE: teacher never updates
+    
+    # ---------- Stage 2: student + adapters ----------
+    student  = MobileNetSeg(...)          # likely; check paper
+    adapters = nn.ModuleList([nn.Conv2d(c_s, c_t, 1) for c_s, c_t in pairs])
+    opt = torch.optim.AdamW(list(student.parameters()) +
+                            list(adapters.parameters()), lr=LR)   # LR: check paper
+    
+    T, lam1, lam2, lam3 = T_PAPER, L1, L2, L3                     # check paper
+    
+    for images, masks in train_loader:
+        with torch.no_grad():                         # no gradients for teacher
+            t_logits, t_feats = teacher(images, return_features=True)
+    
+        s_logits, s_feats = student(images, return_features=True)
+    
+        # 1) supervised loss (T = 1)
+        L_seg = cross_entropy(s_logits, masks) + dice_loss(s_logits, masks)
+    
+        # 2) response distillation (per pixel, softened by T)
+        log_ps = F.log_softmax(s_logits / T, dim=1)   # dim=1 is the class axis
+        pt     = F.softmax(t_logits / T, dim=1)
+        L_kd   = F.kl_div(log_ps, pt, reduction="none").sum(1).mean() * T * T
+    
+        # 3) feature distillation (e.g. MSE or Pearson-normalised MSE)
+        L_feat = 0
+        for a, fs, ft in zip(adapters, s_feats, t_feats):
+            fs = F.interpolate(a(fs), size=ft.shape[-2:], mode="bilinear")
+            L_feat += feature_loss(fs, ft)            # mse / pkd / review-style
+    
+        loss = lam1 * L_seg + lam2 * L_kd + lam3 * L_feat
+        opt.zero_grad(); loss.backward(); opt.step()  # updates STUDENT (+adapters)
+    
+    torch.save(student.state_dict(), "student_final.pth")   # teacher discarded
+    ------------------------------------------------------------
+
+The key lines are torch.no_grad() and requires_grad = False for the teacher. They are what
+make the teacher a fixed source of targets.
+
+==========================================================================================
+9. TRAINING VS. INFERENCE
+==========================================================================================
+
+[GENERAL METHOD] The teacher, the temperature, the adapters and all losses exist only
+during training. At inference (deployment) the student runs alone, at normal temperature,
+and outputs the crack mask.
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  TRAINING (teacher needed)
+
+                +--------------------+
+           +--->| Teacher (frozen)   |---- knowledge ---+
+           |    +--------------------+                  v
+       [image]                                     +-----------+
+           |    +--------------------+             | losses:   |
+           +--->| Student (learning) |------------>| seg + KD  |
+                +--------------------+             | + feat    |
+                          ^                        +-----------+
+                          |                              |
+                          +--- gradients update student -+
+
+  INFERENCE / DEPLOYMENT (teacher discarded)
+
+       [image] ---> [ Student (fixed weights) ] ---> [ crack mask ]
+
+       Teacher: NOT USED.  No losses, no labels, no temperature, no adapters.
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Figure 3. Training vs. inference. The teacher is only present during training; the
+    deployed model is the student alone.
+
++--------------------+-----------------------------+-------------------------+
+|                    | Training                    | Inference               |
++====================+=============================+=========================+
+| Teacher            | Runs (forward only, frozen) | Not used                |
+| Student            | Runs and is updated         | Runs with fixed weights |
+| Ground-truth masks | Needed                      | Not needed              |
+| Temperature T      | Used in L_KD                | Not used (T = 1)        |
+| Adapters phi_l     | Used                        | Discarded               |
+| Cost               | Teacher + student           | Student only            |
++--------------------+-----------------------------+-------------------------+
+
+==========================================================================================
+10. WHY THE STUDENT IS SMALLER AND FASTER
+==========================================================================================
+
+[GENERAL METHOD] At inference, the cost is entirely the student's. The student is cheaper
+for three reasons.
+
+10.1  Depthwise-separable convolutions (MobileNet)
+--------------------------------------------------
+
+A standard k x k convolution from C_in to C_out channels on an H x W feature map costs:
+
+        Params_std = k^2 * C_in * C_out
+        FLOPs_std  ~ k^2 * C_in * C_out * H * W
+
+MobileNet splits it into a depthwise k x k convolution (one filter per input channel)
+followed by a pointwise 1 x 1 convolution (which mixes channels):
+
+        Params_dw = k^2 * C_in + C_in * C_out
+        cost_dw / cost_std = 1/C_out + 1/k^2
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  STANDARD CONV (one big step)
+  +--------------------------+
+  | k x k x C_in x C_out     |      params = k^2 * C_in * C_out
+  +--------------------------+
+
+  DEPTHWISE-SEPARABLE CONV (MobileNet building block) = two cheap steps
+  +--------------------------+        +--------------------------+
+  | Depthwise k x k,         |  then  | Pointwise 1 x 1,         |
+  | one filter per channel   | -----> | C_in x C_out (mixes the  |
+  | (C_in filters)           |        | channels)                |
+  +--------------------------+        +--------------------------+
+   params = k^2 * C_in                 params = C_in * C_out
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Figure 4. Standard convolution vs. depthwise-separable convolution.
+
+Worked example. Take k = 3, C_in=C_out=256 and a 64 x 64 feature map:
+
++---------------------+----------------------------+---------------+
+|                     | Parameters                 | Multiply-adds |
++=====================+============================+===============+
+| Standard 3×3 conv   | 3·3·256·256 = 589,824      | ≈ 2.42 G      |
+| Depthwise-separable | 3·3·256 + 256·256 = 67,840 | ≈ 0.28 G      |
+| Ratio               | ≈ 8.7× smaller             | ≈ 8.7× fewer  |
++---------------------+----------------------------+---------------+
+
+This matches the "8 to 9 times" saving reported by the MobileNet papers (refs. 34, 35).
+MobileNetV2 adds inverted residual blocks with linear bottlenecks, which keep the
+expensive channel width only inside the blocks.
+
+10.2  No (or much less) self-attention
+--------------------------------------
+
+Swin's window self-attention on an h x w map with C channels and window size M costs (Liu
+et al., 2021, Eq. 2):
+
+        Omega(W-MSA) = 4*h*w*C^2 + 2*M^2*h*w*C
+
+That is on top of its MLP layers, at four stages, with wide channels, plus a heavy UPerNet
+decoder. A MobileNet student avoids most of this.
+
+10.3  Fewer channels, layers and a lighter decoder
+--------------------------------------------------
+
+The student is designed with narrower layers and a simpler decoder, so its parameter count
+and FLOPs are typically one or two orders of magnitude below a Swin+UPerNet teacher.
+Compare roughly 60–120 M parameters for the teacher candidates in Section 4 with a few
+million for MobileNet-class models.
+
+The key point: KD does not make the student faster. The student's architecture makes it
+fast. KD makes the fast student more accurate than it would be when trained alone.
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! CHECK IN PAPER: The reported parameters, FLOPs, FPS/latency (and the hardware      !
+  ! used) for the teacher, the student without KD and the student with KD.             !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+==========================================================================================
+11. WORKED TOY EXAMPLE: WHAT TEMPERATURE DOES
+==========================================================================================
+
+[GENERAL METHOD] These numbers are invented purely to illustrate the mechanics. They are
+not from the paper.
+
+Consider one pixel on a blurry crack edge. The classes are (crack, background).
+
+  - Teacher logits: z^t = (2.0, 0.5). The teacher thinks "probably crack".
+  - Student logits early in training: z^s = (0.5, 1.0). The student wrongly leans toward
+    background.
+
+11.1  Step 1: soften with different temperatures
+------------------------------------------------
+
+For T = 1: p^t = ( e^2.0/(e^2.0+e^0.5), e^0.5/(e^2.0+e^0.5) ) = ( 7.389/(7.389+1.649),
+1.649/9.038 ) = (0.818, 0.182).
+
++---------------+----------------------+-----------------------+----------------+--------+
+| Temperature T | Teacher p^t (crack,  | Student p^s (crack,   | KL(p^t || p^s) | T^2*KL |
+|               | bg)                  | bg)                   |                |        |
++===============+======================+=======================+================+========+
+| 1             | (0.818, 0.182)       | (0.378, 0.622)        | 0.408          | 0.408  |
+| 2             | (0.679, 0.321)       | (0.438, 0.562)        | 0.118          | 0.473  |
+| 4             | (0.593, 0.407)       | (0.469, 0.531)        | 0.031          | 0.493  |
+| 8             | (0.547, 0.453)       | (0.484, 0.516)        | 0.008          | 0.498  |
++---------------+----------------------+-----------------------+----------------+--------+
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  Teacher probabilities for the toy pixel (crack logit 2.0, background logit 0.5)
+  (each # = 0.025)
+
+          P(crack)                                  P(background)
+  T = 1   ################################# 0.818   ####### 0.182
+  T = 2   ########################### 0.679         ############# 0.321
+  T = 4   ######################## 0.593            ################ 0.407
+  T = 8   ###################### 0.547              ################## 0.453
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Figure 5. Teacher probabilities for the toy pixel at increasing temperature.
+
+11.2  Step 2: what to notice
+----------------------------
+
+  1. Higher T gives softer targets. At T=1 the teacher says 82% crack. At T=4 it says 59%
+     crack. The ranking (crack > background) is preserved, but the relative information
+     becomes easier for the student to match.
+  2. Raw KL shrinks as T grows (0.408 → 0.008). Without a correction, the KD term would
+     almost vanish at high T.
+  3. Multiplying by T^2 fixes this. T^2*KL stays around 0.41–0.50 for every T. This is
+     exactly why Hinton et al. scale the loss by T^2.
+  4. Compare with a confident pixel. For an obvious background pixel with teacher logits
+     (-2, 6), the softmax at T=1 gives (0.0003, 0.9997), essentially a hard label carrying
+     no extra information. At T = 4 it gives (0.119, 0.881), which still says
+     "background", but now with a usable gradient signal.
+  5. Gradient direction. With T=1 the gradient on the student's crack logit is (p^s - p^t)
+     = 0.378 - 0.818 = -0.44. Gradient descent therefore increases the student's crack
+     logit, moving it toward the teacher's belief.
+
+==========================================================================================
+12. COMMON CONFUSIONS (FAQ)
+==========================================================================================
+
+Q1. Is the student a smaller copy, or a pruned version, of the teacher?
+No. It is a separately designed network (likely a CNN, while the teacher is likely a
+transformer). No weights are copied. Only training targets flow from teacher to student.
+
+Q2. Are the teacher and student trained at the same time?
+In standard (offline) KD, no. The teacher is fully trained first and then frozen. During
+student training the teacher only does forward passes. Check in paper whether this is
+offline KD.
+
+Q3. Does the teacher's accuracy limit the student?
+Mostly, yes: a student rarely beats its teacher. But the student is still trained on the
+ground truth too, so it is not forced to copy every teacher error. Occasionally a student
+slightly exceeds its teacher, because the soft targets act as a regulariser.
+
+Q4. Why not just train the small network on the labels?
+You can, and that is the "student without KD" baseline. KD adds a richer signal (soft
+confidences and feature hints), which typically improves accuracy at zero extra inference
+cost.
+
+Q5. Is the temperature used at test time?
+No. T appears only inside L_KD during training. At inference the student uses its normal
+output (T=1, or simply argmax/threshold).
+
+Q6. What is the "dark knowledge" when there are only two classes?
+With crack vs. background there is no "which wrong class is more similar" information. The
+dark knowledge is mainly per-pixel confidence: uncertain boundaries, faint hairline
+cracks, crack-like stains. Feature distillation adds the rest.
+
+Q7. Why are adapters (1×1 convs) needed?
+The teacher's and student's feature maps usually have different numbers of channels (and
+possibly resolutions), so they cannot be subtracted directly. The adapter projects student
+features into the teacher's space. It is thrown away after training.
+
+Q8. Why do Pearson/PKD or Knowledge Review matter for a transformer → CNN pair?
+The two architectures produce features with very different magnitudes and statistics. PKD
+normalises them so that only the pattern is matched. Knowledge Review lets each student
+stage learn from multiple teacher levels with multi-scale context.
+
+Q9. Does KD make the network faster?
+No. Speed comes from the student's architecture. KD only improves the student's accuracy.
+
+Q10. What exactly is "obtained" at the end?
+A set of student weights (one checkpoint file). It is the trained lightweight network,
+which is used on its own.
+
+==========================================================================================
+13. CHECKLIST: WHAT TO VERIFY IN THE PAPER'S METHOD SECTION
+==========================================================================================
+
+Use this table when you read the PDF. Fill in the last column and then update your thesis
+text. Every row is currently unconfirmed.
+
++----+------------------------+-----------------------------------------+----------------+
+| #  | Item                   | What to look for                        | Value in paper |
++====+========================+=========================================+================+
+| 1  | Teacher architecture   | Swin-T/S/B? UPerNet decoder? Pre-       | ☐              |
+|    |                        | training?                               |                |
+| 2  | Teacher training       | Epochs, loss, accuracy (mIoU/F1),       | ☐              |
+|    |                        | params/FLOPs                            |                |
+| 3  | Teacher frozen?        | Offline KD vs. online/joint training    | ☐              |
+| 4  | Student architecture   | MobileNetV1/V2? Width multiplier?       | ☐              |
+|    |                        | Decoder type?                           |                |
+| 5  | Student initialisation | Random vs. ImageNet pre-trained         | ☐              |
+| 6  | Output format          | 2-class softmax vs. 1-channel sigmoid   | ☐              |
+| 7  | Response KD            | KL? Pixel-wise? Temperature T = ?       | ☐              |
+|    |                        | Multiplied by T²?                       |                |
+| 8  | Feature KD             | Which teacher/student stages are paired | ☐              |
+| 9  | Feature loss           | MSE / Pearson (PKD) / Knowledge Review  | ☐              |
+|    |                        | (ABF+HCL) / own module                  |                |
+| 10 | Adapters               | 1×1 conv? Resizing? Normalisation?      | ☐              |
+| 11 | Segmentation loss      | CE / BCE / Dice / focal / combination   | ☐              |
+| 12 | Total loss             | Full equation and weights λ (or α, β)   | ☐              |
+| 13 | Training setup         | Optimiser (AdamW?), learning rate,      | ☐              |
+|    |                        | schedule, batch size, epochs, input     |                |
+|    |                        | size                                    |                |
+| 14 | Dataset & augmentation | Which dataset(s), splits, augmentations | ☐              |
+| 15 | Metrics                | mIoU, F1, precision, recall, etc.       | ☐              |
+| 16 | Efficiency             | Params, FLOPs, FPS, hardware for        | ☐              |
+|    |                        | teacher and student                     |                |
+| 17 | Baselines              | Student without KD; other lightweight   | ☐              |
+|    |                        | networks; other KD methods              |                |
+| 18 | Ablations              | Effect of each loss term, of T, of the  | ☐              |
+|    |                        | weights                                 |                |
+| 19 | Visualisation          | Grad-CAM / qualitative masks            | ☐              |
+| 20 | Novelty                | What the authors claim is new compared  | ☐              |
+|    |                        | with standard KD                        |                |
++----+------------------------+-----------------------------------------+----------------+
+
+==========================================================================================
+14. A TEMPLATE PARAGRAPH FOR YOUR THESIS
+==========================================================================================
+
+Adapt the text below after verifying the checklist. Replace every bracketed item.
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! "Wang et al. (2023) obtain a lightweight crack segmentation network through        !
+  ! knowledge distillation. A high-capacity teacher, [a Swin Transformer with an       !
+  ! UPerNet decoder], is first trained on the crack dataset and then frozen. A compact !
+  ! student, [a MobileNetV2-based encoder–decoder], is then trained from [scratch /    !
+  ! ImageNet weights] with a composite loss. The loss combines a supervised            !
+  ! segmentation loss [CE + Dice] with a response-based distillation loss, the         !
+  ! temperature-scaled KL divergence between the per-pixel softened outputs of the     !
+  ! teacher and student [T = ?], and a feature-based distillation loss [type, layers]. !
+  ! These terms are weighted by [λ values]. At inference only the student is used,     !
+  ! reducing parameters from [?] to [?] and FLOPs from [?] to [?], while mIoU changes  !
+  ! from [?] (student without KD) to [?] (student with KD), compared with [?] for the  !
+  ! teacher."                                                                          !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+==========================================================================================
+15. REFERENCES
+==========================================================================================
+
+References are numbered as in the paper's reference list (from Crossref metadata). Romero
+et al. is added for background and is not cited by the paper.
+
+  - [28] Gou, J., Yu, B., Maybank, S. J., & Tao, D. (2021). Knowledge distillation: A
+    survey. International Journal of Computer Vision, 129, 1789–1819.
+    https://doi.org/10.1007/s11263-021-01453-z
+  - [30] Liu, Z., et al. (2021). Swin Transformer: Hierarchical vision transformer using
+    shifted windows. ICCV, 10012–10022. https://doi.org/10.1109/ICCV48922.2021.00986
+  - [31] Ba, J. L., Kiros, J. R., & Hinton, G. E. (2016). Layer normalization.
+    arXiv:1607.06450.
+  - [32] Hendrycks, D., & Gimpel, K. (2016). Gaussian error linear units (GELUs).
+    arXiv:1606.08415.
+  - [33] Lin, T.-Y., et al. (2017). Feature pyramid networks for object detection. CVPR,
+    2117–2125. https://doi.org/10.1109/CVPR.2017.106
+  - [34] Sandler, M., Howard, A., Zhu, M., Zhmoginov, A., & Chen, L.-C. (2018).
+    MobileNetV2: Inverted residuals and linear bottlenecks. CVPR, 4510–4520.
+    https://doi.org/10.1109/CVPR.2018.00474
+  - [35] Howard, A. G., et al. (2017). MobileNets: Efficient convolutional neural networks
+    for mobile vision applications. arXiv:1704.04861.
+  - [36] Chen, P., Liu, S., Zhao, H., & Jia, J. (2021). Distilling knowledge via knowledge
+    review. CVPR, 5008–5017. https://doi.org/10.1109/CVPR46437.2021.00497
+  - [37] Paszke, A., et al. (2019). PyTorch: An imperative style, high-performance deep
+    learning library. NeurIPS 32.
+  - [38] Loshchilov, I., & Hutter, F. (2017). Decoupled weight decay regularization.
+    arXiv:1711.05101.
+  - [39] Özgenel, Ç. F. (2019). Concrete crack segmentation dataset. Mendeley Data, v1.
+  - [40] Shorten, C., & Khoshgoftaar, T. M. (2019). A survey on image data augmentation
+    for deep learning. Journal of Big Data, 6, 60.
+    https://doi.org/10.1186/s40537-019-0197-0
+  - [42] Hinton, G., Vinyals, O., & Dean, J. (2015). Distilling the knowledge in a neural
+    network. arXiv:1503.02531.
+  - [43] Cao, W., Zhang, Y., Gao, J., Cheng, A., Cheng, K., & Cheng, J. (2022). PKD:
+    General distillation framework for object detectors via Pearson correlation
+    coefficient. NeurIPS 35.
+  - [45] Long, J., Shelhamer, E., & Darrell, T. (2015). Fully convolutional networks for
+    semantic segmentation. CVPR, 3431–3440. https://doi.org/10.1109/CVPR.2015.7298965
+  - [46] Ronneberger, O., Fischer, P., & Brox, T. (2015). U-Net: Convolutional networks
+    for biomedical image segmentation. MICCAI, 234–241.
+  - [47] Xiao, T., Liu, Y., Zhou, B., Jiang, Y., & Sun, J. (2018). Unified perceptual
+    parsing for scene understanding. ECCV, 418–434.
+    https://doi.org/10.1007/978-3-030-01228-1_26
+  - [48] Chen, L.-C., Zhu, Y., Papandreou, G., Schroff, F., & Adam, H. (2018).
+    Encoder-decoder with atrous separable convolution for semantic image segmentation.
+    ECCV, 801–818. https://doi.org/10.1007/978-3-030-01234-2_49
+  - [49] Selvaraju, R. R., et al. (2017). Grad-CAM: Visual explanations from deep networks
+    via gradient-based localization. ICCV, 618–626.
+  - [—] Romero, A., et al. (2015). FitNets: Hints for thin deep nets. ICLR. (Background
+    only; not cited in the paper.)
+  - Main paper: Wang, W.-J., Su, C., Han, G., & Zhang, H. (2023). A lightweight crack
+    segmentation network based on knowledge distillation. Journal of Building Engineering,
+    76, 107200. https://doi.org/10.1016/j.jobe.2023.107200

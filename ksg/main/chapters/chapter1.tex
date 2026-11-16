@@ -1,0 +1,329 @@
+\chapter{Research of Previous Work}
+\label{ch:previous}
+
+A school bag looks like a simple product. The shop that makes it is not simple. One order asks for a navy backpack in three sizes, the next for a red trolley bag with a short due date, and a third for a khaki sports sack that must share the only khaki thread lot with work already on a machine. The auto cutter is fast and already worn. The second cutter is slow and healthy. Three sewing operators do not all have the same skill on the bartack machine. Embroidery has a single head. Inspection and packing share people with the hardware bench. A planner who treats this shop as a list of jobs and a list of machines will build a schedule that looks feasible on paper and then loses the afternoon to a colour change, a missing operator, or a cutter that was asked to run past a sensible wear limit.
+
+The scheduling literature already contains powerful answers to pieces of this picture. Flexible job shops, dispatching rules, evolutionary multi-objective search, and, more recently, graph neural networks trained by reinforcement learning, all decide which operation should run on which machine. A second literature, built around cyber-physical systems, digital twins, and remaining-useful-life models, decides what a machine's present health means for the next hour. Textile research has started to treat operators as a second resource. Almost none of these lines decides the school-bag problem as it actually arrives: several targets, a resource bundle around every operation, and a machine state that is allowed to change the plan.
+
+This chapter reviews those lines in the order the thesis uses them. Section~\ref{sec:tech1-review} reviews scheduling technology, from classical job shops to heterogeneous graph policies, and states what that technology still does not represent. Section~\ref{sec:tech2-review} reviews machine-status technology, from degradation models to digital twins that influence a schedule, and states where the loop is still open. Section~\ref{sec:problem-set} puts the two gaps on the same factory, writes the problem the rest of the thesis solves, and names the two technologies proposed for it.
+
+\section{Research on graph-based multi-target scheduling}
+\label{sec:tech1-review}
+
+\subsection{The job shop and the flexible job shop}
+
+The classical job shop asks for a sequence of operations on each machine. Job \(j\) has operations \(O_{1j}, O_{2j}, \ldots\) in a fixed order. Operation \(O_{ij}\) has a processing time \(p_{ij}\) and a single eligible machine. Two operations cannot occupy one machine at the same time, and an operation cannot start before its predecessor in the same job has finished. The usual objective is the makespan
+\begin{equation}
+\cmax = \max_j C_j,
+\label{eq:cmax-classic}
+\end{equation}
+where \(C_j\) is the completion time of the last operation of job \(j\). Garey, Johnson, and Sethi showed that even strongly restricted flow shops and job shops are NP-hard, so a practical factory cannot expect a polynomial algorithm that always returns an optimal sequence \cite{garey1976}. The integer-programming tradition begins with Manne's assignment of binary order variables to pairs of operations that share a machine \cite{manne1960}. Surveys of the deterministic problem run from the shifting-bottleneck procedure of Adams, Balas, and Zawack \cite{adams1988} through the review of Jain and Meeran \cite{jain1999} to the textbook treatment in Pinedo \cite{pinedo2016}.
+
+A school bag factory is not a classical job shop. The body of a backpack can be sewn on either lockstitch machine. A strap can go to the bartack machine or, more slowly, to a lockstitch. Cutting can go to the automatic cutter or to the manual cutter. Brucker and Schlie named this the job shop with multi-purpose machines \cite{brucker1990}. The version studied throughout later work is the flexible job shop scheduling problem, in which each operation \(O_{ij}\) has an eligible set \(M_{ij}\) and a processing time \(p_{ijk}\) on each machine \(k \in M_{ij}\). Brandimarte solved it with tabu search on a routing-and-sequencing representation \cite{brandimarte1993}. Kacem, Hammadi, and Borne made the objective multi-objective, combining makespan with machine workload, and used a localisation heuristic followed by an evolutionary search \cite{kacem2002}. Genetic algorithms with careful encodings became a standard benchmark family \cite{pezzella2008,gao2008,li2016}. Chaudhry and Khan reviewed the technique catalogue and showed how large it had become: dispatching rules, shifting bottlenecks, genetic algorithms, particle swarm methods, and hybrids, almost all of them aimed at makespan on static instances \cite{chaudhry2016}.
+
+The mathematical skeleton that later learning methods still use is the disjunctive graph of Roy and Sussmann \cite{roy1964}. Operations are nodes. A conjunctive arc fixes the route inside a job. A disjunctive pair connects two operations that might share a machine, and a schedule is a choice of one direction for every pair, plus an assignment of flexible operations to machines. Giffler and Thompson had already given a constructive way to build active schedules, in which no operation can be moved earlier without pushing another operation later \cite{giffler1960}. Almost every genetic algorithm and every reinforcement-learning policy in this chapter is, at bottom, a way of choosing those directions.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  op/.style={draw, rounded corners, minimum width=1.7cm, minimum height=0.7cm, font=\small},
+  mac/.style={draw, fill=gray!12, minimum width=1.7cm, minimum height=0.7cm, font=\small},
+  arr/.style={-{Stealth}, thick}
+]
+\node[op] (a) {cut};
+\node[op, right=1.1cm of a] (b) {sew};
+\node[op, right=1.1cm of b] (c) {pack};
+\node[mac, below=0.9cm of a] (m1) {cutter};
+\node[mac, below=0.9cm of b] (m2) {lockstitch};
+\node[mac, below=0.9cm of c] (m3) {bench};
+\draw[arr] (a) -- (b);
+\draw[arr] (b) -- (c);
+\draw[arr, dashed] (a) -- (m1);
+\draw[arr, dashed] (b) -- (m2);
+\draw[arr, dashed] (c) -- (m3);
+\end{tikzpicture}
+\caption{The classical flexible-job-shop picture. Solid arcs are the route of one school-bag order. Dashed arcs are a machine assignment. Operators, dies, thread lots, colour setups, and machine health are not nodes in this graph.}
+\label{fig:classical-graph}
+\end{figure}
+
+Figure~\ref{fig:classical-graph} is the picture that most of the papers in this section optimise. It is already enough to make the problem hard. It is not enough for the factory in Section~\ref{sec:problem-set}. The cutter node does not know that a die is required, the lockstitch node does not know which operator is free, and no node carries a wear value. The rest of this section follows the research that made Figure~\ref{fig:classical-graph} smarter, and stops at the point where the missing nodes become the first technology of the thesis.
+
+\subsection{Dispatching rules and why they are still the factory default}
+
+Before metaheuristics and before learning, factories scheduled with priority rules. Panwalkar and Iskander collected more than a hundred of them \cite{panwalkar1977}. Blackstone, Phillips, and Hogg compared the rules that shops actually use \cite{blackstone1982}. Four of them matter for the estimation in Chapter~\ref{ch:estimation}, because they are the baselines a production manager will believe.
+
+First-in-first-out releases work in the order it became ready. It is fair and it is blind. Shortest processing time clears small operations and often keeps the mean flow time down, at the cost of starving a long trolley-bag shell. Earliest due date sorts by the order's promise date and is the natural rule when tardiness is the complaint that reaches the planner. The apparent-tardiness-cost rule of Vepsalainen and Morton combines the two ideas \cite{vepsalainen1987}. For an operation with processing time \(p\) and slack \(s\) it uses a priority of the form
+\begin{equation}
+Z = \frac{1}{p}\exp\left(-\frac{\max(0,s)}{k\,\bar p}\right),
+\label{eq:atc}
+\end{equation}
+where \(\bar p\) is an average processing time and \(k\) is a look-ahead parameter. A tight, short operation ranks first. A long operation with a comfortable slack waits. Equation~\eqref{eq:atc} is still one of the strongest hand-written rules for weighted tardiness, and it is the strongest of the classical rules one would expect to meet on a due-date-driven bag order book.
+
+Rules have three structural limits that no tuning of \(k\) removes. They score one operation at a time, so they do not see that assigning the navy body to Lockstitch-1 also blocks the only operator who can run the bartack. They do not carry a vector of targets: a weight in front of tardiness and a weight in front of energy are not part of the rule. And they do not look at health. A worn automatic cutter remains the shortest-processing-time choice until it fails, because the rule's \(p\) is the nominal time, not the time at the current wear. The learning methods reviewed next were invented to replace hand-written scores with scores discovered from the shop's own transitions. They inherit the same three limits unless the state is deliberately enlarged.
+
+\subsection{Evolutionary search for several targets}
+
+When a schedule can be encoded as a chromosome, a population can search it. The flexible-job-shop encodings of Pezzella, Morganti, and Ciaschetti \cite{pezzella2008}, Gao, Sun, and Gen \cite{gao2008}, and Li and Gao \cite{li2016} assign each operation a machine and a priority, then decode the chromosome with a list schedule that respects precedence. Hybrids of genetic search and tabu search or variable-neighbourhood descent improve the makespan on the standard Brandimarte and Kacem sets. They are offline procedures. A population of thirty individuals, each decoded by a full shop simulation, is a reasonable night-time calculation and a poor answer to an order that arrives at 10:15 with a same-day promise.
+
+Multi-objective evolutionary algorithms changed the question from ``the best schedule'' to ``the set of schedules that are not beaten on every target.'' Deb, Pratap, Agarwal, and Meyarivan's NSGA-II sorts a population into nondominated fronts and uses crowding distance to keep the front spread out \cite{deb2002}. Zitzler and Thiele's strength Pareto approach, and the later hypervolume indicator, gave the field a way to say whether one front is better than another \cite{zitzler1999,zitzler2003}. When the number of objectives passes three, crowding in NSGA-II stops spreading the population well. Deb and Jain's NSGA-III replaces crowding with reference directions \cite{deb2014}. Gong, De Pessemier, Martens, and Joseph used that algorithm on a flexible job shop whose five objectives were makespan, energy cost, labour cost, peak workload, and total workload, under a time-varying electricity price \cite{gong2019}. Their result is important for this thesis for two reasons. It shows that labour is a real objective, not a soft constraint hidden inside the processing time. And it shows that a many-objective genetic algorithm can expose the conflict between energy and labour, because the cheap electricity hours are often the expensive wage hours.
+
+Energy had already been brought into scheduling by Mouzon, Yildirim, and Twomey, who showed that simply turning idle machines off is not the whole problem: the schedule itself decides when the large loads run \cite{mouzon2007}. Dai, Tang, Giret, and Salido added transportation time and energy to a flexible job shop and solved the bi-objective model with an enhanced genetic algorithm \cite{dai2019}. Sequence-dependent setups, surveyed by Allahverdi and co-authors across two large reviews, sit in the same family \cite{allahverdi2008,allahverdi2015}. A colour change on a sewing machine is exactly such a setup. None of these papers, however, treats the setup, the operator, the energy, and a live wear state as inputs of one online decision.
+
+The practical objection to the evolutionary line, for the factory considered here, is not that the algorithms are weak. On a frozen instance they are often the quality ceiling. The objection is that the ceiling is computed for a shop that holds still. A school-bag week does not hold still. Health moves with every minute of cutting. A rush trolley order is released at mid-morning. A thread lot runs out. Re-evolving a population at every one of these events is possible and usually too slow for the dispatch decision, which is ``what should the free operator start now.'' The learning policies of the next subsection are attractive because, after training, that decision is a forward pass.
+
+\subsection{Reinforcement learning for dispatching}
+
+Reinforcement learning treats scheduling as a sequence of decisions. The state is the shop. The action is the next dispatch. The reward is progress toward the objective. Sutton and Barto's framework is the one used throughout \cite{sutton2018}. Mnih and co-authors showed that a deep network can learn an action value from raw high-dimensional states \cite{mnih2015}. Schulman and co-authors' proximal policy optimisation then became the default stable policy-gradient method for continuous training runs: a clipped ratio keeps a new policy from moving so far that the data just collected become useless \cite{schulman2017}. Haarnoja and co-authors' soft actor-critic adds an entropy bonus so that the policy does not collapse early \cite{haarnoja2018}. Scheduling papers use these algorithms; they do not need to reinvent them. The design problem is the state and the action.
+
+Zhang, Song, Cao, Zhang, Tan, and Xu trained a graph network to dispatch a classical job shop \cite{zhang2020}. The disjunctive graph is the state. A graph neural network embeds every operation. The policy picks the next operation at a machine. Because the network shares weights across nodes, a policy trained on modest instances can be applied to larger ones. That size-agnostic property is the reason later factory work preferred graphs to fixed-length vectors. Park, Chun, Kim, Kim, and Park reported a related graph-and-reinforcement-learning design for job shops \cite{park2021}. Luo studied the flexible job shop when new jobs are inserted, and showed that a deep policy can react without rebuilding a genetic population \cite{luo2020}. Lei, Guo, Zhao, Wang, Qian, Meng, and Tang separated the flexible-job-shop action into several heads, so that operation choice and machine choice are not forced through a single flat list \cite{lei2022}.
+
+These papers moved the field from ``learn a rule for a fixed shop'' to ``learn a rule on a graph that can grow.'' They still optimise, in the typical experiment, one time-based objective, and the graph still contains operations and machines only.
+
+\subsection{Heterogeneous graphs and multi-target policies}
+
+Flexibility makes the graph heterogeneous. An operation is not the same kind of node as a machine, and the relation ``can be processed on'' is not the same relation as ``precedes.'' Song, Chen, Li, and Cao used that fact directly \cite{song2023}. Their IEEE Transactions on Industrial Informatics model extends the disjunctive graph with machine nodes, defines an action as a composite choice of an operation and a machine, and encodes the state with a two-stage heterogeneous graph network. Proximal policy optimisation trains the policy. The published result is that the learned rule beats hand-written rules and still runs quickly on instances larger than the training set. This is the closest ancestor of the first technology in this thesis. It solves the representation problem that plain job-shop graphs do not solve: a machine has its own embedding, and the action is a pair rather than an operation index.
+
+Two limits of that ancestor matter here. The machine node carries scheduling status, such as the time it becomes free, but it does not carry a degradation state that changes the processing time. And there is still no node for the operator or for a shared token. A composite action \((\text{operation},\text{machine})\) is one resource short of a school-bag assignment, which is \((\text{operation},\text{machine},\text{operator})\) and, when the operation needs it, a die or a thread lot.
+
+Wang, Jing, Gu, He, and Chen pushed the same graph idea toward several targets \cite{wang2025}. Their Internet of Things Journal model puts transportation time and energy, together with makespan, into one flexible-job-shop simulation, encodes tasks and machines with a graph network, and trains a multi-agent proximal policy optimisation with a vector-valued critic. The experimental claim is higher solution quality than strong baselines at a small online computing cost. Zeng, Yang, Du, Yang, Wang, and Lv added a dynamic dual-attention network so that a multi-agent policy can react to new jobs and urgent insertions while balancing makespan and average tardiness \cite{zeng2025}. Li, Li, He, and Li reported a collaborative multi-agent method whose reward is split across makespan and energy, with hypervolume used as the comparison metric \cite{li2025}. Attention itself, as a trainable weighted pool of neighbours, comes from the sequence model of Vaswani and co-authors \cite{vaswani2017}, the graph attention network of Velickovic and co-authors \cite{velickovic2018}, and the routing policies of Kool, van Hoof, and Welling \cite{kool2019}. Graph convolutional networks \cite{kipf2017} and GraphSAGE \cite{hamilton2017} are the earlier message-passing tools that these attention schedulers refine.
+
+Table~\ref{tab:sched-lineage} places the lineage against the decision a bag factory actually needs.
+
+\begin{table}[ht]
+\centering
+\caption{What recent scheduling models decide, and what they leave out of the school-bag assignment.}
+\label{tab:sched-lineage}
+\small
+\begin{tabularx}{\textwidth}{@{}lXXXX@{}}
+\toprule
+Work & Decision & Targets & Live health & Shared tokens \\
+\midrule
+Brandimarte \cite{brandimarte1993} & route and sequence & makespan & no & no \\
+Kacem et al. \cite{kacem2002} & route and sequence & time and load & no & no \\
+Gong et al. \cite{gong2019} & route, sequence, labour & five, including energy and labour & no & labour hours \\
+Zhang et al. \cite{zhang2020} & next operation & makespan & no & no \\
+Song et al. \cite{song2023} & operation and machine & makespan & no & no \\
+Wang et al. \cite{wang2025} & operation and machine & makespan, transport, energy & no & no \\
+Zeng et al. \cite{zeng2025} & two agents & makespan and tardiness & no & no \\
+This thesis & operation, machine, operator, token & time, due date, energy, balance, failures & yes, through Chapter~\ref{ch:methods}'s twin & dies and thread lots \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The last row is not a claim that earlier rows are incomplete as papers. Each of them answers the question it asked. The row says that the question asked by a school-bag planner is wider than any one of those questions, and that the widening is specific: the action must name a resource bundle, and one of the node features must be allowed to come from a machine-status model. That is the design brief of resource-coupled heterogeneous graph attention scheduling, written out in Section~\ref{sec:rch}.
+
+\subsection{Textile shops and the second resource}
+
+General flexible-job-shop benchmarks are machining benchmarks. A school bag is closer to a sewing shop. Chen, Xie, Ma, Chen, and Wang formulated a textile flexible job shop and modified ant-colony optimisation so that the pheromone remembers the product as well as the machine, with a heuristic that lifts machines which the search would otherwise ignore \cite{chen2024}. The objective is balance of machine time across the operations of the textile route. The paper is useful because it shows that a textile route is not an arbitrary chain: machines and product types constrain each other, and a search that ignores the product will over-use the convenient machine. It does not model operators as competing resources, and it does not model health.
+
+Sewing research has a name for the operator constraint. A dual-resource-constrained shop is one in which a station needs both a machine and a worker, and workers are fewer or less flexible than machines. Xu, Xu, and Xie reviewed that literature \cite{xu2011}. The consequence for dispatching is immediate. A machine that is free in the data table may be unusable because the only qualified operator is inside another operation. Sequence-dependent setups apply to the operator as well as to the machine: a change of colour, of needle, or of bag style costs minutes of the person, not only of the head. Gong and co-authors' labour-aware model \cite{gong2019} prices this effect. It still plans labour as a cost accumulated by a static chromosome, not as a token the online policy must seize and release.
+
+Rework belongs in the same practical family. Flapper, Fransoo, Broekmeulen, and Inderfurth reviewed planning when a quality failure sends work back \cite{flapper2002}. A school-bag inspection can fail a zipper or a crooked strap. The estimation shop in Chapter~\ref{ch:estimation} keeps inspection as a required operation rather than a random rework loop, so that the comparison of schedulers is not mixed with a second random process. The formulation in Chapter~\ref{ch:methods} leaves a place for a rework arc; the numerical shop does not draw one.
+
+\subsection{The gap that the first technology is built to close}
+
+The scheduling literature, read against a school-bag route, supports five conclusions.
+
+The problem is a flexible job shop, and it is reasonable to keep the disjunctive-graph view of precedence and machine choice \cite{roy1964,song2023}. The action, however, is larger than a machine assignment. It includes an operator whose skill changes the processing time, and a token whose capacity is one or two, not the number of machines. A graph that has no operator node and no token node cannot attend to the contention that actually blocks the hardware bench and the khaki lot.
+
+The targets are plural. Makespan research \cite{brandimarte1993,pezzella2008,zhang2020,song2023} is the right foundation and the wrong single number. Energy \cite{mouzon2007,dai2019,gong2019,wang2025}, due dates \cite{vepsalainen1987,zeng2025}, and workload balance \cite{kacem2002,chen2024,gong2019} have each been studied. A factory policy has to carry them together, and a manager has to be able to move the emphasis without training an entirely new system. Preference-conditioned decisions are the natural shape of that requirement. The recent multi-agent critics \cite{wang2025,li2025,zeng2025} move in this direction and still do not condition a resource-bundle action on a preference vector tied to bag-factory tokens.
+
+The useful online object is a learned dispatch policy, not a population that is re-evolved at every breakdown. Graph policies are the ones that transfer across order-book sizes \cite{zhang2020,song2023}. They are also the ones that can accept an extra node type without a new hand-written feature hierarchy.
+
+Setups are sequence dependent and, in this factory, mostly colour changes \cite{allahverdi2015}. A policy that does not see the previous colour on the machine will pay the setup in the simulation and never in the decision.
+
+No paper in this section writes the machine's wear into the same graph that chooses the operator and the thread lot. That omission is not a small missing feature. It is a second technology, reviewed next, which this thesis couples to the first instead of leaving it as a report beside the plan.
+
+\section{Research on machine status and digital twins}
+\label{sec:tech2-review}
+
+\subsection{Status is a signal, not a label}
+
+A machine status that a scheduler can use is a number with a clock. ``The cutter is fine'' is not such a number. The cutter's vibration, the current of its feed motor, the temperature at the knife, the count of thread breaks on a sewing head, and the hours since the last knife change are such numbers. They arrive from a controller, they are noisy, and they are late by whatever period the collector uses.
+
+Two standards make this more than a vendor choice. IEC 62264, the standard built on ISA-95, separates the enterprise plan from the control system and defines the objects that pass between them: equipment, material lots, personnel, and process segments \cite{iec62264}. IEC 62541, OPC Unified Architecture, is the usual way those equipment objects expose live values to a client outside the programmable controller \cite{iec62541}. A scheduler that claims to react to machine status is, in factory terms, a client of this stack. It does not need to own the sensors. It needs a defined place where a health value enters the decision.
+
+Lee, Bagheri, and Kao organised the same idea as a five-level architecture for cyber-physical manufacturing: a smart connection, conversion of data to information, a cyber model, cognition, and configuration of the physical system \cite{lee2015}. Monostori and co-authors reviewed cyber-physical production systems as the place where this loop has to be closed, and listed scheduling among the decisions that still sit too far from the physical state \cite{monostori2016}. Xu, Xu, and Li's survey of Industry 4.0 makes the same point at the level of the whole plant: connectivity is no longer the scarce piece, and decision models that use the connectivity are \cite{xu2018}. Koren and Shpitalni's reconfigurable manufacturing systems add a design consequence. If the plant can change its routing, the schedule is part of the configuration, not a file written once per shift \cite{koren2010}.
+
+The school-bag factory does not need a new network architecture. It needs the cognition level of Lee's stack to be a scheduler, and the cyber level to be a degradation model whose output is a feature of that scheduler. The next subsections review the models that can sit at that cyber level.
+
+\subsection{Digital twins of a production system}
+
+A digital twin is a living model paired with a particular physical system, updated by that system's data, and used to make a decision about that system. Grieves and Vickers stated the idea as a way to see undesirable behaviour before the physical system has to exhibit it \cite{grieves2017}. Tao, Zhang, Liu, and Nee reviewed industrial practice and separated a digital twin from a plain simulation by the requirement of ongoing synchronisation \cite{tao2019}. Qi and Tao compared the twin with big-data manufacturing and argued that the twin is the structure that makes data actionable \cite{qi2018}. Negri, Fumagalli, and Macchi reviewed the role of twins inside cyber-physical production and found a wide spread of meanings, from geometric models to scheduling models \cite{negri2017}. Cimino, Negri, and Fumagalli followed the manufacturing applications and found the same spread \cite{cimino2019}. Fuller, Fan, Day, and Barlow listed enabling technologies and the open problems, among them the difficulty of keeping the model and the asset in step \cite{fuller2020}. Lu, Liu, Wang, Huang, and Xu proposed a reference model for a twin-driven manufacturing system and again placed production planning among the applications that the reference model must be able to host \cite{lu2020}.
+
+For this thesis the word ``twin'' is used in a narrow way. The twin of a school-bag machine is not a three-dimensional drawing of the cutter. It is a state \(h_k(t)\) for each machine \(k\), a rule that updates \(h_k\) from the latest signals, and a pair of maps from \(h_k\) to the quantities the scheduler needs: a processing-time multiplier and a probability that the next cycle is interrupted. If those maps are not in the scheduling decision, the factory has a dashboard, not a twin of the plan.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, align=center, minimum width=2.6cm, minimum height=0.95cm, font=\small},
+  arr/.style={-{Stealth}, thick}
+]
+\node[box] (phys) {Physical\\machine};
+\node[box, right=1.3cm of phys] (sig) {Signals\\OPC~UA};
+\node[box, right=1.3cm of sig] (twin) {Health\\state \(h_k\)};
+\node[box, right=1.3cm of twin] (plan) {Schedule\\decision};
+\draw[arr] (phys) -- (sig);
+\draw[arr] (sig) -- (twin);
+\draw[arr] (twin) -- (plan);
+\draw[arr] (plan.south) -- ++(0,-0.7) -| (phys.south);
+\end{tikzpicture}
+\caption{The twin loop required by a status-aware schedule. The return arrow is the part most digital-twin case studies leave as a manual action by the planner.}
+\label{fig:twin-loop}
+\end{figure}
+
+Figure~\ref{fig:twin-loop} is deliberately small. The research question is the return arrow. Many twin deployments stop at the health state and show it to a person. The person then edits the plan. That can be the right engineering choice for a rare failure. It is a poor choice for a wear process that moves a little on every backpack, because the plan is then permanently out of date by the amount the person has not yet typed.
+
+\subsection{Degradation and remaining useful life}
+
+Remaining useful life is the time left until a machine crosses a failure threshold. Si, Wang, Hu, and Zhou reviewed the statistical approaches and separated models that regress a health indicator from models that write an explicit stochastic process for the degradation \cite{si2011}. Lei, Li, Guo, Li, Yan, and Lin reviewed the path from sensors to a life prediction, including the feature extraction that a factory must get right before any scheduler sees a number \cite{lei2018}. This thesis does not compete with that extraction literature. It assumes a scalar health indicator has already been formed, and it spends its effort on the use of the scalar.
+
+A Wiener process is the usual explicit model when degradation can be treated as a drift plus noise. In the linear form,
+\begin{equation}
+h(t) = h(0) + \eta t + \sigma B_t,
+\label{eq:wiener-review}
+\end{equation}
+where \(\eta\) is the wear rate, \(\sigma\) is a diffusion scale, and \(B_t\) is standard Brownian motion. The increment over a cycle of length \(\Delta\) is Gaussian with mean \(\eta\Delta\) and variance \(\sigma^2\Delta\). Si, Wang, Hu, Zhou, and Pecht extended the idea to nonlinear drift, which matters when wear accelerates near failure \cite{si2012}. Gebraeel, Lawley, Li, and Ryan put a Bayesian update on the residual-life distribution so that each new degradation signal revises the life left, rather than only the point estimate \cite{gebraeel2005}. Kalman filtering is the classical linear-Gaussian way to carry such a revision \cite{kalman1960}. Particle filters cover the non-Gaussian case at a higher computational cost \cite{arulampalam2002}.
+
+The scheduling consequence of Equation~\eqref{eq:wiener-review} is a chance constraint, not a single predicted day of failure. Charnes and Cooper introduced chance constraints as a way to keep a random inequality feasible with a chosen probability \cite{charnes1959}. Birge and Louveaux place that idea inside stochastic programming \cite{birge2011}. For a machine, the natural statement is
+\begin{equation}
+\Prob\big(h_k(t+\Delta) \ge h^{\star}\big) \le \varepsilon,
+\label{eq:chance-review}
+\end{equation}
+with \(\varepsilon\) chosen by the factory. If the increment is Gaussian, Equation~\eqref{eq:chance-review} becomes a deterministic threshold on the current health, the cycle length, and \(\varepsilon\). Chapter~\ref{ch:methods} writes that threshold down. The point for the present review is that the constraint is old, the degradation model is mature, and their appearance inside a graph-attention dispatcher is not.
+
+Nguyen and Medjaher connected a deep prognostic model to a dynamic predictive-maintenance decision, so that the maintenance action, rather than only the life number, is the output \cite{nguyen2019}. Wang, Li, and Zhao built multi-objective maintenance schedules that take a remaining-useful-life prediction as an input and trade maintenance duration against cost \cite{wang2024cie}. Both papers treat maintenance as the decision. A production schedule, if present, is outside the model or is a fixed demand the maintenance plan must serve.
+
+\subsection{Maintenance inside the production schedule}
+
+The closer line of work inserts maintenance into the job shop itself. A 2024 study of bi-objective flexible job shop scheduling with condition-based maintenance updates the degradation parameters by Bayesian inference after each maintenance, and uses an evolutionary algorithm with an insertion step so that a maintenance window disturbs the production plan less than a naive split would \cite{cbm2024}. The objectives are production and maintenance together. The algorithm is offline. Machine health changes the feasibility of a chromosome; it is not a feature of a learned online policy, and operators are not part of the chromosome.
+
+Pandhare, Negri, Ragazzini, Cattaneo, Macchi, and Lee described a prognostics-enabled twin that schedules a flow shop while equipment is degrading \cite{pandhare2024}. Field data, reduced by principal components, drive a discrete-event model. A genetic algorithm searches the schedule. The reported comparison is that a twin which knows the degraded state estimates makespan more realistically than a twin which pretends the equipment is nominal, and that the resulting schedule is better for that reason. The paper is the clearest statement that health belongs inside scheduling. It is a flow shop, so routing flexibility is absent. It has no operator tokens and no thread lots. The search is a genetic algorithm, so a rush order or a sudden jump in a health residual means another population, not a masked action in a policy that is already trained.
+
+An online joint scheme for predictive maintenance and production planning, of the kind discussed by Zhu, Wang, and Yuan, uses a rolling horizon: at each period the latest remaining-useful-life estimate and the latest demand forecast are written into a shorter optimisation, and only the first period is implemented \cite{zhu2024pdm}. Rolling horizons are the right operational pattern for a planner who re-solves. They are heavy if the inner model is a full flexible job shop with resource tokens, and they are unnecessary if a trained policy can be evaluated at the epoch when the twin says the residual has moved enough.
+
+The maintenance literature and the scheduling literature therefore meet, but they meet in evolutionary or rolling-horizon optimisers. They do not meet in the heterogeneous graph policy of Song, Chen, Li, and Cao \cite{song2023} or in the multi-target policy of Wang, Jing, Gu, He, and Chen \cite{wang2025}. The second technology of this thesis is that meeting. It is specified in Section~\ref{sec:ssdt} as a status-synchronized twin whose health, failure probability, and maintenance action are features and actions of the same dispatcher.
+
+\subsection{The gap that the second technology is built to close}
+
+Four observations close the review.
+
+Health is a state variable with a stochastic increment, not a static penalty. Wiener and Bayesian residual-life models already supply the increment \cite{si2011,si2012,gebraeel2005}. A scheduler that reads a health value once per shift is ignoring the model it paid to build.
+
+The map from health to the shop has two outputs, and both belong in the decision. The processing time grows as the machine leaves its nominal condition, and the probability of an interruption grows with it. Energy grows as well, because a worn drive draws more for the same piece. A makespan model with nominal times will prefer the fast worn cutter and then spend the saved minutes on a repair.
+
+The maintenance action has to be cheap enough, and visible enough, to be chosen by the same policy that chooses the backpack. A separate maintenance optimiser that runs overnight will insert windows that the morning rush has already invalidated. A chance constraint of the form \eqref{eq:chance-review}, evaluated at the dispatch epoch, is the lightest coupling that still refuses a dangerous assignment \cite{charnes1959}.
+
+The twin must be allowed to force a new decision. Synchronisation that only refreshes a dashboard does not change \(C_j\). Event-triggered rescheduling, called when the predicted failure probability or a newly released order crosses a threshold, is the configuration step in the cyber-physical stack of Lee, Bagheri, and Kao \cite{lee2015}. The trigger condition is part of the technology, not an implementation detail.
+
+\section{Problem set}
+\label{sec:problem-set}
+
+\subsection{The school-bag route}
+
+The product family in this thesis is the ordinary school bag: a soft-sided pack carried by a student, together with two cousins that share the same shop, a trolley bag and a sports sack. The factory is imagined as a single-site cell, not a supply chain. Cloth, webbing, zippers, and hardware arrive as lots. Finished bags leave in cartons. The planning horizon of the estimation is one congested day, long enough for wear and colour changes to matter and short enough that the order book is a list rather than a season.
+
+A classic student backpack crosses eight steps. The main shell is cut. The lining is cut. A logo is embroidered or printed. The body, including the compartment seams, is sewn. The shoulder straps and handle are sewn, preferably on a bartack or heavy lockstitch because the webbing is thick. The zipper, buckles, and adjusters are attached at the hardware bench. The bag is inspected. It is packed. The two cutting steps both need a die. Embroidery and the sewing steps need a thread lot of the order's colour. Hardware, inspection, and packing do not.
+
+A trolley bag crosses seven steps: cutting the shell, reinforcing the base, sewing the shell, fitting the frame, fitting the wheels, inspection, and packing. The frame and the wheels share the hardware bench, so a trolley order holds that bench longer than a backpack does. A sports sack is the short route: cut, print, sew, drawstring, inspect, and pack. It is the order a shortest-processing-time rule will always prefer, and the order that fills the embroidery head while a trolley shell waits.
+
+The eligible machines are deliberately uneven. Two cutters share the cutting group. The automatic cutter is fast, high-powered, and, in the case studied in Chapter~\ref{ch:estimation}, already worn at the start of the day. The manual cutter is slow, cheap in power, and healthy. One embroidery head serves every logo. Two lockstitch machines and one bartack machine serve the sewing and reinforcement steps, with a strap allowed to fall back from the bartack onto a lockstitch. One hardware bench, one inspection table, and one packing table finish the route. This mix is a partial flexible job shop in the sense of Brandimarte \cite{brandimarte1993}: some operations have a real choice, and some have only one machine.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  st/.style={draw, rounded corners, align=center, font=\scriptsize, minimum height=0.72cm, minimum width=1.15cm},
+  arr/.style={-{Stealth}, thin}
+]
+\node[st] (c1) {cut\\shell};
+\node[st, right=0.35cm of c1] (c2) {cut\\lining};
+\node[st, right=0.35cm of c2] (pr) {logo};
+\node[st, right=0.35cm of pr] (sb) {sew\\body};
+\node[st, right=0.35cm of sb] (ss) {sew\\strap};
+\node[st, right=0.35cm of ss] (hw) {hardware};
+\node[st, right=0.35cm of hw] (qc) {inspect};
+\node[st, right=0.35cm of qc] (pk) {pack};
+\draw[arr] (c1) -- (c2);
+\draw[arr] (c2) -- (pr);
+\draw[arr] (pr) -- (sb);
+\draw[arr] (sb) -- (ss);
+\draw[arr] (ss) -- (hw);
+\draw[arr] (hw) -- (qc);
+\draw[arr] (qc) -- (pk);
+\end{tikzpicture}
+\caption{Route of one classic school backpack. Trolley bags and sports sacks use shorter or longer chains on the same cells. Cutting and colour-sensitive sewing are the steps that seize a shared token.}
+\label{fig:backpack-route}
+\end{figure}
+
+Colour is a setup, not only a bill-of-material attribute. If a sewing machine or the embroidery head moves from navy to red, the operator changes thread and the machine loses a setup of about eleven minutes in the case data. A repeated colour pays a short warm-up only when the machine has been idle and cleared. Allahverdi's setup surveys describe exactly this structure \cite{allahverdi2015}. In a bag factory the setup is large relative to a small sports sack and small relative to a heavy trolley shell, so a policy that groups colour is not automatically a policy that protects the trolley due date. That conflict is one reason a single rule is not enough.
+
+Quantity and size scale the cycle. The nominal times in Chapter~\ref{ch:estimation} are written for a batch of eighty bags of size M. A batch of one hundred and twenty, or a size L pattern, takes longer on every step and occupies the token for longer. The die and the thread lot are therefore not only feasibility constraints. They are congestion multipliers.
+
+\subsection{Resources and the information the scheduler is allowed to see}
+
+The shop is dual-resource constrained \cite{xu2011}. Eight operators are modelled in the estimation cell. Two can cut, and the second of them is slower. One runs embroidery and can help at inspection. Three sew; only two of those three are qualified on the bartack, and their skills differ. One operator owns the hardware bench and can pack. One owns inspection and can also pack or, slowly, work the hardware bench. An operation is feasible only if at least one qualified operator is free at the same moment as an eligible machine. Skill scales the processing time. A weak pairing is legal and expensive.
+
+Shared tokens sit on top of the operator constraint. Two cutting dies can be out at once, so the two cutters can run together only when two dies are free. Thread lots are counted per colour: two concurrent users for navy, black, red, and grey, and one concurrent user for khaki. A shortage scenario in Chapter~\ref{ch:estimation} drops navy, red, and khaki to a single lot. The token is seized when the operation starts and released when it ends. A scheduler that ignores the token will recommend two khaki bodies at once and then discover that the second cannot start.
+
+The information model is intentionally modest. At a decision epoch the scheduler may see the released orders, their routes, colours, sizes, quantities, and due dates; the eligibility and skill tables; the previous colour and the free time of each machine and operator; the token counts; and a scalar health for each machine. It may not see the future rush order before its release time. It may not see a breakdown that has not yet been implied by the health model. This is the information a manufacturing-execution client can actually subscribe to under IEC 62264 and OPC UA \cite{iec62264,iec62541}. It is also enough, as Chapter~\ref{ch:methods} shows, to build the graph.
+
+\subsection{Targets}
+
+The planner does not have one number to minimise. Five quantities describe a finished schedule \(S\).
+
+The makespan \(\cmax(S)\) is the clock time at which the last bag of the released book is packed. It measures the length of the day.
+
+The total tardiness
+\begin{equation}
+T(S) = \sum_j \max(0, C_j - d_j)
+\label{eq:tard-problem}
+\end{equation}
+measures broken promises. A sports sack that finishes an hour early does not cancel a trolley bag that finishes an hour late. On-time rate, the fraction of orders with \(C_j \le d_j\), is reported beside \(T\) because a single very late order can dominate the sum.
+
+Energy \(E(S)\) is the electrical energy of processing, setup, preventive maintenance, and the expected energy of a repair. Power is a property of the machine. A worn machine draws more for the same minute. The automatic cutter dominates this sum when it is used carelessly.
+
+Workload imbalance \(B(S)\) is the standard deviation of busy time across machines. A schedule that parks almost all cutting on one cutter will look acceptable on makespan until that cutter becomes the wear problem of the next day. Balance is therefore both a fairness target and a leading indicator of tomorrow's health.
+
+Expected failures \(\Phi(S)\) sum, over every executed cycle, the probability that the cycle is interrupted. The estimation uses this expectation rather than a single random breakdown draw, so that two schedulers are compared on the risk they chose and not on a lucky or unlucky random seed. Expected repair delay is accumulated into the timeline for the same reason.
+
+These five numbers conflict. The fast cutter reduces the nominal cutting time and increases energy, wear, and failure probability. Grouping navy orders reduces setups and can increase the tardiness of a red order. Preventive maintenance spends sixteen minutes now to avoid an expected repair of several times that, and to restore a faster, cooler cycle. A preference vector \(\omega\), with non-negative components summing to one, tells the policy which of the conflicts matters for the present shift. Changing \(\omega\) is a management action. It should not require a new research project.
+
+\subsection{Why the previous methods do not close this problem}
+
+Put an earliest-due-date rule on this shop and it will protect promises better than first-in-first-out, as Chapter~\ref{ch:estimation} confirms. It will also send the logo of every urgent order to the single embroidery head without seeing the queue it is building, and it will keep the worn automatic cutter busy because the rule has no health input. The apparent-tardiness-cost rule improves the local ranking and still has no token, no skill, and no wear.
+
+Put NSGA-II or NSGA-III on a frozen snapshot and the front can be excellent by morning \cite{deb2002,deb2014,gong2019}. At 10:15 a rush order and a jumped health residual make the snapshot false. Rebuilding the front is a batch computation. The dispatch decision is not.
+
+Put the heterogeneous graph policy of Song, Chen, Li, and Cao on the shop and the operation-machine choice becomes learned and fast \cite{song2023}. The operator may still be double-booked by a later repair of the action, because the operator was never in the graph. The khaki lot may be double-booked for the same reason. Health may be displayed on a screen in the same room and never enter the embedding.
+
+Put a condition-based maintenance optimiser beside the plan \cite{cbm2024,pandhare2024,wang2024cie} and the cutter will be maintained on a sensible wear threshold. The maintenance window will not know that the operator it needs is the only person who can start the urgent strap, and the production policy will not know, in its features, that the maintenance has just made the cutter fast again.
+
+The problem set of this thesis is the joint problem these methods each solve half of. Find a dispatch policy that, at every epoch, selects a feasible bundle \((\text{operation},\text{machine},\text{operator},\text{token})\) so that a preference-weighted combination of makespan, tardiness, energy, imbalance, and expected failures is small, with processing times and failure probabilities written by a health state that is updated from machine status, and with a maintenance action available in the same decision when a chance constraint would otherwise be broken.
+
+\subsection{The two technologies, stated as contributions}
+
+The first technology is resource-coupled heterogeneous graph attention scheduling (RCH-GAT). The shop graph contains four node types that the assignment actually touches: the operation, the machine, the operator, and the shop-level contention for tokens. Relation-specific attention pools those nodes into a score. The score is conditioned on the preference vector \(\omega\). Infeasible bundles, including bundles that fail skill, precedence, machine capacity, or token capacity, are masked before the score is used. The training objective in the full model is proximal policy optimisation of this masked, preference-conditioned policy. The estimation system of Chapter~\ref{ch:estimation} implements the same score in a one-hop form whose coefficients are identified by cross-entropy search, so that every reported number comes from an executable policy rather than from an unreported training run. Section~\ref{sec:rch} writes the full model. The identification procedure is part of the system build.
+
+The second technology is the status-synchronized digital twin with chance-constrained rescheduling (SSDT-CC). Each machine carries a health state. The state scales processing time and energy, and it supplies the failure probability of the cycle about to be started. If that probability exceeds a tolerance \(\varepsilon\), or if the predicted health at the end of the cycle exceeds a wear ceiling, the decision inserts a short preventive maintenance, renews the health, and recomputes the cycle. The policy is an online policy, so a new health value is visible at the next dispatch without a separate rescheduling project. The chance constraint is what turns the twin from a display into a veto. Section~\ref{sec:ssdt} writes the state, the constraint, and the coupling back into the graph features of the first technology.
+
+The two technologies are one system. RCH-GAT without the twin can still prefer a healthy machine, but it cannot renew a worn one. The twin without RCH-GAT can still maintain the cutter, but it will maintain whatever machine a shortest-processing-time rule happens to overload. Chapter~\ref{ch:estimation} estimates them separately and together for that reason.
+
+\subsection{Questions the estimation is required to answer}
+
+The estimation is not a collection of illustrations. It is required to answer four questions about the problem just stated.
+
+First, on a nominal school-bag book, does the coupled system reduce makespan, energy, imbalance, and expected failures relative to first-in-first-out, shortest processing time, earliest due date, and apparent tardiness cost, without giving those rules a large advantage on tardiness? A system that saves energy by missing every due date has not solved a multi-target problem.
+
+Second, when the day is stressed, does the same system hold up? The stresses used in Chapter~\ref{ch:estimation} are a mid-day rush release, an accelerated wear regime, and a thread-lot shortage. These are the three ways the problem set says the shop escapes a static flexible-job-shop benchmark.
+
+Third, which technology produces which part of the gain? Removing resource features and removing status-and-maintenance are the two ablations. If both removals do nothing, the technologies are not doing the work the model description claims.
+
+Fourth, does the chance-constraint tolerance behave like a real knob? Tightening \(\varepsilon\) should buy fewer expected failures at the price of more preventive maintenance. If the estimation cannot show that exchange, the constraint is only a story.
+
+A fifth, softer question is how stable the tardiness comparison is. Total tardiness is a sum of a few late orders, so its standard deviation across random books is expected to be large. The estimation reports that spread instead of treating a small difference in the mean as a ranking.
+
+\subsection{How the remaining chapters answer the problem set}
+
+Chapter~\ref{ch:methods} answers the problem set with formulas. Section~\ref{sec:rch} writes objectives, constraints, the heterogeneous graph, the attention score, the masked action, and the policy-gradient training of RCH-GAT, and it walks one numerical assignment. Section~\ref{sec:ssdt} writes the health dynamics, the Kalman revision of that health, the chance constraint and its Gaussian threshold, the maintenance map, and the way the renewed health re-enters the graph.
+
+Chapter~\ref{ch:estimation} answers the problem set with a system and a measurement. Section~\ref{sec:build} describes the shop that was built, the data it accepts, and the executable form of the two technologies. Section~\ref{sec:estimate} reports the four scenarios, the ablations, the tolerance sweep, and the limits of what those runs can support. The program that produced the tables is the program in the thesis directory. The numbers were not taken from an external factory and they were not taken from the papers reviewed in this chapter.

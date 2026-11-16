@@ -1,0 +1,586 @@
+\begin{thebibliography}{84}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Stewart(2010)]{stewart2010}
+Graham~G. Stewart.
+\newblock High-gravity brewing and distilling---past experiences and future
+  prospects.
+\newblock \emph{Journal of the American Society of Brewing Chemists},
+  68\penalty0 (1):\penalty0 1--9, 2010.
+\newblock \doi{10.1094/ASBCJ-2009-1214-01}.
+
+\bibitem[Kunze(2019)]{kunze2019}
+Wolfgang Kunze.
+\newblock \emph{Technology Brewing and Malting}.
+\newblock VLB Berlin, Berlin, 6 edition, 2019.
+
+\bibitem[Puligundla et~al.(2011)Puligundla, Smogrovicova, Obulam, and
+  Ko]{puligundla2011}
+Pradeep Puligundla, Daniela Smogrovicova, Vijaya Sarathi~Reddy Obulam, and
+  Sanghoon Ko.
+\newblock Very high gravity ({VHG}) ethanolic brewing and fermentation: A
+  research update.
+\newblock \emph{Journal of Industrial Microbiology and Biotechnology},
+  38\penalty0 (9):\penalty0 1133--1144, 2011.
+\newblock \doi{10.1007/s10295-011-0999-3}.
+
+\bibitem[Gibson et~al.(2007)Gibson, Lawrence, Leclaire, Powell, and
+  Smart]{gibson2007}
+Brian~R. Gibson, Stephen~J. Lawrence, Jessica P.~R. Leclaire, Chris~D. Powell,
+  and Katherine~A. Smart.
+\newblock Yeast responses to stresses associated with industrial brewery
+  handling.
+\newblock \emph{FEMS Microbiology Reviews}, 31\penalty0 (5):\penalty0 535--569,
+  2007.
+\newblock \doi{10.1111/j.1574-6976.2007.00076.x}.
+
+\bibitem[Casey et~al.(1984)Casey, Magnus, and Ingledew]{casey1984}
+Gregory~P. Casey, Carol~A. Magnus, and W.~M. Ingledew.
+\newblock High-gravity brewing: Effects of nutrition on yeast composition,
+  fermentative ability, and alcohol production.
+\newblock \emph{Applied and Environmental Microbiology}, 48\penalty0
+  (3):\penalty0 639--646, 1984.
+\newblock \doi{10.1128/aem.48.3.639-646.1984}.
+
+\bibitem[Stewart et~al.(2013)Stewart, Hill, and Russell]{stewart2013}
+Graham~G. Stewart, Annie~E. Hill, and Inge Russell.
+\newblock 125th anniversary review: Developments in brewing and distilling
+  yeast strains.
+\newblock \emph{Journal of the Institute of Brewing}, 119\penalty0
+  (4):\penalty0 202--220, 2013.
+\newblock \doi{10.1002/jib.104}.
+
+\bibitem[Boulton and Quain(2001)]{boulton2001}
+Chris Boulton and David Quain.
+\newblock \emph{Brewing Yeast and Fermentation}.
+\newblock Blackwell Science, Oxford, 2001.
+
+\bibitem[Briggs et~al.(2004)Briggs, Boulton, Brookes, and Stevens]{briggs2004}
+Dennis~E. Briggs, Chris~A. Boulton, Peter~A. Brookes, and Roger Stevens.
+\newblock \emph{Brewing: Science and Practice}.
+\newblock Woodhead Publishing, Cambridge, 2004.
+
+\bibitem[Priest and Stewart(2006)]{priest2006}
+Fergus~G. Priest and Graham~G. Stewart, editors.
+\newblock \emph{Handbook of Brewing}.
+\newblock CRC Press, Boca Raton, 2 edition, 2006.
+
+\bibitem[Bamforth(2009)]{bamforth2009}
+Charles~W. Bamforth, editor.
+\newblock \emph{Beer: A Quality Perspective}.
+\newblock Academic Press, Burlington, 2009.
+
+\bibitem[Vanderhaegen et~al.(2006)Vanderhaegen, Neven, Verachtert, and
+  Derdelinckx]{vanderhaegen2006}
+Bart Vanderhaegen, Hedwig Neven, Hubert Verachtert, and Guy Derdelinckx.
+\newblock The chemistry of beer aging---a critical review.
+\newblock \emph{Food Chemistry}, 95\penalty0 (3):\penalty0 357--381, 2006.
+\newblock \doi{10.1016/j.foodchem.2005.01.006}.
+
+\bibitem[Uchida and Ono(1996)]{uchida1996}
+Minoru Uchida and Masahiro Ono.
+\newblock Improvement for oxidative flavor stability of beer---role of
+  {OH}-radical in beer oxidation.
+\newblock \emph{Journal of the American Society of Brewing Chemists},
+  54\penalty0 (4):\penalty0 198--204, 1996.
+\newblock \doi{10.1094/ASBCJ-54-0198}.
+
+\bibitem[{Centec GmbH}(2024)]{centec2024}
+{Centec GmbH}.
+\newblock High gravity blending.
+\newblock \url{https://www.centec.de/process-systems/brewery/blender/}, 2024.
+\newblock Technical data sheet, accessed 29 October 2026.
+
+\bibitem[{corosys Prozesssysteme GmbH}(2024)]{corosysweb}
+{corosys Prozesssysteme GmbH}.
+\newblock Blending and carbonisation systems for breweries.
+\newblock
+  \url{https://bbt.corosys.com/en/portrait/professional-articles/blending-carbonisation-plants-breweries.php},
+  2024.
+\newblock Professional article, accessed 29 October 2026.
+
+\bibitem[Palmer and Kaminski(2013)]{palmer2013}
+John Palmer and Colin Kaminski.
+\newblock \emph{Water: A Comprehensive Guide for Brewers}.
+\newblock Brewers Publications, Boulder, 2013.
+
+\bibitem[Holle(2003)]{holle2003}
+Stephen~R. Holle.
+\newblock \emph{A Handbook of Basic Brewing Calculations}.
+\newblock Master Brewers Association of the Americas, St. Paul, 2003.
+
+\bibitem[{MEBAK}(2013)]{mebak2013}
+{MEBAK}.
+\newblock \emph{Wort, Beer and Beer-based Beverages}.
+\newblock Mitteleurop{\"a}ische Brautechnische Analysenkommission, Freising,
+  2013.
+
+\bibitem[{American Society of Brewing Chemists}(2014)]{asbc2014}
+{American Society of Brewing Chemists}.
+\newblock \emph{Methods of Analysis}.
+\newblock ASBC, St. Paul, 2014.
+\newblock Beer-4, Alcohol; Beer-13, Dissolved carbon dioxide.
+
+\bibitem[{European Brewery Convention}(2013)]{ebcanalytica}
+{European Brewery Convention}.
+\newblock \emph{Analytica-{EBC}}.
+\newblock Fachverlag Hans Carl, N{\"u}rnberg, 2013.
+
+\bibitem[Findlay and Shen(1911)]{findlay1911}
+Alexander Findlay and B.~Shen.
+\newblock The solubility of carbon dioxide in beer.
+\newblock \emph{Journal of the Chemical Society, Transactions}, 99:\penalty0
+  1313--1320, 1911.
+\newblock \doi{10.1039/CT9119901313}.
+
+\bibitem[Speers and MacIntosh(2013)]{speers2013}
+R.~A. Speers and A.~J. MacIntosh.
+\newblock Carbon dioxide solubility in beer.
+\newblock \emph{Journal of the American Society of Brewing Chemists},
+  71\penalty0 (4):\penalty0 242--247, 2013.
+\newblock \doi{10.1094/ASBCJ-2013-1008-01}.
+
+\bibitem[Weiss(1974)]{weiss1974}
+R.~F. Weiss.
+\newblock Carbon dioxide in water and seawater: The solubility of a non-ideal
+  gas.
+\newblock \emph{Marine Chemistry}, 2\penalty0 (3):\penalty0 203--215, 1974.
+\newblock \doi{10.1016/0304-4203(74)90015-2}.
+
+\bibitem[Carroll et~al.(1991)Carroll, Slupsky, and Mather]{carroll1991}
+John~J. Carroll, John~D. Slupsky, and Alan~E. Mather.
+\newblock The solubility of carbon dioxide in water at low pressure.
+\newblock \emph{Journal of Physical and Chemical Reference Data}, 20\penalty0
+  (6):\penalty0 1201--1209, 1991.
+\newblock \doi{10.1063/1.555900}.
+
+\bibitem[Rammert and Pahl(1991)]{rammert1991}
+M.~Rammert and M.~H. Pahl.
+\newblock Die {L\"oslichkeit} von {Kohlendioxid} in {Getr\"anken}.
+\newblock \emph{Brauwelt}, 132:\penalty0 488--499, 1991.
+
+\bibitem[Shinskey(1996)]{shinskey1996}
+F.~Greg Shinskey.
+\newblock \emph{Process Control Systems: Application, Design, and Tuning}.
+\newblock McGraw-Hill, New York, 4 edition, 1996.
+
+\bibitem[Seborg et~al.(2016)Seborg, Edgar, Mellichamp, and
+  Doyle~III]{seborg2016}
+Dale~E. Seborg, Thomas~F. Edgar, Duncan~A. Mellichamp, and Francis~J.
+  Doyle~III.
+\newblock \emph{Process Dynamics and Control}.
+\newblock Wiley, Hoboken, 4 edition, 2016.
+
+\bibitem[Bristol(1966)]{bristol1966}
+Edgar~H. Bristol.
+\newblock On a new measure of interaction for multivariable process control.
+\newblock \emph{IEEE Transactions on Automatic Control}, 11\penalty0
+  (1):\penalty0 133--134, 1966.
+\newblock \doi{10.1109/TAC.1966.1098266}.
+
+\bibitem[Skogestad(2004)]{skogestad2004}
+Sigurd Skogestad.
+\newblock Control structure design for complete chemical plants.
+\newblock \emph{Computers and Chemical Engineering}, 28\penalty0
+  (1--2):\penalty0 219--234, 2004.
+\newblock \doi{10.1016/j.compchemeng.2003.08.002}.
+
+\bibitem[Downs and Skogestad(2011)]{downs2011}
+James~J. Downs and Sigurd Skogestad.
+\newblock An industrial and academic perspective on plantwide control.
+\newblock \emph{Annual Reviews in Control}, 35\penalty0 (1):\penalty0 99--110,
+  2011.
+\newblock \doi{10.1016/j.arcontrol.2011.03.006}.
+
+\bibitem[Skogestad(2003)]{skogestad2003}
+Sigurd Skogestad.
+\newblock Simple analytic rules for model reduction and {PID} controller
+  tuning.
+\newblock \emph{Journal of Process Control}, 13\penalty0 (4):\penalty0
+  291--309, 2003.
+\newblock \doi{10.1016/S0959-1524(02)00062-8}.
+
+\bibitem[Int(2011)]{iec60534}
+\emph{{IEC} 60534-2-1: Industrial-Process Control Valves---Part 2-1: Flow
+  Capacity---Sizing Equations for Fluid Flow under Installed Conditions}.
+\newblock International Electrotechnical Commission, Geneva, 2011.
+
+\bibitem[Int(2012)]{isa75}
+\emph{{ANSI/ISA-75.01.01-2012}: Flow Equations for Sizing Control Valves}.
+\newblock International Society of Automation, Research Triangle Park, 2012.
+
+\bibitem[Fis(2005)]{fisher2005}
+\emph{Control Valve Handbook}.
+\newblock Fisher Controls International, Marshalltown, 4 edition, 2005.
+
+\bibitem[White(2011)]{white2011}
+Frank~M. White.
+\newblock \emph{Fluid Mechanics}.
+\newblock McGraw-Hill, New York, 7 edition, 2011.
+
+\bibitem[Cra(2009)]{crane2009}
+\emph{Flow of Fluids Through Valves, Fittings, and Pipe}.
+\newblock Crane Co., Stamford, 2009.
+\newblock Technical Paper No. 410.
+
+\bibitem[Rohner and Thompkins(1970)]{rohner1970}
+R.~L. Rohner and J.~R. Thompkins.
+\newblock Continuous automatic control of carbonation in beer streams.
+\newblock In \emph{Proceedings of the American Society of Brewing Chemists},
+  pages 111--117, 1970.
+
+\bibitem[Luyben(1990)]{luyben1990}
+William~L. Luyben.
+\newblock \emph{Process Modeling, Simulation, and Control for Chemical
+  Engineers}.
+\newblock McGraw-Hill, New York, 2 edition, 1990.
+
+\bibitem[Wang and Baker(2014)]{wang2014}
+Tao Wang and Roger Baker.
+\newblock Coriolis flowmeters: A review of developments over the past 20 years,
+  and an assessment of the state of the art and likely future directions.
+\newblock \emph{Flow Measurement and Instrumentation}, 40:\penalty0 99--123,
+  2014.
+\newblock \doi{10.1016/j.flowmeasinst.2014.08.015}.
+
+\bibitem[{Anton Paar GmbH}(2024)]{antonpaar2024}
+{Anton Paar GmbH}.
+\newblock Inline beverage analyzer: Beer monitor 5501/5601.
+\newblock
+  \url{https://www.anton-paar.com/corp-en/products/details/beer-monitor/},
+  2024.
+\newblock Product specification, accessed 29 October 2026.
+
+\bibitem[Sch{\"o}ck et~al.(2012)Sch{\"o}ck, Hussein, Hitzmann, and
+  Becker]{schoeck2012}
+T.~Sch{\"o}ck, M.~Hussein, B.~Hitzmann, and T.~Becker.
+\newblock Influence of dissolved carbon dioxide on the sound velocity and
+  adiabatic compressibility in aqueous solutions with saccharose and ethanol.
+\newblock \emph{Journal of Molecular Liquids}, 175:\penalty0 111--120, 2012.
+\newblock \doi{10.1016/j.molliq.2012.08.002}.
+
+\bibitem[Siesler et~al.(2002)Siesler, Ozaki, Kawata, and Heise]{siesler2002}
+Heinz~W. Siesler, Yukihiro Ozaki, Satoshi Kawata, and H.~Michael Heise,
+  editors.
+\newblock \emph{Near-Infrared Spectroscopy: Principles, Instruments,
+  Applications}.
+\newblock Wiley-VCH, Weinheim, 2002.
+
+\bibitem[Lachenmeier(2007)]{lachenmeier2007}
+Dirk~W. Lachenmeier.
+\newblock Rapid quality control of spirit drinks and beer using multivariate
+  data analysis of {Fourier} transform infrared spectra.
+\newblock \emph{Food Chemistry}, 101\penalty0 (2):\penalty0 825--832, 2007.
+\newblock \doi{10.1016/j.foodchem.2005.12.032}.
+
+\bibitem[I{\~n}{\'o}n et~al.(2006)I{\~n}{\'o}n, Garrigues, and de~la
+  Guardia]{inon2006}
+Fernando~A. I{\~n}{\'o}n, Salvador Garrigues, and Miguel de~la Guardia.
+\newblock Combination of mid- and near-infrared spectroscopy for the
+  determination of the quality properties of beers.
+\newblock \emph{Analytica Chimica Acta}, 571\penalty0 (2):\penalty0 167--174,
+  2006.
+\newblock \doi{10.1016/j.aca.2006.04.070}.
+
+\bibitem[Grassi et~al.(2014)Grassi, Amigo, Lyndgaard, Foschino, and
+  Casiraghi]{grassi2014}
+Silvia Grassi, Jos{\'e}~Manuel Amigo, Christian~B{\o}ge Lyndgaard, Roberto
+  Foschino, and Ernestina Casiraghi.
+\newblock Beer fermentation: Monitoring of process parameters by {FT-NIR} and
+  multivariate data analysis.
+\newblock \emph{Food Chemistry}, 155:\penalty0 279--286, 2014.
+\newblock \doi{10.1016/j.foodchem.2014.01.060}.
+
+\bibitem[Garc{\'i}a et~al.(1989)Garc{\'i}a, Prett, and Morari]{garcia1989}
+Carlos~E. Garc{\'i}a, David~M. Prett, and Manfred Morari.
+\newblock Model predictive control: Theory and practice---a survey.
+\newblock \emph{Automatica}, 25\penalty0 (3):\penalty0 335--348, 1989.
+\newblock \doi{10.1016/0005-1098(89)90002-2}.
+
+\bibitem[Qin and Badgwell(2003)]{qin2003}
+S.~Joe Qin and Thomas~A. Badgwell.
+\newblock A survey of industrial model predictive control technology.
+\newblock \emph{Control Engineering Practice}, 11\penalty0 (7):\penalty0
+  733--764, 2003.
+\newblock \doi{10.1016/S0967-0661(02)00186-7}.
+
+\bibitem[Mayne et~al.(2000)Mayne, Rawlings, Rao, and Scokaert]{mayne2000}
+D.~Q. Mayne, J.~B. Rawlings, C.~V. Rao, and P.~O.~M. Scokaert.
+\newblock Constrained model predictive control: Stability and optimality.
+\newblock \emph{Automatica}, 36\penalty0 (6):\penalty0 789--814, 2000.
+\newblock \doi{10.1016/S0005-1098(99)00214-9}.
+
+\bibitem[Rawlings et~al.(2017)Rawlings, Mayne, and Diehl]{rawlings2017}
+James~B. Rawlings, David~Q. Mayne, and Moritz Diehl.
+\newblock \emph{Model Predictive Control: Theory, Computation, and Design}.
+\newblock Nob Hill Publishing, Madison, 2 edition, 2017.
+
+\bibitem[Camacho and Bordons(2007)]{camacho2007}
+Eduardo~F. Camacho and Carlos Bordons.
+\newblock \emph{Model Predictive Control}.
+\newblock Springer, London, 2 edition, 2007.
+
+\bibitem[Maciejowski(2002)]{maciejowski2002}
+Jan~M. Maciejowski.
+\newblock \emph{Predictive Control with Constraints}.
+\newblock Prentice Hall, Harlow, 2002.
+
+\bibitem[Gr{\"u}ne and Pannek(2017)]{grune2017}
+Lars Gr{\"u}ne and J{\"u}rgen Pannek.
+\newblock \emph{Nonlinear Model Predictive Control: Theory and Algorithms}.
+\newblock Springer, Cham, 2 edition, 2017.
+
+\bibitem[Ellis et~al.(2014)Ellis, Durand, and Christofides]{ellis2014}
+Matthew Ellis, Helen Durand, and Panagiotis~D. Christofides.
+\newblock A tutorial review of economic model predictive control methods.
+\newblock \emph{Journal of Process Control}, 24\penalty0 (8):\penalty0
+  1156--1178, 2014.
+\newblock \doi{10.1016/j.jprocont.2014.03.010}.
+
+\bibitem[W{\"a}chter and Biegler(2006)]{wachter2006}
+Andreas W{\"a}chter and Lorenz~T. Biegler.
+\newblock On the implementation of an interior-point filter line-search
+  algorithm for large-scale nonlinear programming.
+\newblock \emph{Mathematical Programming}, 106\penalty0 (1):\penalty0 25--57,
+  2006.
+\newblock \doi{10.1007/s10107-004-0559-y}.
+
+\bibitem[Andersson et~al.(2019)Andersson, Gillis, Horn, Rawlings, and
+  Diehl]{andersson2019}
+Joel A.~E. Andersson, Joris Gillis, Greg Horn, James~B. Rawlings, and Moritz
+  Diehl.
+\newblock {CasADi}: A software framework for nonlinear optimization and optimal
+  control.
+\newblock \emph{Mathematical Programming Computation}, 11\penalty0
+  (1):\penalty0 1--36, 2019.
+\newblock \doi{10.1007/s12532-018-0139-4}.
+
+\bibitem[Diehl et~al.(2005)Diehl, Bock, and Schl{\"o}der]{diehl2005}
+Moritz Diehl, Hans~Georg Bock, and Johannes~P. Schl{\"o}der.
+\newblock A real-time iteration scheme for nonlinear optimization in optimal
+  feedback control.
+\newblock \emph{SIAM Journal on Control and Optimization}, 43\penalty0
+  (5):\penalty0 1714--1736, 2005.
+\newblock \doi{10.1137/S0363012902400713}.
+
+\bibitem[Gros et~al.(2020)Gros, Zanon, Quirynen, Bemporad, and Diehl]{gros2020}
+S{\'e}bastien Gros, Mario Zanon, Rien Quirynen, Alberto Bemporad, and Moritz
+  Diehl.
+\newblock From linear to nonlinear {MPC}: Bridging the gap via the real-time
+  iteration.
+\newblock \emph{International Journal of Control}, 93\penalty0 (1):\penalty0
+  62--80, 2020.
+\newblock \doi{10.1080/00207179.2016.1222553}.
+
+\bibitem[Gee and Ramirez(1994)]{gee1994}
+Douglas~A. Gee and W.~Fred Ramirez.
+\newblock A flavour model for beer fermentation.
+\newblock \emph{Journal of the Institute of Brewing}, 100\penalty0
+  (5):\penalty0 321--329, 1994.
+\newblock \doi{10.1002/j.2050-0416.1994.tb00830.x}.
+
+\bibitem[Andr{\'e}s-Toro et~al.(1998)Andr{\'e}s-Toro, Gir{\'o}n-Sierra,
+  L{\'o}pez-Orozco, Fern{\'a}ndez-Conde, Peinado, and
+  Garc{\'i}a-Ochoa]{andrestoro1998}
+B.~Andr{\'e}s-Toro, J.~M. Gir{\'o}n-Sierra, J.~A. L{\'o}pez-Orozco,
+  C.~Fern{\'a}ndez-Conde, J.~M. Peinado, and F.~Garc{\'i}a-Ochoa.
+\newblock A kinetic model for beer production under industrial operational
+  conditions.
+\newblock \emph{Mathematics and Computers in Simulation}, 48\penalty0
+  (1):\penalty0 65--74, 1998.
+\newblock \doi{10.1016/S0378-4754(98)00147-5}.
+
+\bibitem[Carrillo-Ureta et~al.(2001)Carrillo-Ureta, Roberts, and
+  Becerra]{carrillo2001}
+G.~E. Carrillo-Ureta, P.~D. Roberts, and V.~M. Becerra.
+\newblock Genetic algorithms for optimal control of beer fermentation.
+\newblock In \emph{Proceedings of the 2001 IEEE International Symposium on
+  Intelligent Control}, pages 391--396, 2001.
+\newblock \doi{10.1109/ISIC.2001.971541}.
+
+\bibitem[Trelea et~al.(2004)Trelea, Titica, and Corrieu]{trelea2004}
+I.~C. Trelea, M.~Titica, and G.~Corrieu.
+\newblock Dynamic optimisation of the aroma production in brewing fermentation.
+\newblock \emph{Journal of Process Control}, 14\penalty0 (1):\penalty0 1--16,
+  2004.
+\newblock \doi{10.1016/S0959-1524(03)00007-6}.
+
+\bibitem[Rodman and Gerogiorgis(2016)]{rodman2016}
+Alistair~D. Rodman and Dimitrios~I. Gerogiorgis.
+\newblock Multi-objective process optimisation of beer fermentation via dynamic
+  simulation.
+\newblock \emph{Food and Bioproducts Processing}, 100:\penalty0 255--274, 2016.
+\newblock \doi{10.1016/j.fbp.2016.05.002}.
+
+\bibitem[Tao et~al.(2019)Tao, Zhang, Liu, and Nee]{tao2019}
+Fei Tao, He~Zhang, Ang Liu, and A.~Y.~C. Nee.
+\newblock Digital twin in industry: State-of-the-art.
+\newblock \emph{IEEE Transactions on Industrial Informatics}, 15\penalty0
+  (4):\penalty0 2405--2415, 2019.
+\newblock \doi{10.1109/TII.2018.2873186}.
+
+\bibitem[Fuller et~al.(2020)Fuller, Fan, Day, and Barlow]{fuller2020}
+Aidan Fuller, Zhong Fan, Charles Day, and Chris Barlow.
+\newblock Digital twin: Enabling technologies, challenges and open research.
+\newblock \emph{IEEE Access}, 8:\penalty0 108952--108976, 2020.
+\newblock \doi{10.1109/ACCESS.2020.2998358}.
+
+\bibitem[Jones et~al.(2020)Jones, Snider, Nassehi, Yon, and Hicks]{jones2020}
+David Jones, Chris Snider, Aydin Nassehi, Jason Yon, and Ben Hicks.
+\newblock Characterising the digital twin: A systematic literature review.
+\newblock \emph{CIRP Journal of Manufacturing Science and Technology},
+  29:\penalty0 36--52, 2020.
+\newblock \doi{10.1016/j.cirpj.2020.02.002}.
+
+\bibitem[Kritzinger et~al.(2018)Kritzinger, Karner, Traar, Henjes, and
+  Sihn]{kritzinger2018}
+Werner Kritzinger, Matthias Karner, Georg Traar, Jan Henjes, and Wilfried Sihn.
+\newblock Digital twin in manufacturing: A categorical literature review and
+  classification.
+\newblock \emph{IFAC-PapersOnLine}, 51\penalty0 (11):\penalty0 1016--1022,
+  2018.
+\newblock \doi{10.1016/j.ifacol.2018.08.474}.
+
+\bibitem[Int(2010)]{isa88}
+\emph{{ANSI/ISA-88.00.01-2010}: Batch Control---Part 1: Models and
+  Terminology}.
+\newblock International Society of Automation, Research Triangle Park, 2010.
+
+\bibitem[Int(2020)]{iec62541}
+\emph{{IEC} 62541-1: {OPC} Unified Architecture---Part 1: Overview and
+  Concepts}.
+\newblock International Electrotechnical Commission, Geneva, 2020.
+
+\bibitem[Goffi et~al.(2025)Goffi, Tremblay, and Oakes]{goffi2025}
+Pierre-Emmanuel Goffi, Rapha{\"e}l Tremblay, and Bentley Oakes.
+\newblock Engineering a digital twin for the monitoring and control of beer
+  fermentation sampling.
+\newblock In \emph{IEEE Conference on Engineering Digital Twins}, 2025.
+\newblock Author preprint, arXiv:2508.18452.
+
+\bibitem[von Stosch et~al.(2014)von Stosch, Oliveira, Peres, and Feyo~de
+  Azevedo]{vonstosch2014}
+Moritz von Stosch, Rui Oliveira, Joana Peres, and Sebasti{\~a}o Feyo~de
+  Azevedo.
+\newblock Hybrid semi-parametric modeling in process systems engineering: Past,
+  present and future.
+\newblock \emph{Computers and Chemical Engineering}, 60:\penalty0 86--101,
+  2014.
+\newblock \doi{10.1016/j.compchemeng.2013.08.008}.
+
+\bibitem[Sansana et~al.(2021)Sansana, Joswiak, Castillo, Wang, Rendall, Chiang,
+  and Reis]{sansana2021}
+Joel Sansana, Mark~N. Joswiak, Ivan Castillo, Zhenyu Wang, Ricardo Rendall,
+  Leo~H. Chiang, and Marco~S. Reis.
+\newblock Recent trends on hybrid modeling for industry 4.0.
+\newblock \emph{Computers and Chemical Engineering}, 151:\penalty0 107365,
+  2021.
+\newblock \doi{10.1016/j.compchemeng.2021.107365}.
+
+\bibitem[Kadlec et~al.(2009)Kadlec, Gabrys, and Strandt]{kadlec2009}
+Petr Kadlec, Bogdan Gabrys, and Sibylle Strandt.
+\newblock Data-driven soft sensors in the process industry.
+\newblock \emph{Computers and Chemical Engineering}, 33\penalty0 (4):\penalty0
+  795--814, 2009.
+\newblock \doi{10.1016/j.compchemeng.2008.12.012}.
+
+\bibitem[Raissi et~al.(2019)Raissi, Perdikaris, and Karniadakis]{raissi2019}
+Maziar Raissi, Paris Perdikaris, and George~E. Karniadakis.
+\newblock Physics-informed neural networks: A deep learning framework for
+  solving forward and inverse problems involving nonlinear partial differential
+  equations.
+\newblock \emph{Journal of Computational Physics}, 378:\penalty0 686--707,
+  2019.
+\newblock \doi{10.1016/j.jcp.2018.10.045}.
+
+\bibitem[Karniadakis et~al.(2021)Karniadakis, Kevrekidis, Lu, Perdikaris, Wang,
+  and Yang]{karniadakis2021}
+George~Em Karniadakis, Ioannis~G. Kevrekidis, Lu~Lu, Paris Perdikaris, Sifan
+  Wang, and Liu Yang.
+\newblock Physics-informed machine learning.
+\newblock \emph{Nature Reviews Physics}, 3\penalty0 (6):\penalty0 422--440,
+  2021.
+\newblock \doi{10.1038/s42254-021-00314-5}.
+
+\bibitem[Cai et~al.(2021)Cai, Mao, Wang, Yin, and Karniadakis]{cai2021}
+Shengze Cai, Zhiping Mao, Zhicheng Wang, Minglang Yin, and George~Em
+  Karniadakis.
+\newblock Physics-informed neural networks ({PINNs}) for fluid mechanics: A
+  review.
+\newblock \emph{Acta Mechanica Sinica}, 37\penalty0 (12):\penalty0 1727--1738,
+  2021.
+\newblock \doi{10.1007/s10409-021-01148-1}.
+
+\bibitem[Zheng and Wu(2023)]{zheng2023}
+Yingzhe Zheng and Zhe Wu.
+\newblock Physics-informed online machine learning and predictive control of
+  nonlinear processes with parameter uncertainty.
+\newblock \emph{Industrial and Engineering Chemistry Research}, 62\penalty0
+  (6):\penalty0 2804--2818, 2023.
+\newblock \doi{10.1021/acs.iecr.2c03691}.
+
+\bibitem[Wu et~al.(2023)Wu, Yion, Dang, and Wu]{wu2023cerd}
+Guoquan Wu, Wallace Tan~Gian Yion, Khoa Le Nguyen~Quang Dang, and Zhe Wu.
+\newblock Physics-informed machine learning for {MPC}: Application to a batch
+  crystallization process.
+\newblock \emph{Chemical Engineering Research and Design}, 192:\penalty0
+  556--569, 2023.
+\newblock \doi{10.1016/j.cherd.2023.02.046}.
+
+\bibitem[Kalman(1960)]{kalman1960}
+Rudolph~E. Kalman.
+\newblock A new approach to linear filtering and prediction problems.
+\newblock \emph{Journal of Basic Engineering}, 82\penalty0 (1):\penalty0
+  35--45, 1960.
+\newblock \doi{10.1115/1.3662552}.
+
+\bibitem[Julier and Uhlmann(2004)]{julier2004}
+Simon~J. Julier and Jeffrey~K. Uhlmann.
+\newblock Unscented filtering and nonlinear estimation.
+\newblock \emph{Proceedings of the IEEE}, 92\penalty0 (3):\penalty0 401--422,
+  2004.
+\newblock \doi{10.1109/JPROC.2003.823141}.
+
+\bibitem[Rao et~al.(2003)Rao, Rawlings, and Mayne]{rao2003}
+Christopher~V. Rao, James~B. Rawlings, and David~Q. Mayne.
+\newblock Constrained state estimation for nonlinear discrete-time systems:
+  Stability and moving horizon approximations.
+\newblock \emph{IEEE Transactions on Automatic Control}, 48\penalty0
+  (2):\penalty0 246--258, 2003.
+\newblock \doi{10.1109/TAC.2002.808470}.
+
+\bibitem[Choudhury et~al.(2005)Choudhury, Thornhill, and Shah]{choudhury2005}
+M.~A. A.~Shoukat Choudhury, Nina~F. Thornhill, and Sirish~L. Shah.
+\newblock Modelling valve stiction.
+\newblock \emph{Control Engineering Practice}, 13\penalty0 (5):\penalty0
+  641--658, 2005.
+\newblock \doi{10.1016/j.conengprac.2004.05.005}.
+
+\bibitem[Jelali and Huang(2010)]{jelali2010}
+Mohieddine Jelali and Biao Huang, editors.
+\newblock \emph{Detection and Diagnosis of Stiction in Control Loops}.
+\newblock Springer, London, 2010.
+
+\bibitem[Kano and Ogawa(2010)]{kano2010}
+Manabu Kano and Morimasa Ogawa.
+\newblock The state of the art in chemical process control in {Japan}: Good
+  practice and questionnaire survey.
+\newblock \emph{Journal of Process Control}, 20\penalty0 (9):\penalty0
+  969--982, 2010.
+\newblock \doi{10.1016/j.jprocont.2010.06.013}.
+
+\bibitem[{\AA}str{\"o}m and H{\"a}gglund(2006)]{astrom2006}
+Karl~J. {\AA}str{\"o}m and Tore H{\"a}gglund.
+\newblock \emph{Advanced {PID} Control}.
+\newblock ISA, Research Triangle Park, 2006.
+
+\bibitem[Paul et~al.(2004)Paul, Atiemo-Obeng, and Kresta]{paul2004}
+Edward~L. Paul, Victor~A. Atiemo-Obeng, and Suzanne~M. Kresta, editors.
+\newblock \emph{Handbook of Industrial Mixing: Science and Practice}.
+\newblock Wiley, Hoboken, 2004.
+
+\end{thebibliography}

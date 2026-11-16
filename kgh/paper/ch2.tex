@@ -1,0 +1,778 @@
+\chapter{The Two Diagnostic Technologies}
+\label{ch:methods}
+
+The diagnosis is a composition of two maps.
+The first map, VWC, sends a triaxial acceleration record to a point in \(\R^{22}\).
+The second map, MSFLA-SVM, sends that point to one of four labels, after a search has fixed the two parameters of a radial-basis support vector machine.
+This chapter specifies both maps at the level of equations, algorithms, and implementation choices.
+Where the source study leaves a choice unspecified, the choice is stated and marked as a specification of this exposition rather than as a recovered experimental setting.
+
+\section{Technology one: the VWC feature map}
+\label{sec:vwc}
+
+\subsection{What the map is required to preserve}
+
+Let one observation be three finite sequences
+\begin{equation}
+a_{r}[n],\ a_{t}[n],\ a_{a}[n],\qquad n=0,\ldots,N-1,
+\label{eq:triaxial}
+\end{equation}
+sampled at \(f_{s}\), together with the shaft speed \(n_{\mathrm{rpm}}\) that fixes \(f_{0}\) through \eqref{eq:f0}.
+On the published rig, \(f_{s}=10\,\mathrm{kHz}\), \(N=8192\), and \(n_{\mathrm{rpm}}=960\).
+The map
+\begin{equation}
+\Phi:\ (a_{r}, a_{t}, a_{a})\ \longmapsto\ \vect{x}\in\R^{22}
+\label{eq:phi}
+\end{equation}
+has to preserve three different facts at once.
+The first fact is how hard the machine is vibrating, in the standardized sense of root-mean-square velocity.
+The second fact is how that vibration is spread across time scales, so that a short-lived transient is not averaged into invisibility.
+The third fact is how the energy of the loudest scale is distributed among the seven shaft orders in \eqref{eq:family}, because those orders are the mechanical vocabulary of the four states.
+VWC is the conjunction of those three facts: vibration severity, the dyadic wavelet energy time-spectrum, and the coefficient power spectrum of the maximum-energy level.
+The initial letters of the three blocks name the map.
+
+The blocks are complementary in a precise sense.
+Severity is invariant to a redistribution of energy among frequencies, which is why the pedestal fault hides inside it.
+The energy time-spectrum is invariant to a redistribution among frequencies that share a scale, which is why two different shaft orders inside one dyadic band produce the same \(E_{j}\).
+The coefficient power spectrum breaks that remaining invariance, at the price of being computed on only one scale.
+Using the maximum-energy scale concentrates the third block where the record actually has energy, instead of averaging a spectrum over scales that contain only the noise floor.
+
+\subsection{Vibration severity}
+
+The continuous definition \eqref{eq:vibcont} and the discrete RMS \eqref{eq:vibdisc} are the first block.
+The velocity series that enters \eqref{eq:vibdisc} is obtained from acceleration.
+This exposition distinguishes the source formula from the integrator used to scale the illustrative figures.
+
+The source formula accumulates absolute acceleration over a window of \(10\,\mathrm{ms}\),
+\begin{equation}
+v_{i}=\int_{0}^{0.01}\abs{a_{i}(t)}\,\mathrm{d}t.
+\label{eq:vsrc}
+\end{equation}
+On a uniform grid with step \(\Delta t=1/f_{s}\) the integral is a sum of \(0.01 f_{s}\) samples.
+At \(10\,\mathrm{kHz}\) that is \(100\) samples.
+The absolute value makes \(v_{i}\) nonnegative and proportional to the local mean absolute acceleration.
+Substituting the resulting series into \eqref{eq:vibdisc} produces the severity that the source reports: \(1.051\,\mathrm{mm/s}\) healthy, \(3.737\,\mathrm{mm/s}\) for the eccentric axle, \(1.161\,\mathrm{mm/s}\) for the bearing pedestal, and \(1.70024\,\mathrm{mm/s}\) for sealing-ring wear, all quoted for the radial direction in which the time-domain figures of the source are drawn.
+Figure~\ref{fig:severity} restates those four numbers.
+The eccentric state is more than three times the healthy severity.
+The pedestal state is about ten percent above healthy.
+A threshold on severity alone can flag the eccentric axle and cannot reliably flag the pedestal.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\textwidth]{severity.pdf}
+\caption{Radial vibration severity reported by You et al.\ for the four operating states. These are published measurements, not quantities computed from the illustrative signals.}
+\label{fig:severity}
+\end{figure}
+
+The illustrative waveforms of Figure~\ref{fig:waves} are built differently, and the difference is intentional.
+Each synthetic acceleration is high-pass integrated,
+\begin{equation}
+\tilde{v}[n]=\Delta t\sum_{k=0}^{n} a[k],\qquad
+v=\mathcal{H}_{2\,\mathrm{Hz}}\{\tilde{v}\},
+\label{eq:illustvel}
+\end{equation}
+and the acceleration is scaled by a single positive constant until \(\sqrt{\tfrac{1}{N}\sum v[n]^{2}}\), expressed in millimetres per second, equals the published severity of that state.
+The shape of each record---a shaft-locked fundamental, a half-order where the source describes one, a blade-pass component, a weak supply tone in the healthy state, and a resonance near \(200\,\mathrm{Hz}\) that gives the dyadic bank something to localize---follows the qualitative signatures of Section~\ref{sec:signatures}.
+The samples are not a reconstruction of the laboratory series, whose raw values are not in the source paper.
+They exist so that the later formulae can be looked at on a signal whose intensity and whose harmonic emphasis agree with the published description.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{waveforms.pdf}
+\caption{Illustrative radial acceleration over the first \(200\,\mathrm{ms}\). Each record is scaled so that the RMS of its high-pass-integrated velocity equals the published severity of that state.}
+\label{fig:waves}
+\end{figure}
+
+Severity contributes one coordinate to \(\vect{x}\), not three.
+The arithmetic of the source is explicit: seven harmonics in three directions give \(21\) spectral coordinates, and the full vector has dimension \(22\), so exactly one severity is appended.
+Figure~8 of the source shows that coordinate in the radial direction across groups of records.
+This exposition takes the radial severity as that coordinate, because that is the direction for which a number is published, and it keeps the three-axis diversity for the spectral block where the source says the three axes differ.
+
+\subsection{The dyadic wavelet and the Mallat bank}
+
+The second block begins with a mother wavelet \(\psi\in L^{2}(\R)\) of zero mean and unit norm.
+The dyadic family at scale \(2^{j}\) and translation \(b\) is
+\begin{equation}
+\psi_{2^{j}, b}(t)=2^{-j/2}\,\psi\bigl(2^{-j}(t-b)\bigr),\qquad j\in\mathbb{Z}.
+\label{eq:dyadic}
+\end{equation}
+The factor \(2^{-j/2}\) keeps the \(L^{2}\) norm equal to one for every \(j\).
+The analysis formula used by the source is the inner product
+\begin{equation}
+W_{f}(2^{j}, b)=2^{-j/2}\int_{-\infty}^{\infty} f(t)\,\psi^{*}\bigl(2^{-j}(t-b)\bigr)\,\mathrm{d}t
+=\bigl(f*\overline{\psi}_{2^{j}}\bigr)(b),
+\label{eq:wt}
+\end{equation}
+with \(\overline{\psi}_{2^{j}}(u)=\psi_{2^{j}}(-u)\).
+On a sampled record the inner product is not computed as an integral.
+It is computed by the filter bank \eqref{eq:mallat}, which Mallat showed to be equivalent to \eqref{eq:wt} when \(\psi\) is the wavelet of a multiresolution analysis.
+
+One step of that bank is drawn in Figure~\ref{fig:mallat}.
+The approximation coefficients at level \(j-1\) are convolved with the low-pass analysis filter \(h\) and with the high-pass analysis filter \(g\), and both results are downsampled by two.
+The downsampled high-pass branch is the detail \(cD^{j}\).
+The downsampled low-pass branch is the approximation \(cA^{j}\), which becomes the input of level \(j+1\).
+Reconstruction, written by the source as
+\begin{equation}
+cA^{j-1}[k]=\sum_{n} cA^{j}[n]\,h[k-2n]+\sum_{n} cD^{j}[n]\,g[k-2n],
+\label{eq:recon}
+\end{equation}
+is the identity that lets a detail be put back into the original sampling grid and inspected as a time series.
+Orthonormal filter pairs satisfy a quadrature mirror relation, so the sum of detail energies and the final approximation energy equals the energy of the input, up to the boundary treatment.
+That identity is what makes a bar chart of energy-by-level a partition of the record rather than an arbitrary scoring.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  blk/.style={draw, minimum width=16mm, minimum height=7mm, font=\small, align=center},
+  arr/.style={-{Stealth[length=2mm]}, thick},
+  ds/.style={draw, circle, inner sep=1pt, font=\scriptsize, minimum size=6mm}
+]
+\node[blk, fill=blue!8] (in) {\(cA^{j-1}\)};
+\node[blk, fill=orange!15, right=8mm of in] (lo) {\(h\)\\low-pass};
+\node[blk, fill=orange!15, below=6mm of lo] (hi) {\(g\)\\high-pass};
+\node[ds, right=8mm of lo] (ds1) {\(\downarrow 2\)};
+\node[ds, right=8mm of hi] (ds2) {\(\downarrow 2\)};
+\node[blk, fill=green!10, right=8mm of ds1] (a) {\(cA^{j}\)};
+\node[blk, fill=green!10, right=8mm of ds2] (d) {\(cD^{j}\)};
+\draw[arr] (in) -- (lo);
+\draw[arr] (in.south) |- (hi.west);
+\draw[arr] (lo) -- (ds1);
+\draw[arr] (hi) -- (ds2);
+\draw[arr] (ds1) -- (a);
+\draw[arr] (ds2) -- (d);
+\node[font=\scriptsize, align=left, below=2mm of d] {detail energy \(E_{j}=\norm{cD^{j}}^{2}\)};
+\end{tikzpicture}
+\caption{One step of the Mallat analysis bank. The detail coefficients at level \(j\) are the dyadic wavelet transform at scale \(2^{j}\).}
+\label{fig:mallat}
+\end{figure}
+
+This exposition uses the Daubechies wavelet with four vanishing moments (db4) as the concrete mother wavelet.
+The source does not name the mother wavelet.
+Db4 is short, orthonormal, and has enough vanishing moments to annihilate a local cubic trend, which is the usual default when a monitoring study leaves the wavelet unnamed.
+The analysis filters used to draw Figure~\ref{fig:energy} are the standard db4 pair.
+A change to db6 or to a symlet moves the energy slightly between neighboring levels and does not change the definition of the map.
+The level index, however, must be read against the sampling rate.
+With \(f_{s}=10\,\mathrm{kHz}\), ideal dyadic half-bands place detail \(d_{j}\) roughly in
+\begin{equation}
+\Bigl(\frac{f_{s}}{2^{j+1}},\ \frac{f_{s}}{2^{j}}\Bigr).
+\label{eq:bands}
+\end{equation}
+Detail \(d_{5}\) then occupies about \(156\)--\(312\,\mathrm{Hz}\), detail \(d_{6}\) about \(78\)--\(156\,\mathrm{Hz}\), and the shaft family \(\mathcal{F}\) itself, from \(8\,\mathrm{Hz}\) to \(96\,\mathrm{Hz}\), falls in \(d_{7}\), \(d_{8}\), and the final approximation.
+The source figures identify \(d_{5}\) as the maximum-energy detail of the records they plot.
+That observation is consistent with a structural or fluid resonance in the few-hundred-hertz band carrying more acceleration energy than the shaft tones, which is exactly what the factor \(-\omega^{2}\) in \eqref{eq:transfer} predicts.
+The coefficient spectrum can still show shaft orders, because those orders modulate the resonant carrier, and because the spectrum the source plots is a spectrum of the selected detail's coefficient sequence with a frequency axis returned to hertz.
+Both effects are part of the third block.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{wavelet_energy.pdf}
+\caption{Fraction of energy by dyadic level for the illustrative signals, db4, eight levels. The bars are a partition of each synthetic record. They are not the energy table of the laboratory records, which the source publishes only as plots.}
+\label{fig:energy}
+\end{figure}
+
+\subsection{Energy time-spectrum}
+
+The source identifies the detail coefficients with the dyadic transform,
+\begin{equation}
+W_{f}(2^{j}, b)=cD^{j}[k],
+\label{eq:identify}
+\end{equation}
+and defines the energy time-spectrum at scale \(2^{j}\) by the squared coefficients
+\begin{equation}
+E_{W_{f}(t)}(2^{j})=\abs{W_{f}(2^{j}, b)}^{2}=\abs{cD^{j}[k]}^{2}.
+\label{eq:ets}
+\end{equation}
+Read as a function of the coefficient index, \eqref{eq:ets} is a time series, not a scalar.
+It shows when, inside the record, scale \(2^{j}\) was loud.
+A pedestal impact that occupies one millisecond raises \(E\) at the fine scales for that millisecond and leaves the rest of the series small.
+A steady unbalance raises the coarse-scale series almost uniformly.
+The scalar energy of the level, which decides the maximum, is the sum of the time series,
+\begin{equation}
+\mathcal{E}(2^{j})=\sum_{k}\abs{cD^{j}[k]}^{2}=\sum_{k} E_{W_{f}(t)}(2^{j})[k].
+\label{eq:sumE}
+\end{equation}
+The maximum-energy level is the integer
+\begin{equation}
+k^{\star}\in\argmin_{1\le j\le J}\bigl(-\mathcal{E}(2^{j})\bigr),
+\label{eq:kstar}
+\end{equation}
+that is, any level whose scalar energy is largest.
+The source writes the assumption \(1\le k\le j\) for this index.
+Ties are broken by choosing the finer level, so that a transient is preferred over a trend of equal energy.
+On the source plots, \(k^{\star}=5\) for the displayed radial records of every state.
+The map does not hard-code the number \(5\).
+It recomputes \(k^{\star}\) for each record and each direction.
+A fixed level would be a different method.
+
+\subsection{Coefficient power spectrum of the maximum-energy level}
+
+The third block reads the internal periodicity of the winning level.
+The source forms the discrete Fourier transform of the energy time-series at \(k^{\star}\),
+\begin{equation}
+\widehat{E}_{W_{f}}(2^{k^{\star}})[\omega]
+=\sum_{n=0}^{N_{c}-1} E_{W_{f}(t)}(2^{k^{\star}})[n]\,e^{-i\omega n/N_{c}},
+\label{eq:fftE}
+\end{equation}
+and the power spectrum
+\begin{equation}
+E_{W_{p}}(\hat{\omega}, 2^{k^{\star}})
+=\frac{1}{N_{c}}\left|\widehat{E}_{W_{f}}(2^{k^{\star}})[\omega]\right|^{2}.
+\label{eq:cps}
+\end{equation}
+Here \(N_{c}\) is the length of the coefficient sequence at that level, which is about \(N/2^{k^{\star}}\) for an undecimated-free dyadic bank.
+Equation \eqref{eq:cps} is the power spectrum of the energy envelope of the winning detail.
+Peaks of an energy envelope sit at the rates that modulate the detail: a once-per-revolution modulation produces a line at \(f_{0}\) in this spectrum, and a twice-per-revolution looseness produces a line at \(\tfrac12 f_{0}\).
+
+The plots in the source are labeled as the wavelet coefficient power spectrum of level \(d_{5}\) and are drawn with a horizontal axis in hertz from \(0\) to about \(110\,\mathrm{Hz}\), with visible lines at members of \(\mathcal{F}\).
+Two implementations produce a plot of that shape.
+The first is literal: transform \eqref{eq:ets} by \eqref{eq:fftE}, convert the coefficient-domain frequency \(\nu\) (cycles per coefficient) into hertz by
+\begin{equation}
+f=\nu\cdot\frac{f_{s}}{2^{k^{\star}}},
+\label{eq:fmap}
+\end{equation}
+and read \eqref{eq:cps} on \(\mathcal{F}\).
+The second forms the power spectrum of the detail coefficients themselves, without the square inside \eqref{eq:ets}, and uses the same frequency map.
+The square emphasizes the strong instants of the detail and is the formula the source writes.
+This exposition follows the written formula.
+Amplitudes at the seven orders are then the samples of \eqref{eq:cps} nearest to each frequency in \(\mathcal{F}\),
+\begin{equation}
+p_{d}(\eta)=\left. E_{W_{p}}(\hat{\omega}, 2^{k^{\star}}) \right|_{f=\eta},
+\qquad \eta\in\mathcal{F},\quad d\in\{r, t, a\}.
+\label{eq:samples}
+\end{equation}
+If a line falls between bins, the bin of maximum power inside a window of half a shaft order is taken, so that a \(1\,\mathrm{Hz}\) speed drift does not zero the feature.
+The source does not describe an interpolation rule.
+The half-order window is a specification of this exposition, and it is narrower than the gap between adjacent members of \(\mathcal{F}\).
+
+Figure~\ref{fig:spectra} shows the baseband power of the illustrative accelerations, normalized per state, with vertical lines at the same orders.
+It is a spectrum of the raw synthetic signal, included so the harmonic emphasis is visible without the filter bank.
+It is not a plot of \eqref{eq:cps}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{spectra.pdf}
+\caption{Normalized baseband spectra of the illustrative accelerations. Vertical lines mark \(8\), \(16\), \(32\), \(48\), and \(64\,\mathrm{Hz}\). Healthy energy favors \(f_{0}\) and its low harmonics; the eccentric state is dominated by \(f_{0}\); the pedestal and seal-wear states carry a stronger half-order.}
+\label{fig:spectra}
+\end{figure}
+
+\subsection{Assembly of the twenty-two coordinates}
+
+Collect the seven spectral samples on each axis and the radial severity:
+\begin{equation}
+\begin{aligned}
+\vect{x}=\bigl(&
+\mathrm{VIB}_{r},\\
+&p_{t}(\tfrac12 f_{0}), p_{t}(f_{0}), \ldots, p_{t}(6f_{0}),\\
+&p_{a}(\tfrac12 f_{0}), p_{a}(f_{0}), \ldots, p_{a}(6f_{0}),\\
+&p_{r}(\tfrac12 f_{0}), p_{r}(f_{0}), \ldots, p_{r}(6f_{0})
+\bigr)^{\!\top}\in\R^{22}.
+\end{aligned}
+\label{eq:x22}
+\end{equation}
+The order of the blocks is a convention.
+Training and testing must use the same convention, because the SVM kernel compares coordinates by index.
+The source's reading of its own Figure~9 fixes the meaning of the blocks even without a written index map.
+In the healthy state the tangential amplitudes exceed the axial and the radial ones, and the tangential maximum lies at \(f_{0}\).
+Under the eccentric axle the tangential maximum rises from \(1.683\times 10^{-3}\) to \(3.322\times 10^{-3}\) in the units of that figure, the axial energy spreads from \(f_{0}\) toward \(\tfrac12 f_{0}\), and the radial maximum rises from \(4.574\times 10^{-4}\) to \(2.492\times 10^{-3}\).
+Under the pedestal fault the tangential maximum rises further, to \(4.701\times 10^{-3}\), and it sits at \(\tfrac12 f_{0}\) rather than at \(f_{0}\); axial energy grows at \(5f_{0}\) and \(6f_{0}\); radial energy shifts from \(f_{0}\) toward \(\tfrac12 f_{0}\), \(3f_{0}\), and \(4f_{0}\).
+Under sealing-ring wear the tangential amplitudes are again the largest, with emphasis at \(f_{0}\), \(\tfrac12 f_{0}\), and \(2f_{0}\), and the axial and radial intensities fall between the eccentric and the pedestal cases.
+Those sentences are the specification of what \(\Phi\) is supposed to make linearly visible.
+A correct implementation is one in which a scatter of the \(22\)-vectors reproduces this pattern.
+
+\subsection{Normalization}
+
+Coordinates of \(\vect{x}\) do not share a unit.
+Severity is in millimetres per second and has magnitude near \(1\).
+A coefficient power sample is a squared spectral density of a squared wavelet coefficient, and the published tangential peaks lie near \(10^{-3}\).
+Left unscaled, the Euclidean distances inside the radial kernel are severity distances, and the twenty-one spectral coordinates are ignored.
+The source states that training and testing vectors are normalized before classification in order to speed convergence.
+It does not state the map.
+This exposition uses an affine map to the unit interval, fit on the training sample only,
+\begin{equation}
+\tilde{x}^{(j)}=\frac{x^{(j)}-u^{(j)}}{v^{(j)}-u^{(j)}},
+\qquad
+u^{(j)}=\min_{i\in\mathrm{train}} x_{i}^{(j)},
+\quad
+v^{(j)}=\max_{i\in\mathrm{train}} x_{i}^{(j)}.
+\label{eq:norm}
+\end{equation}
+The same \(u^{(j)}\) and \(v^{(j)}\) are applied to the test vectors.
+Refitting the range on the test set would leak the test distribution into the feature and would inflate the estimate in Chapter~\ref{ch:estimation}.
+A coordinate with \(v^{(j)}=u^{(j)}\) is dropped; on this rig none of the twenty-two is constant.
+A \(z\)-score is an acceptable alternative and is not the map used in the formulae below.
+
+\subsection{The feature procedure}
+
+The map \(\Phi\), ready to implement, is the following procedure.
+\begin{enumerate}
+\item From each acceleration axis, form the velocity series by the chosen integrator and compute one radial severity by \eqref{eq:vibdisc}.
+\item For each axis, run \(J=8\) steps of \eqref{eq:mallat} with the db4 filters.
+Compute the scalar energies \eqref{eq:sumE} and the winning index \(k^{\star}\) by \eqref{eq:kstar}.
+\item Form the energy time-series \eqref{eq:ets} at level \(k^{\star}\), its transform \eqref{eq:fftE}, and the power \eqref{eq:cps}.
+Sample the seven orders by \eqref{eq:samples}.
+\item Concatenate by \eqref{eq:x22}.
+\item Apply \eqref{eq:norm} with ranges stored from the training fold.
+\end{enumerate}
+The cost is linear in \(N\) for the filter bank and \(O(N_{c}\log N_{c})\) for the single transform of the winning level.
+At \(N=8192\) this cost is negligible beside the cost of the SVM trainings inside the parameter search.
+The map contains no iterative optimization and no random seed.
+Given the filter, the integrator, and the tie break, \(\Phi\) is a function.
+
+\subsection{How the four states separate inside the map}
+
+A short mechanical reading says what a later classifier is asked to finish.
+Healthy running puts a moderate severity next to a tangential spectrum peaked at \(16\,\mathrm{Hz}\), with smaller lines at \(32\), \(48\), and \(64\,\mathrm{Hz}\) and a supply artifact at \(50\,\mathrm{Hz}\) that the order sampler, aimed at \(48\,\mathrm{Hz}\), is narrow enough to miss.
+Eccentric axle multiplies the severity by about three and multiplies the tangential \(f_{0}\) sample by about two, which is the stationary signature of a larger \(me\Omega^{2}\) in \eqref{eq:rotor}.
+Bearing-pedestal fault leaves the severity almost unchanged and moves the tangential peak from \(16\,\mathrm{Hz}\) to \(8\,\mathrm{Hz}\), which is the spectral form of a stiffness that repeats every two revolutions, and it raises high-order axial energy that the source attributes to flow-induced vibration and to component natural frequencies.
+Sealing-ring wear raises the severity to \(1.70\,\mathrm{mm/s}\) and emphasizes \(\tfrac12 f_{0}\) together with \(2f_{0}\), which is the hydraulic leakage writing on the orbit twice per turn as well as once every two turns.
+These four patterns are not orthogonal, and the pedestal pattern is the least stable of them because resonance and site interference share the bands the high orders occupy.
+The classifier of the next section is trained to draw the boundaries that these patterns only suggest.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=2pt, align=center, font=\small, inner sep=3pt, minimum height=8mm},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box, fill=blue!8, text width=26mm] (a) {Triaxial\\acceleration};
+\node[box, fill=orange!12, text width=28mm, right=5mm of a] (v) {Radial severity\\\eqref{eq:vibdisc}};
+\node[box, fill=orange!12, text width=32mm, below=5mm of v] (w) {Mallat bank\\energies \(\mathcal{E}(2^{j})\)};
+\node[box, fill=orange!12, text width=34mm, right=5mm of w] (c) {CPS at \(k^{\star}\)\\seven orders, three axes};
+\node[box, fill=green!12, text width=24mm, right=5mm of v] (x) {\(\vect{x}\in\R^{22}\)};
+\node[box, fill=green!12, text width=24mm, right=5mm of x] (n) {Train-only\\scaling \eqref{eq:norm}};
+\draw[arr] (a) -- (v);
+\draw[arr] (a.south) ++(0,-1mm) |- (w.west);
+\draw[arr] (w) -- (c);
+\draw[arr] (v) -- (x);
+\draw[arr] (c.north) |- (x.south);
+\draw[arr] (x) -- (n);
+\end{tikzpicture}
+\caption{Data flow of the VWC map. Severity and the spectral block meet only at the concatenation.}
+\label{fig:vwcflow}
+\end{figure}
+
+\section{Technology two: the MSFLA-SVM classifier}
+\label{sec:svm}
+
+\subsection{Hard margin}
+
+The second technology starts from a binary labeled sample, because the multiclass pump problem is reduced to binary problems below.
+Let
+\begin{equation}
+\mathcal{T}=\bigl\{(\vect{x}_{i}, y_{i})\bigr\}_{i=1}^{n},
+\qquad \vect{x}_{i}\in\R^{d},\quad y_{i}\in\{+1,-1\}.
+\label{eq:binset}
+\end{equation}
+A linear classifier is a pair \((\vect{w}, b)\) and the rule \(\sgn(\vect{w}^{\top}\vect{x}+b)\).
+Among all pairs that separate \(\mathcal{T}\), the hard-margin SVM chooses the pair whose slab
+\begin{equation}
+\bigl\{\vect{x}:\ \abs{\vect{w}^{\top}\vect{x}+b}\le 1\bigr\}
+\label{eq:slab}
+\end{equation}
+is as thick as possible.
+The Euclidean thickness of the slab is \(2/\norm{\vect{w}}\).
+Maximizing the thickness is the same problem as
+\begin{equation}
+\min_{\vect{w}, b}\ \frac{1}{2}\norm{\vect{w}}^{2}
+\quad\text{subject to}\quad
+y_{i}(\vect{w}^{\top}\vect{x}_{i}+b)\ge 1,
+\quad i=1,\ldots,n.
+\label{eq:hard}
+\end{equation}
+The factor one half is traditional and makes the derivative equal to \(\vect{w}\).
+Points that lie on the boundary of the slab are the support vectors.
+They alone determine \(\vect{w}\).
+Moving a correctly classified point that sits strictly outside the slab does not change the solution, which is the geometric reason a small sample can still determine a stable rule: most of the sample is allowed to be absent.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.05]
+  \draw[->] (-0.2,0) -- (6.2,0) node[right] {\(x^{(1)}\)};
+  \draw[->] (0,-0.2) -- (0,4.4) node[above] {\(x^{(2)}\)};
+  \draw[thick] (0.4,4.0) -- (5.2,0.3);
+  \draw[dashed] (0.9,4.2) -- (5.7,0.5);
+  \draw[dashed] (-0.1,3.8) -- (4.7,0.1);
+  \fill[blue!70] (1.15,3.15) circle (1.6pt);
+  \fill[blue!70] (1.7,2.55) circle (1.6pt);
+  \fill[blue!70] (2.3,2.15) circle (1.6pt);
+  \fill[red!70] (3.55,1.55) circle (1.6pt);
+  \fill[red!70] (4.15,1.15) circle (1.6pt);
+  \fill[red!70] (3.9,0.85) circle (1.6pt);
+  \draw[<->, thick] (2.55,2.55) -- (3.15,1.95);
+  \node[font=\scriptsize] at (2.45,2.85) {margin};
+  \node[font=\scriptsize, blue!70!black] at (1.5,3.5) {\(y=+1\)};
+  \node[font=\scriptsize, red!70!black] at (4.7,0.7) {\(y=-1\)};
+\end{tikzpicture}
+\caption{Hard-margin geometry in a feature plane. The solid line is the decision boundary. The dashed lines bound the slab. Only points on the dashed lines are support vectors.}
+\label{fig:margin}
+\end{figure}
+
+\subsection{Soft margin and the dual}
+
+Pump features overlap, so the constraints of \eqref{eq:hard} can be empty.
+The soft-margin problem introduces a slack \(\xi_{i}\ge 0\) for each training point and a penalty \(C>0\) on the sum of slacks,
+\begin{equation}
+\min_{\vect{w}, b, \xi}\ 
+\frac{1}{2}\norm{\vect{w}}^{2}+C\sum_{i=1}^{n}\xi_{i}
+\quad\text{subject to}\quad
+y_{i}(\vect{w}^{\top}\vect{x}_{i}+b)\ge 1-\xi_{i},\quad \xi_{i}\ge 0.
+\label{eq:soft}
+\end{equation}
+A small \(C\) permits a wide margin with many slacks and under-fits the four states.
+A large \(C\) forces the slacks toward zero and can memorize the \(180\) training vectors.
+This is the first of the two numbers the frog search has to set.
+The Lagrangian of \eqref{eq:soft} with multipliers \(\alpha_{i}\ge 0\) for the margin inequalities and \(\mu_{i}\ge 0\) for the slack inequalities has a saddle point at which \(\vect{w}=\sum_{i}\alpha_{i} y_{i}\vect{x}_{i}\) and \(\sum_{i}\alpha_{i} y_{i}=0\).
+Eliminating \(\vect{w}\), \(b\), and \(\xi\) produces the dual quadratic program that the source writes in kernel form.
+In the linear case it is
+\begin{equation}
+\begin{aligned}
+\max_{\alpha}\quad
+&-\frac{1}{2}\sum_{i=1}^{n}\sum_{j=1}^{n} y_{i} y_{j}\alpha_{i}\alpha_{j}\,\vect{x}_{i}^{\top}\vect{x}_{j}
++\sum_{j=1}^{n}\alpha_{j}\\
+\text{subject to}\quad
+&\sum_{i=1}^{n} y_{i}\alpha_{i}=0,
+\qquad 0\le \alpha_{i}\le C.
+\end{aligned}
+\label{eq:dual}
+\end{equation}
+The box constraint \(0\le\alpha_{i}\le C\) is the algebraic face of the penalty.
+A point with \(\alpha_{i}=0\) is outside the slab and does not appear in \(\vect{w}\).
+A point with \(0<\alpha_{i}<C\) lies on the margin boundary and is a free support vector.
+A point with \(\alpha_{i}=C\) lies inside the slab or on the wrong side and is a bound support vector.
+The decision rule, once any free support vector \(\vect{x}_{j}\) has been used to recover the threshold, is
+\begin{equation}
+f(\vect{x})=\sgn\Bigl(\sum_{i=1}^{n}\alpha_{i} y_{i}\,\vect{x}_{i}^{\top}\vect{x}+b\Bigr),
+\label{eq:declin}
+\end{equation}
+\begin{equation}
+b=y_{j}\Bigl(1-\frac{\alpha_{j}}{C}\Bigr)-\sum_{i=1}^{n} y_{i}\alpha_{i}\,\vect{x}_{i}^{\top}\vect{x}_{j},
+\label{eq:bias}
+\end{equation}
+which is the linear special case of the source formulae.
+Sequential minimal optimization solves \eqref{eq:dual} by optimizing two multipliers at a time and keeping the equality constraint satisfied.
+The solver is deterministic given the data, \(C\), and the kernel.
+All of the randomness in MSFLA-SVM sits in the outer search, not in the quadratic program.
+
+\subsection{The radial kernel}
+
+Pump classes are not linearly separable in \(\R^{22}\) after the normalization \eqref{eq:norm}.
+A feature map \(\Psi\) into a Hilbert space \(\mathcal{H}\) restores a linear problem in \(\mathcal{H}\) provided the inner products \(\langle\Psi(\vect{x}),\Psi(\vect{x}')\rangle_{\mathcal{H}}\) can be evaluated.
+Mercer's theorem says that a continuous symmetric function \(K\) that is positive definite is such an inner product for some \(\Psi\).
+The radial basis used by the source,
+\begin{equation}
+K(\vect{x}, \vect{x}')
+=\exp\Bigl(-\frac{\norm{\vect{x}-\vect{x}'}^{2}}{2\sigma^{2}}\Bigr)
+=\exp\bigl(-g\,\norm{\vect{x}-\vect{x}'}^{2}\bigr),
+\label{eq:rbf}
+\end{equation}
+is positive definite for every \(\sigma>0\).
+The second writing defines the kernel parameter \(g=1/(2\sigma^{2})\) that the search actually stores.
+A large \(g\) makes \(K\) decay in a small neighborhood of each training point: the decision surface can weave among the \(180\) vectors and the risk of over-fit rises.
+A small \(g\) makes \(K\) almost constant on the unit cube: the surface is nearly linear and the risk of under-fit rises.
+The source notes that \(\sigma\), or equivalently \(g\), balances the influence of \(C\).
+The pair \((C, g)\) is the whole continuous degree of freedom of the classifier.
+Substituting \(K\) for the inner product in \eqref{eq:dual} gives the program the source states,
+\begin{equation}
+\begin{aligned}
+\min_{\alpha}\quad
+&\frac{1}{2}\sum_{i=1}^{n}\sum_{j=1}^{n}
+y_{i} y_{j}\alpha_{i}\alpha_{j}
+\Bigl(K(\vect{x}_{i}, \vect{x}_{j})+\frac{1}{C}\delta_{ij}\Bigr)
+-\sum_{j=1}^{n}\alpha_{j}\\
+\text{subject to}\quad
+&\sum_{i=1}^{n} y_{i}\alpha_{i}=0,\qquad \alpha_{i}\ge 0,
+\end{aligned}
+\label{eq:dualk}
+\end{equation}
+where the diagonal term \(C^{-1}\delta_{ij}\) is the source's way of writing the soft-margin quadratic, and the decision function is
+\begin{equation}
+f(\vect{x})=\sgn\Bigl(\sum_{i=1}^{n}\alpha_{i}^{\star} y_{i} K(\vect{x}, \vect{x}_{i})+b^{\star}\Bigr).
+\label{eq:decf}
+\end{equation}
+The threshold \(b^{\star}\) is computed from any multiplier strictly between \(0\) and \(C\), by the kernel form of \eqref{eq:bias}.
+
+\subsection{Four states from binary machines}
+
+The label set of the pump is
+\begin{equation}
+\mathcal{Y}=\{\text{normal},\ \text{EAF},\ \text{BPF},\ \text{SRWF}\},
+\label{eq:Y}
+\end{equation}
+not a pair.
+This exposition reduces \(\mathcal{Y}\) by the one-versus-one scheme.
+Each pair of states trains one binary machine, which produces
+\begin{equation}
+\binom{4}{2}=6
+\label{eq:ovo}
+\end{equation}
+radial SVMs.
+A test vector is labeled by the state that wins the most of the six votes.
+Ties are broken by the signed sum of the six decision functions after each function has been oriented toward its positive class.
+One-versus-rest, with four machines, is the main alternative.
+It trains each machine on a more unbalanced binary problem, because the negative class then contains three states.
+The source does not name the reduction.
+One-versus-one is the specification here because each binary problem then has \(90\) training vectors, \(45\) per state, which matches the per-state training count the source publishes, and because it is the default reduction of the usual SVM solver.
+The search for \((C, g)\) is shared: one pair is used for all six machines, and the fitness of that pair is the cross-validated accuracy of the voted label, not the accuracy of a single binary machine.
+Searching six independent pairs would multiply the capacity of the outer loop by six and, on \(180\) vectors, would over-fit the folds.
+
+\subsection{Cross-validated fitness}
+
+A frog is a candidate pair \(\vect{z}=(C, g)\) with \(C>0\) and \(g>0\).
+The search works in logarithmic coordinates
+\begin{equation}
+\vect{u}=(\log_{10} C,\ \log_{10} g),
+\label{eq:logcoord}
+\end{equation}
+so that a leap of fixed length means the same factor at \(C=1\) and at \(C=10^{3}\).
+The box of this exposition is
+\begin{equation}
+\log_{10} C\in[-1, 3],\qquad \log_{10} g\in[-3, 1],
+\label{eq:box}
+\end{equation}
+which covers penalties from \(0.1\) to \(1000\) and kernel parameters over four decades around the scale of the unit-cube features.
+The source does not publish a box.
+Equation \eqref{eq:box} is a specification, chosen to match the range a careful grid search would have covered, and every leap is projected back into the box by truncation.
+
+The fitness of \(\vect{u}\) is a stratified \(K\)-fold accuracy on the training set.
+With \(n=180\) and four classes, \(K=5\) gives folds of \(36\) vectors, nine from each state.
+For each fold the six binary machines are trained on the complement, the fold is labeled by vote, and the accuracy is the fraction of correct labels.
+The fitness is the mean of the five accuracies,
+\begin{equation}
+F(\vect{u})=\frac{1}{K}\sum_{k=1}^{K}\mathrm{Acc}\bigl(\mathcal{T}\setminus\mathcal{T}_{k};\ \mathcal{T}_{k};\ \vect{u}\bigr).
+\label{eq:fitness}
+\end{equation}
+\(F\) is a step function.
+It changes only when a leap moves a training vector across a margin.
+Gradient methods are a poor match to it, which is why a derivative-free leap is the right outer loop.
+The value of \(F\) is the only information a frog receives.
+In particular the search never sees the test set.
+The numbers in Chapter~\ref{ch:estimation} are computed after the search has returned its best \(\vect{u}\), by retraining on all \(180\) vectors and labeling the \(60\).
+
+\subsection{The unmodified shuffled frog-leaping search}
+
+The unmodified search is the baseline called SFLA-SVM.
+A population of \(N_{f}\) frogs
+\begin{equation}
+\vect{U}_{i}=(\vect{u}_{i,1}, \ldots, \vect{u}_{i,d}),\qquad d=2,
+\label{eq:frogs}
+\end{equation}
+is drawn uniformly in the box \eqref{eq:box}.
+The source's dimension \(d\) is the dimension of a frog, which is two, not the feature dimension \(22\).
+Fitness \(F(\vect{U}_{i})\) is evaluated by \eqref{eq:fitness}.
+The frogs are sorted so that \(F(\vect{U}_{1})\ge F(\vect{U}_{2})\ge\cdots\), and they are dealt into \(M\) memeplexes of \(P\) frogs with \(N_{f}=M P\).
+Frog \(i\) in the sorted list goes to memeplex
+\begin{equation}
+z=(i-1)\bmod M,
+\label{eq:deal}
+\end{equation}
+which is the source rule \(z=i\bmod M\) up to the indexing of the first frog.
+Dealing by rank, rather than by chopping the sorted list into \(M\) contiguous blocks, puts a high-fitness frog in every memeplex.
+Each memeplex then has a local best frog \(\vect{F}_{b}\), the whole population has a global best frog \(\vect{F}_{g}\), and each memeplex has a worst frog \(\vect{F}_{w}\).
+
+The local leap tries to improve \(\vect{F}_{w}\) by moving it toward \(\vect{F}_{b}\),
+\begin{equation}
+\begin{aligned}
+\vect{D}&=\mathrm{rand}(0,1)\cdot(\vect{F}_{b}-\vect{F}_{w}),\\
+\vect{F}_{w}^{\mathrm{new}}&=\mathrm{clip}\bigl(\vect{F}_{w}+\vect{D};\ \pm D_{\max}\bigr),
+\end{aligned}
+\label{eq:leapb}
+\end{equation}
+where the clip enforces both the box and a maximum step length \(D_{\max}\) on each coordinate.
+If \(F(\vect{F}_{w}^{\mathrm{new}})\) is not strictly better than \(F(\vect{F}_{w})\), the same leap is repeated with \(\vect{F}_{g}\) in place of \(\vect{F}_{b}\).
+If that also fails, \(\vect{F}_{w}\) is replaced by a uniform random frog in the box.
+Each memeplex repeats its local improvement a fixed number of times.
+All memeplexes are then poured back into one population, sorted, and dealt again.
+The shuffle is the only communication between memeplexes, apart from the shared use of \(\vect{F}_{g}\).
+The loop stops at a maximum number of shuffles or when \(F(\vect{F}_{g})\) has met a prescribed accuracy.
+
+The two defects of this loop are visible from the formulae.
+The leap uses \(\vect{F}_{b}\) and \(\vect{F}_{g}\) only in sequence, and only the second if the first has already failed, so a frog that can gain from a combination of the two leaders never sees the combination.
+And the random replacement ignores \(\vect{F}_{w}\) entirely.
+Late in the run, when most frogs lie near one another, both defects reduce diversity: the sequential leap copies the leaders, and the random replacement is rare only when leaps succeed, which is when the population has already collapsed.
+
+\subsection{Distance-weighted update of the worst frog}
+
+The modified search changes the leap and the failure case.
+Inside memeplex \(z\), write \(\vect{X}_{h}\) for the position of its \(h\)-th frog and define the memeplex center by the coordinate-wise mean
+\begin{equation}
+\vect{U}_{z,c}=\frac{1}{P}\sum_{h=1}^{P}\vect{X}_{h}.
+\label{eq:center}
+\end{equation}
+The distance the source uses between two frogs \(i\) and \(j\) is not a plain Euclidean distance of their positions.
+It adds the distance of the centers of the memeplexes that hold them,
+\begin{equation}
+\mathrm{FFdist}(i, j)
+=\sqrt{\sum_{t=1}^{d}\bigl(U_{i,t}-U_{j,t}\bigr)^{2}
++\norm{\vect{U}_{i,c}-\vect{U}_{j,c}}^{2}}.
+\label{eq:ffdist}
+\end{equation}
+A frog is therefore far from another frog either because its parameters differ or because it sits in a memeplex whose center differs.
+The second term keeps two memeplexes that have drifted apart from treating their members as neighbors merely because two of the members happen to be close.
+Let \(S\) be the index of the global best frog, and define
+\begin{align}
+D_{\max}^{g}&=\max_{i\neq S}\ \mathrm{FFdist}(i, S),&
+D_{\min}^{g}&=\min_{i\neq S}\ \mathrm{FFdist}(i, S).
+\label{eq:dminmax}
+\end{align}
+The learning weight on the global leader, for a frog \(i\) that is about to leap, is the normalized distance
+\begin{equation}
+q_{i}=\frac{\mathrm{FFdist}(i, S)-D_{\min}^{g}}{D_{\max}^{g}-D_{\min}^{g}},
+\qquad h_{i}=1-q_{i}.
+\label{eq:qh}
+\end{equation}
+When the denominator vanishes, every frog is at the same distance from the leader and the weights are set to \(h_{i}=q_{i}=\tfrac12\).
+By construction \(h_{i}+q_{i}=1\) and both weights lie in \([0,1]\).
+A frog close to the global best receives a small \(q_{i}\) and a large \(h_{i}\): its leap is mostly toward the local best, which is a fine adjustment.
+A frog far from the global best receives a large \(q_{i}\): its leap is mostly toward the global best, which pulls outliers inward without waiting for the local leap to fail.
+The modified step is the single update
+\begin{equation}
+\begin{aligned}
+\vect{D}_{i}
+&=h_{i}\,\mathrm{rand}(0,1)\,(\vect{F}_{b}-\vect{F}_{w})
++q_{i}\,\mathrm{rand}(0,1)\,(\vect{F}_{g}-\vect{F}_{w}),\\
+\vect{F}_{w}^{\mathrm{new}}
+&=\mathrm{clip}\bigl(\vect{F}_{w}+\vect{D}_{i};\ \pm D_{\max}\bigr).
+\end{aligned}
+\label{eq:msfla}
+\end{equation}
+The two \(\mathrm{rand}(0,1)\) draws are independent.
+Equation \eqref{eq:msfla} replaces the cascade \eqref{eq:leapb}.
+There is no second chance with a different leader, because both leaders are already in the step.
+If the new fitness is strictly better, \(\vect{F}_{w}^{\mathrm{new}}\) replaces \(\vect{F}_{w}\).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  frog/.style={circle, draw, inner sep=1.5pt, font=\scriptsize},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+  \node[frog, fill=green!30, minimum size=7mm] (g) at (0,0) {\(\vect{F}_{g}\)};
+  \node[frog, fill=blue!20] (b) at (2.2,1.6) {\(\vect{F}_{b}\)};
+  \node[frog, fill=red!20] (w) at (4.6,0.3) {\(\vect{F}_{w}\)};
+  \node[frog, fill=orange!25] (n) at (2.6,0.7) {\(\vect{F}^{\mathrm{new}}\)};
+  \draw[arr, blue!60!black] (w) -- (b) node[midway, above, font=\scriptsize] {\(h\) large};
+  \draw[arr, green!50!black] (w) -- (g) node[midway, below, font=\scriptsize] {\(q\) large if far};
+  \draw[arr] (w) -- (n);
+  \node[font=\scriptsize, align=left] at (2.4,-1.1) {Close frogs: \(h\gg q\), step toward the local best.\\Far frogs: \(q\gg h\), step toward the global best.};
+\end{tikzpicture}
+\caption{The modified leap. The new position of the worst frog is a convex combination, with random contractions, of the step toward the local best and the step toward the global best. The weights depend on distance to the global best.}
+\label{fig:leap}
+\end{figure}
+
+\subsection{Gaussian mutation when the leap fails}
+
+If \(F(\vect{F}_{w}^{\mathrm{new}})\le F(\vect{F}_{w})\), the unmodified search draws a new frog uniformly in the box.
+The modified search perturbs the current worst frog by an isotropic Gaussian factor,
+\begin{equation}
+\vect{F}_{w}^{\mathrm{mut}}
+=\mathrm{clip}\bigl(\vect{F}_{w}+\vect{F}_{w}\odot\boldsymbol{\varepsilon}\bigr),
+\qquad
+\boldsymbol{\varepsilon}\sim\mathcal{N}(\vect{0}, \vect{I}),
+\label{eq:gauss}
+\end{equation}
+where \(\odot\) is coordinate-wise multiplication and the clip returns the result to the box \eqref{eq:box}.
+Because the coordinates of \(\vect{F}_{w}\) are logarithms of \(C\) and \(g\), adding a multiple of the coordinate itself is a multiplicative perturbation in the original parameters:
+a coordinate \(u\) becomes \(u(1+\varepsilon)\).
+A draw \(\varepsilon=-1\) would send the coordinate through zero; the box truncation stops that case.
+The perturbation is local in the logarithmic chart whenever \(\boldsymbol{\varepsilon}\) is order one, and it is still able to leave a shallow local maximum, which is the reason for using a unit normal rather than a very small one.
+The mutated frog replaces \(\vect{F}_{w}\) whether or not its fitness improves.
+That acceptance of a worse mutant is what restores diversity after a failed leap.
+It is also the reason the mutant must stay in a neighborhood of \(\vect{F}_{w}\): a worse mutant thrown to the other end of the box would be the blind restart again.
+The source writes the mutation as \(F_{w}+F_{w}\cdot N(0,1)\), which is \eqref{eq:gauss} before the clip.
+The clip is part of this exposition because an unconstrained Gaussian step on a bad frog can exit the box in one generation.
+
+\subsection{The modified procedure as a whole}
+
+The full outer loop, with the inner SVM treated as a subroutine that returns \(F\), is the following.
+\begin{enumerate}
+\item Draw \(N_{f}=M P\) frogs uniformly in the box \eqref{eq:box}.
+Evaluate \(F\) by \eqref{eq:fitness}.
+\item Sort the frogs by decreasing fitness and deal them into \(M\) memeplexes by \eqref{eq:deal}.
+\item For each memeplex, for a prescribed number of local steps: identify \(\vect{F}_{b}\), \(\vect{F}_{w}\), and the global \(\vect{F}_{g}\); compute centers and the weights \eqref{eq:qh}; propose \(\vect{F}_{w}^{\mathrm{new}}\) by \eqref{eq:msfla}; if the fitness improves, accept it; otherwise replace \(\vect{F}_{w}\) by the mutant \eqref{eq:gauss}.
+\item Shuffle all memeplexes into one population.
+\item If the shuffle budget is exhausted, or if \(F(\vect{F}_{g})\) has reached the prescribed accuracy, stop and return \(\vect{F}_{g}\).
+Otherwise return to step 2.
+\item Retrain the six binary SVMs on all \(180\) training vectors at the returned \((C, g)\), and label the test vectors by vote.
+\end{enumerate}
+Population size, memeplex count, local-step count, shuffle budget, and \(D_{\max}\) are not printed in the source study.
+They are parameters of the search, not of the SVM.
+This exposition does not assign them numerical values disguised as the experimental settings.
+What the published estimate in Chapter~\ref{ch:estimation} supports is the whole procedure as the source ran it, not a particular population size reconstructed after the fact.
+An implementation that needs numbers can start from a small memetic configuration, \(M=5\), \(P=10\), ten local steps, and thirty shuffles, and check that the cross-validated fitness has flattened.
+Those starting values are a suggestion for software, not a claim about the 2019 run.
+
+\subsection{Relation to the other outer loops}
+
+The four classifiers in the published comparison share the VWC vector and differ in the map from that vector to a label.
+The backpropagation network fits \eqref{eq:bpnn} by gradients and has no \((C, g)\).
+ACROA-SVM fits the same dual \eqref{eq:dualk} and proposes \((C, g)\) by chemical-reaction moves: combinations of candidates, decompositions, and intermolecular collisions, accepted by a reaction criterion.
+SFLA-SVM proposes \((C, g)\) by the cascade \eqref{eq:leapb} and by random replacement.
+MSFLA-SVM proposes \((C, g)\) by \eqref{eq:msfla} and \eqref{eq:gauss}.
+Any difference in the tables of Chapter~\ref{ch:estimation} is therefore a difference of inductive bias and of search, on a common feature.
+It is not a difference of sensors or of labels.
+
+A useful way to see the modified leap is to write the expected step, conditional on the current frogs, ignoring the clip.
+Because each \(\mathrm{rand}(0,1)\) has mean one half,
+\begin{equation}
+\E[\vect{D}_{i}\mid \text{leaders}]
+=\frac{h_{i}}{2}(\vect{F}_{b}-\vect{F}_{w})+\frac{q_{i}}{2}(\vect{F}_{g}-\vect{F}_{w}).
+\label{eq:expect}
+\end{equation}
+The expected new position is an affine combination of \(\vect{F}_{w}\), \(\vect{F}_{b}\), and \(\vect{F}_{g}\) whose weights on the two leaders sum to one half.
+The unmodified cascade has a different expectation: it moves toward \(\vect{F}_{b}\) alone with probability one on the first try, and toward \(\vect{F}_{g}\) only on failure.
+Equation \eqref{eq:expect} is biased toward exploration exactly when \(q_{i}\) is large, which is when \(\mathrm{FFdist}(i, S)\) is large.
+That is the diversity mechanism, expressed as a conditional expectation rather than as a slogan.
+The Gaussian mutant adds a zero-mean perturbation on the failure event, so it does not change \eqref{eq:expect} on the event that the leap succeeds, and it prevents the failure event from sampling the box uniformly.
+
+\subsection{Numerical safeguards}
+
+A few safeguards keep the procedure inside the theory that justifies it.
+The kernel matrix is positive definite up to rounding; a practical solver adds a ridge of size about \(10^{-8}\) to the diagonal, which is a negligible shift of \(C^{-1}\) inside the box \eqref{eq:box}.
+Features enter only after \eqref{eq:norm}, so a change of engineering unit cannot masquerade as a change of \(g\).
+Fitness is computed on stratified folds, so a frog cannot score perfectly by ignoring the pedestal class, which has the same training count as the others but is harder.
+The test set is touched once, after the return of \(\vect{F}_{g}\).
+Repeating the search from several random populations and keeping the best training fitness would be a further outer loop and would require a fresh test set to stay honest.
+The published estimate is the result of the search the source ran, reported once.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=2pt, align=center, font=\small, inner sep=2.5pt, minimum height=8mm},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box, fill=blue!8, text width=28mm] (pop) {Population of\\pairs \((C, g)\)};
+\node[box, fill=blue!8, text width=28mm, right=4mm of pop] (fit) {Fitness \(F\)\\5-fold vote accuracy};
+\node[box, fill=orange!12, text width=28mm, right=4mm of fit] (deal) {Deal into\\memeplexes};
+\node[box, fill=orange!12, text width=34mm, below=6mm of deal] (leap) {Distance-weighted\\leap \eqref{eq:msfla}};
+\node[box, fill=red!10, text width=32mm, left=4mm of leap] (mut) {If no improvement:\\Gaussian mutant \eqref{eq:gauss}};
+\node[box, fill=green!12, text width=28mm, left=4mm of mut] (shuf) {Shuffle and\\repeat};
+\node[box, fill=green!18, text width=28mm, below=6mm of shuf] (out) {Best pair,\\retrain, vote};
+\draw[arr] (pop) -- (fit);
+\draw[arr] (fit) -- (deal);
+\draw[arr] (deal) -- (leap);
+\draw[arr] (leap) -- (mut);
+\draw[arr] (mut) -- (shuf);
+\draw[arr] (shuf) -- (out);
+\draw[arr] (shuf.north) -- ++(0,4mm) -| (fit.south);
+\end{tikzpicture}
+\caption{Outer loop of MSFLA-SVM. The SVM solver is inside the fitness block. The test set is used only in the final block.}
+\label{fig:loop}
+\end{figure}
+
+\subsection{What each technology contributes, and what it cannot}
+
+VWC contributes a deterministic, mechanically readable vector of fixed dimension.
+It cannot invent separability that the sensor did not record.
+If the pedestal fault and the healthy state produce the same severity and the same seven amplitudes in all three axes, no outer loop will separate them.
+The source figures say that this identity does not hold: the half-order tangential amplitude moves.
+They also say that the move is contaminated by resonance and by site tones, which is why every classifier in the comparison, including MSFLA-SVM, scores its worst class on the pedestal fault.
+
+MSFLA contributes a search for \((C, g)\) that uses both leaders on every leap and that mutates locally after a failure.
+It cannot raise the Bayes accuracy of the feature.
+A perfect search still returns the best radial SVM, not an oracle.
+The comparison with SFLA-SVM is the clean estimate of the modification, because the feature, the dual, the kernel family, and the fitness are shared.
+The comparison with ACROA-SVM estimates the modification against a different global search of similar ambition.
+The comparison with the backpropagation network estimates the whole margin-and-search construction against a gradient-trained network.
+Chapter~\ref{ch:estimation} reads those three comparisons on the rig the next section describes, and it keeps their statistical size in view: sixty test vectors, fifteen per state.
+
+\input{ch2extra}

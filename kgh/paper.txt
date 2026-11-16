@@ -1,0 +1,4276 @@
+
+
+===== PAGE 1 =====
+A Fault Diagnosis Study of Rotating Machinery
+Based on Vibration--Wavelet--Coefficient Features
+and a Modified Shuffled Frog-Leaping Support Vector Machine
+Expanded technical paper developed from the open study of
+You, Fan, Li, Liang, Fang, and Wang
+Shock and Vibration, 2019, Article ID 1908485
+
+
+===== PAGE 2 =====
+How to read the numbers and the figures. The vibration severities, rig parameters,
+sample counts, and classification rates in Chapter 3 are the values reported by You, Fan,
+Li, Liang, Fang, and Wang (2019). One cell of their printed training-count table is arith-
+metically inconsistent with the percentage beside it and with the published average; this
+paper uses the percentage and the average, and states the count that agrees with both.
+Time-domain traces, baseband spectra, and dyadic energy bars are illustrative signals
+synthesized so that the root-mean-square velocity matches those published severities and
+so that each operating state emphasizes the harmonics the source study describes. They
+are not the laboratory recordings, and they are not offered as a new experiment. Block
+diagrams, filter-bank drawings, and geometric sketches are explanatory figures for the
+method.
+
+
+===== PAGE 3 =====
+Abstract
+Fault diagnosis of rotating machinery separates into two coupled tasks: extracting a de-
+scription of the vibration that still carries the fault, and assigning that description to
+an operating state. This paper develops both tasks for a vertical axial-flow pump that
+is observed in four states: normal running, eccentric-axle fault, bearing-pedestal fault,
+and sealing-ring wear. The feature stage, called VWC, joins three descriptions of the
+same record. Vibration severity compresses the record to a single intensity. A dyadic
+wavelet energy time-spectrum shows how that intensity is distributed across scales. The
+coefficient power spectrum of the maximum-energy scale then reads the shaft harmonics
+1
+2f0, f0, 2f0, . . . , 6f0 on which the mechanical faults write their signatures. Three orthog-
+onal directions and one severity scalar produce a vector of dimension 22. The decision
+stage is a radial-basis support vector machine whose penalty and kernel width are chosen
+by a modified shuffled frog-leaping algorithm. The modification replaces the usual two-
+step leap of the worst frog by a distance-weighted leap that learns from both the local
+and the global leader, and it replaces a failed random restart by a Gaussian perturba-
+tion of the current frog. On the published pump data---180 training vectors and 60 test
+vectors---the resulting classifier reaches a pooled test accuracy of 93.3%, above the back-
+propagation network (85.0%), the chemically inspired SVM (91.7%), and the unmodified
+frog-leaping SVM (91.7%). The bearing-pedestal state remains the hardest of the four,
+which is consistent with resonance and site interference in that record. The paper sets out
+the mechanical and statistical principles, the prior art those principles have produced, the
+precise problem left open, the two algorithms in full, the construction of the acquisition
+system, and a quantitative reading of the published estimate.
+
+
+===== PAGE 4 =====
+Contents
+1
+Research of Previous Work
+7
+1.1
+Principles and technology of vibration-based diagnosis . . . . . . . . . . . .
+7
+1.1.1
+The rotor as a forced dynamical system . . . . . . . . . . . . . . . .
+7
+1.1.2
+From force to a measured voltage . . . . . . . . . . . . . . . . . . .
+9
+1.1.3
+Time-domain intensity and vibration severity
+. . . . . . . . . . . .
+10
+1.1.4
+Frequency-domain analysis and the stationary assumption
+. . . . .
+12
+1.1.5
+Wavelets, energy across scales, and empirical modes . . . . . . . . .
+13
+1.1.6
+From a feature vector to a decision . . . . . . . . . . . . . . . . . .
+14
+1.1.7
+What the technology chain must guarantee . . . . . . . . . . . . . .
+15
+1.2
+Previous work on features, classifiers, and their combination
+. . . . . . . .
+16
+1.2.1
+Symptom catalogues and analytic redundancy . . . . . . . . . . . .
+16
+1.2.2
+Wavelet features for gears, bearings, and drives
+. . . . . . . . . . .
+17
+1.2.3
+The empirical-mode line . . . . . . . . . . . . . . . . . . . . . . . .
+18
+1.2.4
+Neural networks trained on time-domain and spectral features . . .
+19
+1.2.5
+Support vector machines and the search for their parameters . . . .
+20
+1.2.6
+Fusion, Bayesian networks, and neighboring plants . . . . . . . . . .
+22
+1.2.7
+What the previous work has already settled
+. . . . . . . . . . . . .
+23
+1.3
+The problem this paper addresses . . . . . . . . . . . . . . . . . . . . . . .
+23
+1.3.1
+The gap between the settled results and the pump . . . . . . . . . .
+23
+1.3.2
+Objectives . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+25
+1.3.3
+What is deliberately outside the problem . . . . . . . . . . . . . . .
+25
+1.3.4
+Map of the remaining chapters . . . . . . . . . . . . . . . . . . . . .
+26
+2
+The Two Diagnostic Technologies
+27
+2.1
+Technology one: the VWC feature map . . . . . . . . . . . . . . . . . . . .
+27
+2.1.1
+What the map is required to preserve . . . . . . . . . . . . . . . . .
+27
+2.1.2
+Vibration severity . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+28
+2.1.3
+The dyadic wavelet and the Mallat bank . . . . . . . . . . . . . . .
+31
+2.1.4
+Energy time-spectrum
+. . . . . . . . . . . . . . . . . . . . . . . . .
+32
+2.1.5
+Coefficient power spectrum of the maximum-energy level . . . . . .
+33
+2.1.6
+Assembly of the twenty-two coordinates
+. . . . . . . . . . . . . . .
+35
+1
+
+
+===== PAGE 5 =====
+2.1.7
+Normalization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+36
+2.1.8
+The feature procedure
+. . . . . . . . . . . . . . . . . . . . . . . . .
+36
+2.1.9
+How the four states separate inside the map . . . . . . . . . . . . .
+37
+2.2
+Technology two: the MSFLA-SVM classifier . . . . . . . . . . . . . . . . .
+37
+2.2.1
+Hard margin . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+37
+2.2.2
+Soft margin and the dual . . . . . . . . . . . . . . . . . . . . . . . .
+38
+2.2.3
+The radial kernel . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+39
+2.2.4
+Four states from binary machines . . . . . . . . . . . . . . . . . . .
+40
+2.2.5
+Cross-validated fitness
+. . . . . . . . . . . . . . . . . . . . . . . . .
+41
+2.2.6
+The unmodified shuffled frog-leaping search
+. . . . . . . . . . . . .
+41
+2.2.7
+Distance-weighted update of the worst frog . . . . . . . . . . . . . .
+42
+2.2.8
+Gaussian mutation when the leap fails
+. . . . . . . . . . . . . . . .
+43
+2.2.9
+The modified procedure as a whole . . . . . . . . . . . . . . . . . .
+44
+2.2.10 Relation to the other outer loops
+. . . . . . . . . . . . . . . . . . .
+45
+2.2.11 Numerical safeguards . . . . . . . . . . . . . . . . . . . . . . . . . .
+45
+2.2.12 What each technology contributes, and what it cannot
+. . . . . . .
+46
+2.2.13 A numerical walk-through of speed, orders, and severity . . . . . . .
+46
+2.2.14 Karush--Kuhn--Tucker conditions of the soft-margin problem . . . .
+49
+2.2.15 A two-point illustration of the radial kernel . . . . . . . . . . . . . .
+50
+2.2.16 Operation count and a reference schedule . . . . . . . . . . . . . . .
+52
+2.2.17 What a correct implementation is obliged to log . . . . . . . . . . .
+53
+2.2.18 Limits of the two technologies, stated as engineering constraints . .
+54
+2.2.19 Margin width on a separable pair, in numbers . . . . . . . . . . . .
+54
+3
+System Build and Estimation
+57
+3.1
+Construction of the diagnostic system . . . . . . . . . . . . . . . . . . . . .
+57
+3.1.1
+The hydraulic loop and the machine
+. . . . . . . . . . . . . . . . .
+57
+3.1.2
+The four operating states and how they are produced . . . . . . . .
+58
+3.1.3
+The sensor and the three directions . . . . . . . . . . . . . . . . . .
+59
+3.1.4
+Sampling arithmetic
+. . . . . . . . . . . . . . . . . . . . . . . . . .
+61
+3.1.5
+Sample size, split, and the unit of analysis . . . . . . . . . . . . . .
+62
+3.1.6
+The processing path
+. . . . . . . . . . . . . . . . . . . . . . . . . .
+62
+3.1.7
+What the build guarantees and what it leaves open . . . . . . . . .
+63
+3.2
+Estimation of diagnostic performance . . . . . . . . . . . . . . . . . . . . .
+63
+3.2.1
+Signatures of the four states . . . . . . . . . . . . . . . . . . . . . .
+63
+3.2.2
+Training estimate . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+64
+3.2.3
+Testing estimate
+. . . . . . . . . . . . . . . . . . . . . . . . . . . .
+66
+3.2.4
+Generalization drop . . . . . . . . . . . . . . . . . . . . . . . . . . .
+69
+3.2.5
+How large the differences are . . . . . . . . . . . . . . . . . . . . . .
+70
+2
+
+
+===== PAGE 6 =====
+3.2.6
+What the estimate establishes . . . . . . . . . . . . . . . . . . . . .
+70
+3.2.7
+What the estimate does not establish . . . . . . . . . . . . . . . . .
+71
+3.2.8
+Reading the result against the problem statement . . . . . . . . . .
+72
+3.2.9
+Reproducibility notes . . . . . . . . . . . . . . . . . . . . . . . . . .
+72
+3.2.10 Error budget of the measurement chain . . . . . . . . . . . . . . . .
+72
+3.2.11 An operating procedure for one labeled record . . . . . . . . . . . .
+74
+3.2.12 The estimate in the unit the experiment controls
+. . . . . . . . . .
+76
+3
+
+
+===== PAGE 7 =====
+List of Figures
+1.1
+Characteristic frequency family of the vertical axial-flow pump at 960 r/min.
+The dashed line is the supply frequency reported as interference in the
+healthy spectrum. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+12
+1.2
+Shaft-synchronous reference at 16 Hz. A record of 8192 samples at 10 kHz
+lasts 0.8192 s and contains about 13.1 revolutions. . . . . . . . . . . . . . .
+12
+1.3
+The diagnostic chain addressed by this paper. Chapter 1 covers the forces
+and the sensor. Chapter 2 covers the two computational blocks. Chapter 3
+covers the rig that produces the acceleration and the estimate of the label.
+26
+2.1
+Radial vibration severity reported by You et al. for the four operating
+states. These are published measurements, not quantities computed from
+the illustrative signals. . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+29
+2.2
+Illustrative radial acceleration over the first 200 ms. Each record is scaled
+so that the RMS of its high-pass-integrated velocity equals the published
+severity of that state. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+30
+2.3
+One step of the Mallat analysis bank. The detail coefficients at level j are
+the dyadic wavelet transform at scale 2j. . . . . . . . . . . . . . . . . . . .
+31
+2.4
+Fraction of energy by dyadic level for the illustrative signals, db4, eight
+levels. The bars are a partition of each synthetic record. They are not the
+energy table of the laboratory records, which the source publishes only as
+plots. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+32
+2.5
+Normalized baseband spectra of the illustrative accelerations. Vertical lines
+mark 8, 16, 32, 48, and 64 Hz. Healthy energy favors f0 and its low har-
+monics; the eccentric state is dominated by f0; the pedestal and seal-wear
+states carry a stronger half-order. . . . . . . . . . . . . . . . . . . . . . . .
+35
+2.6
+Data flow of the VWC map. Severity and the spectral block meet only at
+the concatenation.
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+37
+2.7
+Hard-margin geometry in a feature plane. The solid line is the decision
+boundary. The dashed lines bound the slab. Only points on the dashed
+lines are support vectors. . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+38
+4
+
+
+===== PAGE 8 =====
+2.8
+The modified leap. The new position of the worst frog is a convex com-
+bination, with random contractions, of the step toward the local best and
+the step toward the global best. The weights depend on distance to the
+global best.
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+43
+2.9
+Outer loop of MSFLA-SVM. The SVM solver is inside the fitness block.
+The test set is used only in the final block. . . . . . . . . . . . . . . . . . .
+46
+3.1
+Schematic of the diagnostic build. The dashed path is the closed water
+loop. The solid vertical path is the measurement and decision chain. . . . .
+58
+3.2
+The three measurement directions. The feature vector repeats the seven
+shaft-order amplitudes once in each direction and appends the radial severity. 61
+3.3
+Processing path.
+The four classifiers are interchangeable blocks after a
+shared, train-scaled VWC vector. . . . . . . . . . . . . . . . . . . . . . . .
+63
+3.4
+Training accuracy by state and method, from Table 3.4. . . . . . . . . . . .
+66
+3.5
+Test accuracy by state and method, from Table 3.5. The pedestal state is
+the lowest bar in every group. . . . . . . . . . . . . . . . . . . . . . . . . .
+67
+3.6
+Pooled training and test accuracy. The vertical gap inside each pair is the
+in-sample drop on 60 unseen vectors. . . . . . . . . . . . . . . . . . . . . .
+68
+5
+
+
+===== PAGE 9 =====
+List of Tables
+2.1
+Fourier bin of each monitored frequency for N = 8192 and fs = 10 kHz.
+The exact bin coordinate f/∆f is shown before rounding.
+. . . . . . . . .
+48
+3.1
+Published operating point of the vertical axial-flow pump.
+. . . . . . . . .
+58
+3.2
+Published transducer and acquisition parameters. . . . . . . . . . . . . . .
+60
+3.3
+Published qualitative signatures of the four states, radial severity and tan-
+gential spectral emphasis.
+. . . . . . . . . . . . . . . . . . . . . . . . . . .
+64
+3.4
+Training classification counts on 45 vectors per state. Pooled accuracy is
+correct-over-180.
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+65
+3.5
+Test classification on 15 vectors per state. The BPNN entry for SRWF is
+13/15, the count consistent with the printed percentage 86.667% and the
+printed pooled accuracy 85%.
+. . . . . . . . . . . . . . . . . . . . . . . . .
+67
+3.6
+Drop from pooled training accuracy to pooled test accuracy. . . . . . . . .
+69
+3.7
+Error counts. Training errors are out of 180 pooled vectors. Test errors are
+out of 60 pooled vectors, and the four class columns are out of 15. . . . . .
+76
+6
+
+
+===== PAGE 10 =====
+Chapter 1
+Research of Previous Work
+Diagnosis of rotating machinery sits at the meeting point of rotor dynamics, transducer
+physics, nonstationary signal analysis, and statistical decision theory. A pump, a turbine,
+a gearbox, or a motor produces a vibration record whether it is healthy or not. The record
+is long, the fault is often weak, and the label that an engineer needs is short: which of a
+few known states is present, and how urgently it should be acted on. This chapter sets
+down the principles that make that reduction possible, reviews the technical lines that
+have already been tried, and then states the specific gap that the VWC front end and the
+MSFLA-SVM classifier are built to close. The exposition follows the machine from the
+forces in the rotor to the features in a classifier, because the later chapters reuse the same
+objects.
+1.1
+Principles and technology of vibration-based diag-
+nosis
+1.1.1
+The rotor as a forced dynamical system
+A rotating machine is a dynamical system whose state can be idealized, at the first level
+of description, as the motion of a shaft in a set of bearings, driven by a torque and loaded
+by a fluid or a process force. Let the lateral displacement of a rotor station be the vector
+q(t) ∈R2, with components along two directions fixed to the casing. A linear model that
+is already rich enough to explain the spectral signatures used later is
+M¨q(t) + C ˙q(t) + Kq(t) = fu(t) + fb(t) + ff(t) + fe(t).
+(1.1)
+Here M, C, and K are mass, damping, and stiffness operators. They include the shaft,
+the impeller or the disks, the bearing films or the rolling elements, and the pedestal. The
+four forces on the right-hand side are the usual sources of diagnostically useful vibration.
+The unbalance force fu is produced when the mass center of a rotating part does not
+7
+
+
+===== PAGE 11 =====
+lie on the geometric axis. If a mass m sits at a radius e and the shaft turns at angular
+speed Ω= 2πf0, the force in a stationary frame is a vector of length meΩ2 rotating at
+f0. Its spectrum is a line at the shaft frequency, and its amplitude grows with the square
+of speed. Eccentric-axle fault, as defined in the pump study this paper follows [1], is a
+controlled version of this mechanism: a weight is moved on the shaft so that e changes,
+and the once-per-revolution component is expected to rise.
+The bearing force fb is periodic when a rolling element strikes a local defect, and
+it is broadband and impulsive when the defect is sharp. For a rolling-element bearing
+the classical kinematic frequencies are fixed by geometry and by shaft speed. With ball
+diameter d, pitch diameter D, contact angle α, and ne rolling elements, the cage, ball-spin,
+outer-race, and inner-race rates are
+fc = f0
+2
+(
+1 −d
+D cos α
+)
+,
+fbs = Df0
+2d
+ 
+1 −
+( d
+D cos α
+)2!
+,
+(1.2)
+for = nef0
+2
+(
+1 −d
+D cos α
+)
+,
+fir = nef0
+2
+(
+1 + d
+D cos α
+)
+.
+(1.3)
+These formulae, standard since the defect models of McFadden and Smith [5, 46, 21],
+explain why a bearing fault is not a single new tone at f0. It is a train of impacts whose
+repetition rate is one of the rates above, and each impact rings the housing at a structural
+resonance. The spectrum of the raw acceleration is then a resonance peak surrounded
+by sidebands spaced at the defect rate.
+A pedestal fault adds a further effect.
+The
+pedestal is the structure that holds the bearing. When the bearing begins to rattle, the
+pedestal constraint becomes intermittently loose, the stiffness K in (1.1) jumps inside
+each revolution, and fractional harmonics such as 1
+2f0 appear because the motion repeats
+only every two revolutions. That is the spectral clue reported for the bearing-pedestal
+state of the axial-flow pump.
+The fluid force ff is the load from the liquid in a pump. A vertical axial-flow pump
+with four impeller blades, running at shaft frequency f0, sheds a blade-pass disturbance
+at
+fbp = Zf0,
+(1.4)
+where Z = 4 is the blade count. At 960 revolutions per minute, f0 = 16 Hz and fbp =
+64 Hz, which is exactly the fourth harmonic 4f0. A line at 64 Hz is therefore expected even
+in the healthy machine, and it should not by itself be read as a fault. Flow also excites
+broadband turbulence. The sealing ring, which limits backflow from the discharge toward
+the suction and keeps the impeller from rubbing the casing, changes this fluid path when
+it wears. Leakage alters the incidence on the blades and the axial load on the rotor, so
+the half-order and the second harmonic move relative to the healthy pattern. Sealing-ring
+wear is a hydraulic fault that is observed through the mechanical vibration it forces.
+8
+
+
+===== PAGE 12 =====
+The last term, fe, collects everything the laboratory does not control: neighboring
+machines, the 50 Hz electromagnetic field of the supply, and sensor cable motion. In the
+pump records a line at 50 Hz is reported in the healthy spectrum and is identified as
+supply interference. Any feature set that cannot tell 3f0 = 48 Hz from 50 Hz will confuse
+a mechanical harmonic with an electrical one. The frequency resolution of the acquisition,
+discussed in Chapter 3, has to be finer than that 2 Hz gap.
+Equation (1.1) is linear and time-invariant only as a teaching model. Real faults make
+C and K depend on q and on time: a loose pedestal, a breathing crack, a rub, or a
+worn seal all modulate the operators. The vibration then fails to be a stationary sinusoid,
+which is why a pure Fourier catalogue is not a sufficient front end. The principles below
+exist to recover a stable description anyway.
+1.1.2
+From force to a measured voltage
+The quantity in (1.1) is a displacement of the shaft. The instrument in the pump ex-
+periment is a triaxial charge accelerometer on the casing, not a pair of proximity probes
+looking at the shaft. Casing acceleration is the second derivative of a filtered version of
+q, filtered by the transfer function of the bearing, the pedestal, and the casing. If Hij(ω)
+is that transfer function from force direction j to measured direction i, the acceleration
+spectrum is
+Ai(ω) = −ω2 X
+j
+Hij(ω)Fj(ω).
+(1.5)
+Two consequences follow at once. High-frequency resonances are amplified by the −ω2
+factor and by peaks of Hij, so a small impact can dominate the acceleration record while
+contributing little displacement. Low-frequency unbalance, which is obvious in a displace-
+ment orbit, can look modest in acceleration until it is integrated back toward velocity.
+Vibration severity, defined on velocity rather than on acceleration, exists for exactly this
+reason: standards judge the destructive potential of a motion by the velocity, whose
+energy sits closer to the frequency band that actually fatigues the machine.
+A charge accelerometer converts acceleration into charge. The B&K 4321 used on the
+pump has a nominal sensitivity of 9.8 pC/g, a mounted resonance high enough that the
+stated usable band runs from 0.1 Hz to 12 kHz, and a range of 500 g. Charge is converted
+to voltage by a charge amplifier, and that voltage is what the acquisition card samples.
+The measurement chain is therefore
+vadc(t) = G S a(t) + nelec(t),
+(1.6)
+with sensitivity S, amplifier gain G, and an electronic noise floor nelec. Nothing in the
+later mathematics repairs a saturated channel or a missing anti-alias filter. Those are
+properties of the build, and Chapter 3 treats them as part of the system rather than as
+9
+
+
+===== PAGE 13 =====
+afterthoughts.
+The sensor is triaxial, so each instant yields a triple (ar, at, aa) in the radial, tangential,
+and axial directions of the pump. The three directions are not redundant. Unbalance on
+a vertical rotor loads the radial and tangential casing paths differently from an axial
+hydraulic fault.
+The source study finds, after the wavelet power spectrum is formed,
+that the tangential amplitudes are the largest in every state, that eccentric-axle energy
+concentrates at f0 in that direction, and that bearing-pedestal energy concentrates at 1
+2f0
+in that same direction. A method that kept only one axis would erase the comparison
+that makes those statements possible. The feature vector defined in Chapter 2 therefore
+repeats the harmonic amplitudes once per axis.
+1.1.3
+Time-domain intensity and vibration severity
+Before any transform, a record x[n], n = 0, . . . , N −1, already has scalar summaries. The
+mean, the variance, the root-mean-square value, the crest factor, the skewness, and the
+kurtosis each answer a different question:
+µ = 1
+N
+N−1
+X
+n=0
+x[n],
+σ2 = 1
+N
+N−1
+X
+n=0
+(x[n] −µ
+)2,
+(1.7)
+xrms =
+v
+u
+u
+t 1
+N
+N−1
+X
+n=0
+x[n]2,
+Cf = max |x[n]|
+xrms
+,
+(1.8)
+γ3 =
+1
+Nσ3
+N−1
+X
+n=0
+(x[n] −µ
+)3,
+γ4 =
+1
+Nσ4
+N−1
+X
+n=0
+(x[n] −µ
+)4.
+(1.9)
+Kurtosis and crest factor rise when a smooth carrier is interrupted by rare impacts, which
+is why they are classical bearing indicators. They are also brittle: one interference spike
+raises them as much as a real defect. The pump method does not use the full set. It keeps
+a single, standardized intensity, the vibration severity, computed on velocity.
+Let v(t) be the vibration velocity and T the observation length. Severity is the root-
+mean-square velocity
+VIB =
+s
+1
+T
+Z T
+0
+v(t)2 dt.
+(1.10)
+With uniform samples vi and T = n∆t, the integral collapses to
+VIB =
+v
+u
+u
+t1
+n
+n−1
+X
+i=0
+v2
+i ,
+(1.11)
+which is exactly vrms. The International Organization for Standardization has long zoned
+machines by this number, first in ISO 10816 and now in ISO 20816 [72, 70, 71], because
+10
+
+
+===== PAGE 14 =====
+two machines with the same RMS velocity are, to a first approximation, equally hard on
+their bearings and foundations, regardless of whether the energy sits at 16 Hz or at 48 Hz.
+Severity is therefore a damage coordinate. It is not a class label. The published pump
+values already show why: the healthy state sits at 1.051 mm/s, the bearing-pedestal state
+at 1.161 mm/s, sealing-ring wear at 1.700 mm/s, and the eccentric axle at 3.737 mm/s.
+Eccentricity is obvious on this axis. The pedestal fault is almost indistinguishable from
+healthy running if severity is the only feature. Any honest feature set has to carry severity,
+because an operator needs the intensity, and has to carry something else, because intensity
+does not separate the classes.
+The passage from the measured acceleration to the velocity inside (1.11) is an inte-
+gration. The source study writes a short-window absolute accumulation,
+vi =
+Z 0.01
+0
+|ai(t)| dt,
+(1.12)
+a 10 ms sum of absolute acceleration. A 10 ms window is about one sixth of a revolution
+at 16 Hz. The absolute value folds negative and positive half-cycles together, so (1.12) is a
+local intensity rather than a signed integral of acceleration. The conventional alternative
+in condition monitoring is a discrete integrator followed by a high-pass filter that removes
+the drift of the summation,
+˜v[n] =
+n
+X
+k=0
+a[k] ∆t,
+v = Hωc{˜v},
+(1.13)
+with the cutoff ωc placed below the lowest mechanical frequency of interest and above
+the drift. Both maps turn acceleration into a velocity-like series. They do not produce
+the same millimetre-per-second number on the same record. Throughout this paper the
+published severities are used as published, under the definition the source gives, and illus-
+trative waveforms are scaled so that a high-pass integrated RMS matches those numbers
+for visual comparison only.
+Shaft speed enters the same time-domain discussion because every later frequency is
+a multiple of it. If the rotor turns at n revolutions per minute, the fundamental in hertz
+is
+f0 = fr = n
+60.
+(1.14)
+At the stated pump speed of 960 r/min, f0 = 16 Hz. The family used as features is then
+F =
+n
+1
+2f0, f0, 2f0, 3f0, 4f0, 5f0, 6f0
+o
+= {8, 16, 32, 48, 64, 80, 96} Hz.
+(1.15)
+Half-order energy points to asymmetry that repeats every two turns, such as a loose
+pedestal or a rub that loads one side of the orbit. The first order is the unbalance and
+the eccentricity line. The second and third orders grow with misalignment, looseness,
+11
+
+
+===== PAGE 15 =====
+and crack-like stiffness modulation. The fourth order coincides with blade pass for this
+impeller. The fifth and sixth orders, in the pump records, are read as flow-induced and
+structural energy rather than as a further shaft mechanism. Figure 1.1 marks the family
+against the 50 Hz supply line so that the 2 Hz separation of 3f0 from the mains is visible.
+20
+40
+60
+80
+100
+Frequency (Hz)
+1/2 f0
+8 Hz
+f0
+16 Hz
+2f0
+32 Hz
+3f0
+48 Hz
+4f0
+64 Hz
+5f0
+80 Hz
+6f0
+96 Hz
+Characteristic frequency family at n = 960 r/min (f0 = 16 Hz)
+Mains (50 Hz)
+Figure 1.1: Characteristic frequency family of the vertical axial-flow pump at 960 r/min. The
+dashed line is the supply frequency reported as interference in the healthy spectrum.
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+Time (s)
+−1.0
+−0.5
+0.0
+0.5
+1.0
+Shaft-synchronous
+reference
+Four shaft revolutions at 16 Hz (one analysis record contains about 13.1 revolutions)
+Figure 1.2: Shaft-synchronous reference at 16 Hz. A record of 8192 samples at 10 kHz lasts
+0.8192 s and contains about 13.1 revolutions.
+1.1.4
+Frequency-domain analysis and the stationary assumption
+The discrete Fourier transform of a length-N record is
+X[k] =
+N−1
+X
+n=0
+x[n] e−j2πkn/N,
+k = 0, . . . , N −1,
+(1.16)
+and the one-sided periodogram used as a power estimate is
+ˆP[k] = 1
+N |X[k]|2 .
+(1.17)
+12
+
+
+===== PAGE 16 =====
+Cooley and Tukey's algorithm [9] evaluates (1.16) in O(N log N) operations, which is why
+a spectrum has been the default picture of a machine since the nineteen-sixties. Parseval's
+relation says that the energy is conserved,
+N−1
+X
+n=0
+|x[n]|2 = 1
+N
+N−1
+X
+k=0
+|X[k]|2 ,
+(1.18)
+so a spectrum is a redistribution of the same energy, not a new measurement. Its bin
+spacing is ∆f = fs/N. At fs = 10 kHz and N = 8192, ∆f = 1.2207 Hz. That spacing
+resolves 48 Hz from 50 Hz and places each member of F in its own bin. Welch's averaged,
+windowed periodogram [10, 74, 75] reduces the variance of (1.17) by splitting the record
+into overlapping segments, at the cost of a coarser ∆f. For a 0.82 s pump record the loss
+of resolution is expensive, and a single full-length transform is the more informative of
+the two.
+The Fourier transform is the right tool when the signal is a sum of steady sinusoids
+plus stationary noise. It is the wrong final tool when the fault is an impact that exists
+for a millisecond, or a modulation that turns on and off inside the record. The transform
+then smears the transient across every bin and reports only the average spectrum. Early
+pedestal looseness and early seal wear are of this second kind: the source study says
+explicitly that the weak fault is easily submerged in the periodic carrier and in the inter-
+ference, and that a Fourier method alone is not accurate on the nonstationary vibration
+of a high-speed rotor. The mathematical statement of the limitation is the uncertainty re-
+lation. A window of duration Tw cannot localize time more tightly than Tw nor frequency
+more tightly than about 1/Tw. The short-time Fourier transform
+X(t, ω) =
+Z ∞
+−∞
+x(τ) w(τ −t) e−jωτ dτ
+(1.19)
+makes the compromise explicit by fixing the window w. A narrow w sees the impact and
+loses the harmonic; a wide w sees the harmonic and loses the impact. Wavelets refuse the
+fixed compromise.
+1.1.5
+Wavelets, energy across scales, and empirical modes
+A wavelet is a zero-mean, finite-energy waveform ψ, normalized so that ∥ψ∥2 = 1, and
+localized in time. The continuous transform
+Wx(a, b) =
+1
+p
+|a|
+Z ∞
+−∞
+x(t) ψ∗
+(t −b
+a
+)
+dt
+(1.20)
+compares the signal with copies of ψ stretched by the scale a and shifted by the time
+b.
+Large a matches slow components; small a matches sharp ones.
+Grossmann and
+13
+
+
+===== PAGE 17 =====
+Morlet [6] introduced the transform for exactly the signals that a fixed window mishandles.
+Dyadic sampling a = 2j, j ∈Z, keeps the construction invertible and, with a suitable
+ψ, orthonormal. Mallat's multiresolution analysis [8, 7, 73] implements that sampling as
+a pair of quadrature mirror filters. If h is the low-pass filter associated with the scaling
+function φ and g is the high-pass filter associated with ψ, one step of analysis is
+cAj[k] =
+X
+n
+cAj−1[n] h∗[n −2k],
+cDj[k] =
+X
+n
+cAj−1[n] g∗[n −2k].
+(1.21)
+The detail coefficients cDj are the dyadic wavelet transform at scale 2j. Reconstruction
+inserts the even-indexed coefficients back through the synthesis filters and adds the two
+branches. Because each step retains half the samples, a length-N record yields about N
+coefficients in all, and the cost is linear in N. Chapter 2 writes the energy of each detail
+and the power spectrum of the strongest detail; those two formulae are the wavelet half
+of VWC. What matters at the level of principle is that the scale axis is logarithmic. One
+filter bank covers the impact band and the shaft band without having to choose a single
+STFT window.
+Empirical mode decomposition, introduced by Huang and co-authors [25], takes a
+different route to the same nonstationary record. It extracts intrinsic mode functions
+by repeated sifting: subtract the mean of the upper and lower envelopes until the result
+has a symmetric envelope and a number of extrema that differs from the number of zero
+crossings by at most one. The signal becomes
+x(t) =
+M
+X
+i=1
+ci(t) + r(t),
+(1.22)
+and a Hilbert transform of each ci supplies an instantaneous frequency. The decomposition
+is adaptive and does not need a mother wavelet. It is also empirical: mode mixing, end
+effects, and a dependence on the sampling grid are well documented, and the review of Lei,
+Lin, He, and Zuo [54] is largely a catalogue of those difficulties together with the repairs
+(ensemble EMD, noise-assisted variants) that followed. Local mean decomposition and
+variational mode decomposition are later members of the same family. The pump method
+does not use them. It stays with the dyadic wavelet because the scale partition is fixed,
+the energy identity is exact up to the filter-bank orthogonality, and the maximum-energy
+scale is a well-defined index rather than a mode that may swap places between two records
+of the same fault.
+1.1.6
+From a feature vector to a decision
+Once a record has been reduced to a vector x ∈Rd, diagnosis is a classification problem.
+In the pump study d = 22 and the label y belongs to a set of four states. A decision rule
+14
+
+
+===== PAGE 18 =====
+is a function f from Rd to that set, learned from a finite training collection
+T =
+{
+(xi, yi)
+}n
+i=1.
+(1.23)
+Two facts about T dominate the choice of f. First, n is small. The pump experiment
+yields 60 vectors per state and spends 45 of them on training, so n = 180 in 22 dimensions.
+A richly parameterized neural network can interpolate T and still fail on the 60 held-
+out vectors. Second, the classes overlap. Bearing-pedestal records are contaminated by
+resonance and by site interference, and every method in the published comparison loses
+more of those vectors than of the healthy ones.
+Vapnik's statistical learning theory [15, 16, 12] answers the small-sample fact with a
+capacity control. The probability of a large gap between training error and test error
+is bounded by a term that grows with the VC-dimension of the hypothesis class and
+shrinks with n. A hyperplane in a feature space of huge dimension would have a huge
+VC-dimension if it were unconstrained.
+The support vector machine constrains it by
+maximizing the margin, and the kernel trick realizes that hyperplane in a space the user
+never writes down. The practical price is two continuous parameters: the soft-margin
+penalty, which decides how many training points may fall inside the margin, and the
+width of the radial basis, which decides how finely the kernel measures distance. Set
+either of them badly and the capacity-control argument no longer describes the machine
+that was actually trained.
+Parameter search is therefore part of the classifier, not a
+preliminary inconvenience. Grid search, genetic algorithms, particle swarm optimization,
+artificial bee colony search, chemical-reaction search, and shuffled frog-leaping search are
+all attempts to set those two numbers from the training data alone. Section 1.2 compares
+them by the way they move through the parameter space. Section 1.3 states why the
+unmodified frog-leaping search is not yet a satisfactory mover, which is the reason for the
+modification developed in Chapter 2.
+1.1.7
+What the technology chain must guarantee
+The principles above impose five obligations on any system that claims to diagnose this
+pump.
+1. The sensor and the clock must be fast enough for the band they claim to see, and
+slow enough that the record still contains many shaft revolutions. At 10 kHz and
+8192 samples the record holds about 13.1 revolutions and resolves the mains line
+from 3f0. That pair of facts is the acquisition specification.
+2. The feature map must retain intensity, because severity is the standardized measure
+of damage, and it must retain the distribution of energy across F in three directions,
+because severity does not separate the classes.
+15
+
+
+===== PAGE 19 =====
+3. The feature map must be able to notice a weak transient that a single full-length
+Fourier transform would average away. A dyadic energy spectrum is one construction
+that does so without giving up an exact notion of scale.
+4. The classifier must be stable at n = 180, d = 22, four classes. Margin methods meet
+that requirement more naturally than unrestricted multilayer networks.
+5. The parameters of the classifier must be chosen by a search that does not collapse
+onto the first strong training vector it finds. On a 60-vector test set, a five-point
+swing in accuracy is three samples. A search that overfits the training fold will
+spend those three samples.
+The rest of the chapter asks how far the published literature has already carried these
+five obligations, and where it stops short of the pump problem as posed by You and
+co-authors.
+1.2
+Previous work on features, classifiers, and their
+combination
+The literature is large enough that a flat list of papers would hide the structure. The
+review is organized by the technical idea each line contributed, and each idea is tied back
+to one of the five obligations above. Citations concentrate on rotating machinery, with the
+neighboring lines (inverters, process plants, heat pumps) included only where the same
+classifier or the same fusion argument was developed and later imported.
+1.2.1
+Symptom catalogues and analytic redundancy
+The oldest diagnostic tradition is a catalogue of symptoms written by people who had
+dismantled failed machines. Sohre's account of high-speed turbomachinery [2, 76] sorts
+operating problems into a small number of mechanical families---unbalance, misalignment,
+looseness, rub, bearing damage, resonance, and a handful of hydraulic and aerodynamic
+mechanisms---and lists the spectral clues an analyst should expect from each. The nine-
+family, thirty-seven-type partition cited in the source paper is this kind of catalogue.
+It remains the right vocabulary for the four pump states. Eccentric axle is unbalance.
+Bearing pedestal is a looseness that begins in a rolling-element fault. Sealing-ring wear
+is a hydraulic leakage that loads the rotor. The catalogue tells the analyst which lines
+in F ought to move. It does not compute the lines, and it does not assign a new record
+automatically.
+A second early tradition replaces the catalogue by a model. Beard's thesis [3] showed
+that a linear system can be fitted with analytic redundancy: a bank of observers, each
+16
+
+
+===== PAGE 20 =====
+of which assumes a different fault, produces a residual that is small only under its own
+assumption. Willsky's survey and Frank's survey [4, 13] established residual generation
+as a discipline, with detection as a decision on the residual and isolation as a decision
+on which residual moved. Sliding-mode observers, as developed by Edwards, Spurgeon,
+and Patton [22], keep the residual well behaved when the plant is uncertain, by forcing
+the estimation error onto a surface in finite time. Persis and Isidori [24] gave geometric
+conditions under which a nonlinear system admits a filter that is sensitive to one fault
+and invariant to the others. Isermann's review [33] then placed model-based detection
+next to the industrial systems that can actually support it: the model has to be accurate
+in the frequency band of the fault, the disturbances have to be characterizable, and the
+sensors have to observe the states the residual needs.
+For a vertical axial-flow pump in a closed water loop, that last requirement is the
+obstacle. The forces in (1.1) depend on the seal gap, the bearing clearance, the dissolved
+gas, and the precise pedestal stiffness, none of which is known to the accuracy a resid-
+ual would need in order to be smaller than the fault. The experiment measures casing
+acceleration and almost nothing else. A data-driven front end is not a rejection of the
+model-based line. It is what remains when the residual cannot be built. The later numer-
+ical comparison is therefore entirely among data-driven classifiers that share one feature
+vector.
+1.2.2
+Wavelet features for gears, bearings, and drives
+Peng and Chu's review of the wavelet transform [30, 36] in machine condition monitoring
+is the point at which wavelets stop being a mathematical import and become a standard
+feature tool. The argument of that review is the one already used in Section 1.1: a fault
+transient is localized in time, a Fourier coefficient is not, and the variable window of (1.20)
+matches the transient at the scale where its energy actually sits. Three constructions recur.
+The discrete wavelet transform, implemented by (1.21), yields one energy per scale,
+Ej =
+X
+k
+||cDj[k]
+||2 ,
+(1.24)
+and the vector (Ej) is the feature. Saravanan and Ramachandran [44] extract exactly this
+kind of description from an incipient gearbox vibration by the discrete wavelet transform,
+then hand the vector to an artificial neural network. The network is there because the
+energy vector is not linearly separable by eye once the gearbox carries more than one
+fault type. Hu, He, Zhang, and Zi [38] improve the wavelet-packet variant, in which both
+the detail and the approximation are split at every level so that the frequency tiles are
+equal rather than dyadic, and they classify with an ensemble of support vector machines.
+The packet transform is more flexible and more redundant; the dyadic transform used for
+17
+
+
+===== PAGE 21 =====
+the pump is the cheaper sibling, and it is enough when the question is only which scale
+dominates.
+A second construction keeps the coefficients themselves, or a statistic of them, inside
+the band where a bearing resonance lives. Lou and Loparo [32] combine a wavelet step
+with a fuzzy inference on bearing records. Gao and Yan [50] systematize the same idea
+for manufacturing signals: choose the mother wavelet by its resemblance to the impulse,
+keep the scale whose kurtosis or energy is extreme, and only then compute a spectrum.
+Spectral kurtosis, in Antoni's formulation [35], is a related detector that does not need a
+wavelet at all. It measures, in each frequency bin, the normalized fourth moment of the
+short-time Fourier amplitudes, and it peaks where the signal is impulsive. The coefficient
+power spectrum of the maximum-energy wavelet level is a cousin of this idea. First find the
+scale that holds the energy, then read the periodic structure inside that scale. The pump
+method adds the severity scalar and the three-axis repetition, which spectral kurtosis by
+itself does not supply.
+A third construction uses complex or continuous wavelets when the phase, not only the
+energy, carries the fault. Seshadrinath, Singh, and Panigrahi [56] apply complex wavelets
+to variable-frequency drives and show that several electrical and mechanical faults can be
+separated from the vibration signature when the transform preserves phase relations that
+a real orthogonal wavelet discards. Khalil and Bayoumi [77] had earlier used a dyadic
+wavelet affine invariant for a different recognition task; the citation matters here because
+it records that the dyadic grid is stable under the shifts a real acquisition produces. The
+pump records are triaxial acceleration at a fixed speed, not a variable-frequency electrical
+drive, so the simpler real dyadic energy is the appropriate member of the family. The
+complex-wavelet result remains the warning that a phase-blind energy can fail when the
+fault is a change of timing rather than a change of intensity.
+Bin, Gao, Li, and Dhillon [53] combine wavelet packets with empirical mode decom-
+position for early rotor faults, then classify ten rotor states with a neural network. The
+combination is a useful reference point because it admits, by existing, that neither the
+packet energies nor the modes are always sufficient alone. VWC is a different combination:
+a time-domain standard (severity), a scale distribution (the energy time-spectrum), and a
+harmonic reading of the loudest scale (the coefficient power spectrum). It is deliberately
+small. Twenty-two numbers are the entire interface between the signal and the classifier.
+1.2.3
+The empirical-mode line
+Lei, Lin, He, and Zuo [54] review empirical mode decomposition in rotating-machine
+diagnosis and list the faults for which a mode energy, a mode entropy, or a Hilbert
+envelope spectrum has been used as a feature. Dybaªa and Zimroz [57] show that the
+early stage of a rolling-bearing fault, still buried in the raw spectrum, becomes visible
+18
+
+
+===== PAGE 22 =====
+once the high-frequency mode that the impacts excite is isolated and demodulated. Wu
+and Huang's ensemble empirical mode decomposition [42] attacks the mode-mixing that
+made two records of the same fault produce differently ordered modes: each sift is run on
+the signal plus a different noise, and the modes are averaged. Zhang, Liang, Zhou, and
+Zang [63] put permutation entropy of the ensemble modes beside an optimized SVM for
+bearings. Zhao, Wang, Ma, and Li [67] use complete ensemble decomposition, a short-
+time Fourier entropy, and a multiclass SVM on a hydraulic pump, which is the closest
+industrial cousin of the axial-flow pump in this paper. Yang, Liu, Li, Li, and Ma [65, 40]
+extract gear features by the ensemble decomposition and classify them by an SVM whose
+parameters are set by an artificial bee colony. Huang, Hu, and Yang [47] do the same
+service for a high-voltage circuit breaker with the plain decomposition, an energy entropy,
+and a genetic algorithm around the SVM.
+Two lessons travel from that line into the present design, and one does not.
+The
+first lesson is that a demodulated or scale-local spectrum sees an early fault that the raw
+Fourier transform misses. The coefficient power spectrum is the wavelet version of that
+lesson. The second lesson is that the SVM, not the particular adaptive decomposition,
+is what turns the feature into a label when the sample is small, and that the SVM's two
+parameters are worth a global search. The lesson that does not travel is the adaptive
+partition itself. On sixty records per class, an adaptive mode ordering is an extra source
+of variance between the training fold and the test fold. A fixed dyadic filter bank removes
+that variance. The price is a bank that is not matched to each record. The maximum-
+energy rule gives back a limited adaptivity: the scale index k may differ from record to
+record even though the filters do not.
+Local mean decomposition, which Smith defined [34] for nonstationary physiological
+signals and which Tian, Ma, Lu, and Wang later paired [62] with a singular-value step
+and an extreme learning machine for bearings under variable conditions, belongs to the
+same adaptive family. Variational mode decomposition, which Dragomiretskiy and Zosso
+posed [59] as an optimization rather than a sift, has largely replaced ad-hoc sifting in
+newer work because the modes are concurrent and the bandwidth of each mode is a
+penalty term. Neither is used here. They are recorded so that the choice of a dyadic bank
+is visible as a choice.
+1.2.4
+Neural networks trained on time-domain and spectral fea-
+tures
+Samanta and Al-Balushi [27] take time-domain statistics of bearing vibration in the
+healthy and the faulty states and present them to a multilayer perceptron.
+The net-
+work learns a partition of that statistic space. Samanta's later gear study [31] puts the
+same style of network beside an SVM and lets a genetic algorithm pick features and pa-
+19
+
+
+===== PAGE 23 =====
+rameters for both, which is an early acknowledgement that the classifier and the feature
+set should be tuned together. Li, Chow, Tipsuwan, and Hung [23] apply a neural net-
+work to motor rolling-bearing vibration and show that a time-frequency front end plus
+a network can track bearing condition on a test motor. Huang and Xie [43] use a back-
+propagation network on rolling bearings; their network is one of the three baselines in the
+pump comparison, so its inductive bias matters in detail.
+A backpropagation network with one hidden layer models the label as a smooth non-
+linear function of x. With weights collected in θ, training minimizes a squared or cross-
+entropy loss
+J(θ) = 1
+n
+n
+X
+i=1
+ℓ
+(yi, fθ(xi)
+)
++ λ ∥θ∥2
+(1.25)
+by gradient steps.
+The model can represent the four pump states.
+On 180 training
+vectors it can also represent accidents of the training split.
+The published numbers,
+read in Chapter 3, show a training accuracy of 91.7% and a test accuracy of 85.0% for
+this baseline, a larger train-to-test drop than any of the SVM variants. That drop is
+the capacity argument becoming visible in a table. Kankar, Sharma, and Harsha [45]
+compare several machine-learning methods on ball bearings and reach the same practical
+conclusion from another data set: the method that controls its capacity generalizes better
+when the faulty examples are few. Jack and Nandi's comparison of SVMs and neural
+networks [26], both augmented by a genetic algorithm, is the gearbox version of the same
+conclusion.
+Deep and multimodal extensions exist. Li, Sanchez, Zurita, Cerrada, Cabrera, and
+Vásquez [64] build a multimodal deep support vector classifier for spur and helical gear-
+boxes, using homologous features from several sensors. The pump study has three axes,
+which is a weak form of the same idea, but it fuses them by concatenation into the 22-
+vector rather than by a deep stack. With sixty examples per class a deep stack is not
+identified. The baseline that the source actually trains is the shallow backpropagation
+network, and that is the neural result this paper interprets.
+1.2.5
+Support vector machines and the search for their parame-
+ters
+Cortes and Vapnik's soft-margin classifier [16], and the earlier hard-margin algorithm
+of Boser, Guyon, and Vapnik [14], are the decision rule used for the pump once the
+features exist. Widodo and Yang's review [39, 41] collects the first decade of that rule in
+condition monitoring: bearing faults, gear faults, induction machines, and pumps, with
+linear, polynomial, and radial kernels, and with the repeated observation that the radial
+kernel is the one practitioners keep. The geometry and the dual problem are derived in
+Section 2.2. The prior art that matters here is the outer loop that chooses the penalty C
+20
+
+
+===== PAGE 24 =====
+and the kernel width.
+A grid search evaluates C and the width on a logarithmic lattice and keeps the pair
+with the best cross-validated accuracy. It is simple, and it is expensive in the number
+of trainings. It also cannot spend evaluations where the surface is interesting, because
+the lattice is chosen in advance. Bordoloi and Tiwari [58, 17] compare a grid, a genetic
+algorithm, and an artificial bee colony on a four-class gear problem, which is the same
+number of classes as the pump, and find that the evolutionary searches reach accurate
+multi-fault partitions. Holland's genetic algorithm maintains a population of candidate
+pairs, selects the accurate ones, and recombines them. Its operators do not use the slope
+of the accuracy surface, which is an advantage because cross-validated accuracy is a step
+function of C and of the width.
+Kennedy and Eberhart's particle swarm [18] moves
+each candidate toward its own best position and toward the swarm's best position, with
+a momentum term.
+Dong and Luo [55, 20] use that swarm to set the parameters of
+a least-squares SVM, after a principal-component compression, for bearing degradation
+prediction. Suykens and Vandewalle's least-squares variant replaces the inequality con-
+straints of the standard SVM by equalities, so the training step is a linear system. It is
+faster and it loses the sparse set of support vectors. The pump classifier stays with the
+standard soft-margin dual.
+Karaboga's artificial bee colony searches by employed bees, onlookers, and scouts,
+and it is the optimizer inside Yang's gear classifier. Alatas's artificial chemical reaction
+optimization [49] treats candidate solutions as molecules and moves them by synthesis,
+decomposition, and collision reactions. Ao, Cheng, Li, and Truong [61] wrap that reaction
+search around an SVM for roller bearings, with a local characteristic-scale energy entropy
+as the feature. Their ACROA-SVM is the second baseline of the pump study. It is a
+strong baseline: on the published test set it ties the unmodified frog-leaping SVM at
+91.7% pooled accuracy.
+The shuffled frog-leaping algorithm of Eusuff and Lansey, later elaborated with Pasha [29,
+37], was built for discrete water-network design and then used as a general memetic search.
+A population of frogs is partitioned into memeplexes. Inside a memeplex the worst frog
+leaps toward the best frog of that memeplex, and if the leap fails, toward the best frog of
+the whole population. If that also fails, the worst frog is replaced at random. Memes, in
+the sense of the memetic algorithm, are the local improvements; the shuffle that follows
+the local search is the global mixing, inherited in spirit from the particle swarm. The
+appeal, as the source paper states it, is a short parameter list, a simple leap, and a search
+that is partly local and partly global. The defect, also stated there, appears as the iter-
+ation count grows. Frogs converge, the memeplexes stop differing from one another, and
+the random replacement of a failed frog is a blind jump that throws away the position
+already reached. The modified leap in Chapter 2 is aimed at those two defects and at
+nothing else. It does not change the SVM. It changes the way C and the kernel parameter
+21
+
+
+===== PAGE 25 =====
+are proposed.
+A practical guide belongs in this review because the search is only as good as the
+training procedure inside it. Chang and Lin's LIBSVM [48, 19] is the standard solver
+for the dual, using Platt's sequential minimal optimization on pairs of multipliers. Hsu,
+Chang, and Lin's guide [52] fixes the conventions that the search must respect: scale
+each feature to a common range before training, search C and the radial width on a
+log grid first so that the evolutionary search has a sane box, and judge candidates by
+cross-validation rather than by training accuracy. The pump pipeline normalizes before
+classification, which is the first of those conventions. The fitness of a frog is a cross-
+validated classification rate, which is the third. The source study does not publish the
+box over which C and the width were searched. The exposition in Chapter 2 therefore
+states the box as an algorithmic object and does not pretend to recover a number the
+experiment never printed.
+Schölkopf and Smola's kernel monograph [51, 11] supplies the positive-definiteness
+condition, going back to Mercer, that lets the radial basis be a kernel at all. Without
+that condition the dual quadratic program need not be convex and the solver's output
+need not be a margin maximizer. The radial basis used here satisfies the condition for
+every positive width, so the only remaining question is which width, together with which
+penalty, the leap should return.
+1.2.6
+Fusion, Bayesian networks, and neighboring plants
+Not every fault is carried by one vibration sensor.
+Cai, Huang, and Xie [68] review
+Bayesian networks as a way to fuse uncertain symptoms: each node is a fault or a test,
+and the edges are conditional probabilities that a test is positive given a fault. Cai, Liu,
+Fan, and co-authors [60] apply that construction to a ground-source heat pump, fusing
+several information sources, and report a clear gain over a single-source decision. Cai,
+Zhao, Liu, and Xie [69] later give a data-driven Bayesian treatment of inverter faults in a
+permanent-magnet drive. Yin, Zhu, and Kaynak [66] keep a partial least-squares model
+and focus the detection statistic on the key performance indicators of the plant rather
+than on every measured channel equally. Venkatasubramanian's three-part review [28] of
+process fault detection places these ideas in a larger map: quantitative model residuals,
+qualitative symptom reasoning, and historical data methods.
+The axial-flow pump experiment is a historical-data method with a single triaxial
+sensor. It does not estimate a Bayesian network. The fusion it does perform is early
+fusion, inside the feature vector: three directions, seven harmonics, one severity. The heat-
+pump result is relevant as a ceiling. When independent symptoms exist, a network that
+multiplies their likelihoods can beat a classifier that sees only vibration. The published
+pump comparison does not have those extra symptoms, so the ceiling is not available, and
+22
+
+
+===== PAGE 26 =====
+the gains reported in Chapter 3 are gains of feature and of parameter search only.
+A number of SVM papers in the source bibliography sit outside rotating machinery:
+open-circuit detection in drives, intrusion detection, vehicle suspension, biochemical pro-
+cesses. They establish that the same (C, width) problem appears whenever an SVM is
+the decision rule. They are not evidence about pumps. This review uses them only to
+support the narrow claim that parameter search is part of the method.
+1.2.7
+What the previous work has already settled
+The lines above agree on more than they dispute.
+*  Spectral symptoms organized by shaft order are the right language for unbalance,
+looseness, and hydraulic once-per-revolution faults. Sohre's catalogue and the bear-
+ing kinematics (1.3) are still the interpretation layer sitting on top of any classifier.
+*  A fixed-window spectrum is a weak detector of early impulsive faults.
+Wavelet
+energies, wavelet-packet energies, spectral kurtosis, and empirical-mode envelope
+spectra are the repairs, and they work for the same reason.
+*  On a few hundred labeled records, a margin classifier with a radial kernel is a
+stronger default than an unrestricted neural network. The published pump tables
+reproduce this general experience.
+*  The radial SVM does not choose its own penalty and width. Grid search, genetic
+algorithms, particle swarms, bee colonies, chemical-reaction search, and frog-leaping
+search are all credible outer loops, and on gear and bearing benchmarks the evolu-
+tionary loops beat a coarse grid.
+*  Fusion of independent sensors helps when the sensors exist. A triaxial accelerometer
+is a minimal fusion, and it is the one the pump rig provides.
+1.3
+The problem this paper addresses
+1.3.1
+The gap between the settled results and the pump
+The settled results do not by themselves diagnose the vertical axial-flow pump. Four
+concrete gaps remain, and they are the problem statement.
+The first gap is the feature gap. Severity is standardized and, on this rig, almost blind
+to the pedestal fault: 1.161 mm/s against 1.051 mm/s in the healthy state. A Fourier
+spectrum sees the healthy blade-pass line at 64 Hz and the supply line at 50 Hz, and it
+averages any transient that does not last for the whole 0.82 s record. A wavelet energy
+vector sees which scale is loud and does not say whether the loudness is at 8 Hz or at
+23
+
+
+===== PAGE 27 =====
+16 Hz. An empirical mode may say both and may order itself differently on the next
+record. The missing object is a short vector that contains the standardized intensity, the
+scale distribution, and the shaft-order reading of the loudest scale, taken in the three
+directions the casing sensor actually measures. VWC is that object. It is defined so that
+the four states reported in the source---healthy concentration at f0, eccentric growth of
+that line and of the severity, pedestal growth of 1
+2f0, seal-wear growth of 1
+2f0 and 2f0---are
+different points in the same R22.
+The second gap is the stationarity gap, stated in the source introduction and repeated
+here as an obligation. The vibration of the pump under an early fault is a strong periodic
+carrier plus a weak, nonstationary disturbance plus interference. Methods whose only
+transform is (1.16) are, on the source authors' own account, inaccurate for that mixture.
+The method has to analyze the record in time and in scale, and it still has to return the
+harmonic amplitudes a mechanical interpretation requires. The energy time-spectrum
+followed by a coefficient power spectrum is a specific answer to that double requirement.
+Chapter 2 writes the answer in equations and fixes the implementation choices the source
+text leaves implicit.
+The third gap is the search gap. The shuffled frog-leaping algorithm already combines
+a local leap and a global leap, which is why it is a reasonable optimizer for (C, g). As
+the source formulates the defect: once frogs begin to agree, diversity collapses, the search
+sits in a local optimum of the cross-validated accuracy, and a failed frog is replaced by
+a uniform random draw that does not use the position it is abandoning. On a fitness
+surface that is a step function of two parameters, a blind draw is not a rare event, and
+each draw costs a full cross-validated training. The modification has to do two things and
+stop. It has to let the worst frog learn from the local leader and the global leader in the
+same leap, with weights that depend on how far the frog is from the global leader, so that
+a frog already near the leader exploits and a frog far from the leader explores. It has to
+replace the blind draw by a Gaussian perturbation of the current position, so that a failed
+leap becomes a local mutation rather than a restart. Both changes are internal to the
+leap. The fitness function remains the cross-validated SVM accuracy, and the decision
+function remains the radial-basis SVM. MSFLA is that modified leap.
+The fourth gap is the evaluation gap. A method that is only a derivation is not yet a
+diagnosis. The pump rig supplies four states that a reader can understand mechanically,
+a sample that is honestly small, and three published baselines: the backpropagation
+network, the chemical-reaction SVM, and the unmodified frog-leaping SVM. The problem
+includes reading that comparison at the resolution the tables support. Overall accuracy
+hides the pedestal state, which is the worst class for every method. Training accuracy
+hides the generalization drop, which is largest for the neural baseline. A single pooled
+percentage hides the fact that the entire test set is sixty vectors, so a difference of one
+vector is 1.7 percentage points. Chapter 3 performs that reading. It does not invent a
+24
+
+
+===== PAGE 28 =====
+second experiment.
+1.3.2
+Objectives
+The paper has four objectives, matched to the four gaps.
+1. Derive and specify the VWC map from a triaxial acceleration record to a vector in
+R22: the severity, the dyadic energy time-spectrum, the selection of the maximum-
+energy level, and the coefficient power spectrum at the seven shaft orders on three
+axes.
+2. Derive the soft-margin SVM with a radial kernel, then specify the modified frog-
+leaping search that sets its penalty and its kernel parameter, including the distance-
+weighted leap and the Gaussian mutation, and state which quantities the published
+experiment does not report.
+3. Describe the acquisition system as a build: the closed water loop, the four mechani-
+cal states, the triaxial charge sensor, the sampling clock, the record length, and the
+split into 180 training vectors and 60 test vectors.
+4. Estimate performance from the published counts. Report per-class and pooled rates,
+the train-to-test drop of each method, and the special difficulty of the bearing-
+pedestal state, with the arithmetic of the tables made explicit.
+1.3.3
+What is deliberately outside the problem
+A precise problem also says what it will not claim. This paper does not claim a new
+laboratory campaign. The severities, the hardware table, and the classification counts
+come from You, Fan, Li, Liang, Fang, and Wang. Illustrative signals in the figures are
+synthetic records scaled to those severities and shaped to the harmonic patterns the
+source describes; each such figure is captioned as illustrative. The paper does not claim
+that MSFLA is a universal optimizer, or that VWC is the unique admissible front end.
+Packet energies, spectral kurtosis, and ensemble modes remain legitimate alternatives
+where the sample and the hardware differ. The paper does not claim a detection delay,
+a remaining-useful-life estimate, or a performance under variable speed. The rig runs at
+one stated speed, 960 r/min. The paper does not claim an optimal C or an optimal kernel
+width, because the source does not print them. It claims that the search procedure is
+fully specified and that the published accuracy table is the estimate of its worth on this
+rig.
+25
+
+
+===== PAGE 29 =====
+1.3.4
+Map of the remaining chapters
+Chapter 2 answers the first two objectives. Section 2.1 builds the feature map from the
+velocity integral through the Mallat bank to the 22-vector, and it interprets each block
+against the four mechanical states. Section 2.2 builds the classifier from the hard-margin
+geometry through the radial dual to the modified leap, and it writes the algorithm as
+a procedure that can be implemented without consulting the source text for missing
+formulae. Chapter 3 answers the last two objectives. Section 3.1 specifies the rig, the
+sensor chain, the sampling arithmetic, and the software path from a record to a label.
+Section 3.2 reads the feature signatures and the classification tables, states the strength of
+the estimate, and lists the limits that a sixty-vector test set imposes. The two technologies
+are separable. A reader who already trusts the 22-vector can substitute another outer-
+loop optimizer. A reader who already has MSFLA can point it at another front end. The
+paper evaluates them as the pair the source proposed, because that is the pair for which
+a published estimate exists.
+Rotor forces
+unbalance,
+impact,
+seal flow
+Triaxial
+acceleration
+VWC map
+severity,
+scale energy,
+harmonic CPS
+MSFLA search
+then RBF-SVM
+State label
+N, EAF,
+BPF, SRWF
+Figure 1.3: The diagnostic chain addressed by this paper. Chapter 1 covers the forces and the
+sensor. Chapter 2 covers the two computational blocks. Chapter 3 covers the rig that produces
+the acceleration and the estimate of the label.
+26
+
+
+===== PAGE 30 =====
+Chapter 2
+The Two Diagnostic Technologies
+The diagnosis is a composition of two maps.
+The first map, VWC, sends a triaxial
+acceleration record to a point in R22. The second map, MSFLA-SVM, sends that point
+to one of four labels, after a search has fixed the two parameters of a radial-basis support
+vector machine. This chapter specifies both maps at the level of equations, algorithms,
+and implementation choices.
+Where the source study leaves a choice unspecified, the
+choice is stated and marked as a specification of this exposition rather than as a recovered
+experimental setting.
+2.1
+Technology one: the VWC feature map
+2.1.1
+What the map is required to preserve
+Let one observation be three finite sequences
+ar[n], at[n], aa[n],
+n = 0, . . . , N −1,
+(2.1)
+sampled at fs, together with the shaft speed nrpm that fixes f0 through (1.14). On the
+published rig, fs = 10 kHz, N = 8192, and nrpm = 960. The map
+Φ : (ar, at, aa) 7−→x ∈R22
+(2.2)
+has to preserve three different facts at once. The first fact is how hard the machine is
+vibrating, in the standardized sense of root-mean-square velocity. The second fact is how
+that vibration is spread across time scales, so that a short-lived transient is not averaged
+into invisibility. The third fact is how the energy of the loudest scale is distributed among
+the seven shaft orders in (1.15), because those orders are the mechanical vocabulary of the
+four states. VWC is the conjunction of those three facts: vibration severity, the dyadic
+wavelet energy time-spectrum, and the coefficient power spectrum of the maximum-energy
+level. The initial letters of the three blocks name the map.
+27
+
+
+===== PAGE 31 =====
+The blocks are complementary in a precise sense. Severity is invariant to a redistri-
+bution of energy among frequencies, which is why the pedestal fault hides inside it. The
+energy time-spectrum is invariant to a redistribution among frequencies that share a scale,
+which is why two different shaft orders inside one dyadic band produce the same Ej. The
+coefficient power spectrum breaks that remaining invariance, at the price of being com-
+puted on only one scale. Using the maximum-energy scale concentrates the third block
+where the record actually has energy, instead of averaging a spectrum over scales that
+contain only the noise floor.
+2.1.2
+Vibration severity
+The continuous definition (1.10) and the discrete RMS (1.11) are the first block. The ve-
+locity series that enters (1.11) is obtained from acceleration. This exposition distinguishes
+the source formula from the integrator used to scale the illustrative figures.
+The source formula accumulates absolute acceleration over a window of 10 ms,
+vi =
+Z 0.01
+0
+|ai(t)| dt.
+(2.3)
+On a uniform grid with step ∆t = 1/fs the integral is a sum of 0.01fs samples. At 10 kHz
+that is 100 samples. The absolute value makes vi nonnegative and proportional to the
+local mean absolute acceleration. Substituting the resulting series into (1.11) produces
+the severity that the source reports: 1.051 mm/s healthy, 3.737 mm/s for the eccentric
+axle, 1.161 mm/s for the bearing pedestal, and 1.70024 mm/s for sealing-ring wear, all
+quoted for the radial direction in which the time-domain figures of the source are drawn.
+Figure 2.1 restates those four numbers. The eccentric state is more than three times the
+healthy severity. The pedestal state is about ten percent above healthy. A threshold on
+severity alone can flag the eccentric axle and cannot reliably flag the pedestal.
+28
+
+
+===== PAGE 32 =====
+Normal
+Eccentric axle
+Bearing pedestal
+Sealing-ring wear
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+4.0
+4.5
+Vibration severity (mm/s)
+1.051
+3.737
+1.161
+1.700
+Published radial vibration severity (You et al., 2019)
+Figure 2.1: Radial vibration severity reported by You et al. for the four operating states. These
+are published measurements, not quantities computed from the illustrative signals.
+The illustrative waveforms of Figure 2.2 are built differently, and the difference is
+intentional. Each synthetic acceleration is high-pass integrated,
+˜v[n] = ∆t
+n
+X
+k=0
+a[k],
+v = H2 Hz{˜v},
+(2.4)
+and the acceleration is scaled by a single positive constant until
+q
+1
+N
+P v[n]2, expressed
+in millimetres per second, equals the published severity of that state. The shape of each
+record---a shaft-locked fundamental, a half-order where the source describes one, a blade-
+pass component, a weak supply tone in the healthy state, and a resonance near 200 Hz
+that gives the dyadic bank something to localize---follows the qualitative signatures of
+Section 3.2.1. The samples are not a reconstruction of the laboratory series, whose raw
+values are not in the source paper. They exist so that the later formulae can be looked
+at on a signal whose intensity and whose harmonic emphasis agree with the published
+description.
+29
+
+
+===== PAGE 33 =====
+−0.2
+0.0
+0.2
+Accel.
+(m/s2)
+Normal
+−0.5
+0.0
+0.5
+Accel.
+(m/s2)
+Eccentric axle (EAF)
+−0.1
+0.0
+0.1
+0.2
+Accel.
+(m/s2)
+Bearing pedestal (BPF)
+0
+25
+50
+75
+100
+125
+150
+175
+200
+Time (ms)
+−0.2
+0.0
+0.2
+0.4
+Accel.
+(m/s2)
+Sealing-ring wear (SRWF)
+Illustrative radial acceleration (first 200 ms)
+Figure 2.2: Illustrative radial acceleration over the first 200 ms. Each record is scaled so that
+the RMS of its high-pass-integrated velocity equals the published severity of that state.
+Severity contributes one coordinate to x, not three.
+The arithmetic of the source
+is explicit: seven harmonics in three directions give 21 spectral coordinates, and the full
+vector has dimension 22, so exactly one severity is appended. Figure 8 of the source shows
+that coordinate in the radial direction across groups of records. This exposition takes the
+radial severity as that coordinate, because that is the direction for which a number is
+published, and it keeps the three-axis diversity for the spectral block where the source
+says the three axes differ.
+30
+
+
+===== PAGE 34 =====
+2.1.3
+The dyadic wavelet and the Mallat bank
+The second block begins with a mother wavelet ψ ∈L2(R) of zero mean and unit norm.
+The dyadic family at scale 2j and translation b is
+ψ2j,b(t) = 2−j/2 ψ
+(2−j(t −b)
+)
+,
+j ∈Z.
+(2.5)
+The factor 2−j/2 keeps the L2 norm equal to one for every j. The analysis formula used
+by the source is the inner product
+Wf(2j, b) = 2−j/2
+Z ∞
+−∞
+f(t) ψ∗(2−j(t −b)
+)
+dt =
+(f ∗ψ2j
+)
+(b),
+(2.6)
+with ψ2j(u) = ψ2j(−u). On a sampled record the inner product is not computed as an
+integral. It is computed by the filter bank (1.21), which Mallat showed to be equivalent
+to (2.6) when ψ is the wavelet of a multiresolution analysis.
+One step of that bank is drawn in Figure 2.3. The approximation coefficients at level
+j −1 are convolved with the low-pass analysis filter h and with the high-pass analysis
+filter g, and both results are downsampled by two. The downsampled high-pass branch
+is the detail cDj. The downsampled low-pass branch is the approximation cAj, which
+becomes the input of level j + 1. Reconstruction, written by the source as
+cAj−1[k] =
+X
+n
+cAj[n] h[k −2n] +
+X
+n
+cDj[n] g[k −2n],
+(2.7)
+is the identity that lets a detail be put back into the original sampling grid and inspected
+as a time series. Orthonormal filter pairs satisfy a quadrature mirror relation, so the sum
+of detail energies and the final approximation energy equals the energy of the input, up
+to the boundary treatment. That identity is what makes a bar chart of energy-by-level a
+partition of the record rather than an arbitrary scoring.
+cAj−1
+h
+low-pass
+g
+high-pass
+↓2
+↓2
+cAj
+cDj
+detail energy Ej =
+
+
+cDj
+
+2
+Figure 2.3: One step of the Mallat analysis bank. The detail coefficients at level j are the
+dyadic wavelet transform at scale 2j.
+This exposition uses the Daubechies wavelet with four vanishing moments (db4) as the
+concrete mother wavelet. The source does not name the mother wavelet. Db4 is short,
+orthonormal, and has enough vanishing moments to annihilate a local cubic trend, which
+31
+
+
+===== PAGE 35 =====
+is the usual default when a monitoring study leaves the wavelet unnamed. The analysis
+filters used to draw Figure 2.4 are the standard db4 pair. A change to db6 or to a symlet
+moves the energy slightly between neighboring levels and does not change the definition
+of the map. The level index, however, must be read against the sampling rate. With
+fs = 10 kHz, ideal dyadic half-bands place detail dj roughly in
+( fs
+2j+1, fs
+2j
+)
+.
+(2.8)
+Detail d5 then occupies about 156--312 Hz, detail d6 about 78--156 Hz, and the shaft family
+F itself, from 8 Hz to 96 Hz, falls in d7, d8, and the final approximation. The source figures
+identify d5 as the maximum-energy detail of the records they plot. That observation is
+consistent with a structural or fluid resonance in the few-hundred-hertz band carrying
+more acceleration energy than the shaft tones, which is exactly what the factor −ω2 in
+(1.5) predicts. The coefficient spectrum can still show shaft orders, because those orders
+modulate the resonant carrier, and because the spectrum the source plots is a spectrum
+of the selected detail's coefficient sequence with a frequency axis returned to hertz. Both
+effects are part of the third block.
+d1
+d2
+d3
+d4
+d5
+d6
+d7
+d8
+a8
+Dyadic level (db4, fs = 10 kHz)
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+Fraction of signal energy
+Illustrative dyadic energy distribution
+Normal
+Eccentric axle (EAF)
+Bearing pedestal (BPF)
+Sealing-ring wear (SRWF)
+Figure 2.4: Fraction of energy by dyadic level for the illustrative signals, db4, eight levels. The
+bars are a partition of each synthetic record. They are not the energy table of the laboratory
+records, which the source publishes only as plots.
+2.1.4
+Energy time-spectrum
+The source identifies the detail coefficients with the dyadic transform,
+Wf(2j, b) = cDj[k],
+(2.9)
+32
+
+
+===== PAGE 36 =====
+and defines the energy time-spectrum at scale 2j by the squared coefficients
+EWf(t)(2j) =
+||Wf(2j, b)
+||2 =
+||cDj[k]
+||2 .
+(2.10)
+Read as a function of the coefficient index, (2.10) is a time series, not a scalar. It shows
+when, inside the record, scale 2j was loud. A pedestal impact that occupies one millisecond
+raises E at the fine scales for that millisecond and leaves the rest of the series small. A
+steady unbalance raises the coarse-scale series almost uniformly. The scalar energy of the
+level, which decides the maximum, is the sum of the time series,
+E(2j) =
+X
+k
+||cDj[k]
+||2 =
+X
+k
+EWf(t)(2j)[k].
+(2.11)
+The maximum-energy level is the integer
+k⋆∈arg min
+1≤j≤J
+(−E(2j)
+)
+,
+(2.12)
+that is, any level whose scalar energy is largest. The source writes the assumption 1 ≤
+k ≤j for this index. Ties are broken by choosing the finer level, so that a transient is
+preferred over a trend of equal energy. On the source plots, k⋆= 5 for the displayed radial
+records of every state. The map does not hard-code the number 5. It recomputes k⋆for
+each record and each direction. A fixed level would be a different method.
+2.1.5
+Coefficient power spectrum of the maximum-energy level
+The third block reads the internal periodicity of the winning level. The source forms the
+discrete Fourier transform of the energy time-series at k⋆,
+bEWf(2k⋆)[ω] =
+Nc−1
+X
+n=0
+EWf(t)(2k⋆)[n] e−iωn/Nc,
+(2.13)
+and the power spectrum
+EWp(ˆω, 2k⋆) = 1
+Nc
+||| bEWf(2k⋆)[ω]
+|||
+2
+.
+(2.14)
+Here Nc is the length of the coefficient sequence at that level, which is about N/2k⋆for
+an undecimated-free dyadic bank. Equation (2.14) is the power spectrum of the energy
+envelope of the winning detail. Peaks of an energy envelope sit at the rates that modulate
+the detail: a once-per-revolution modulation produces a line at f0 in this spectrum, and
+a twice-per-revolution looseness produces a line at 1
+2f0.
+The plots in the source are labeled as the wavelet coefficient power spectrum of level
+d5 and are drawn with a horizontal axis in hertz from 0 to about 110 Hz, with visible
+33
+
+
+===== PAGE 37 =====
+lines at members of F. Two implementations produce a plot of that shape. The first is
+literal: transform (2.10) by (2.13), convert the coefficient-domain frequency ν (cycles per
+coefficient) into hertz by
+f = ν · fs
+2k⋆,
+(2.15)
+and read (2.14) on F. The second forms the power spectrum of the detail coefficients
+themselves, without the square inside (2.10), and uses the same frequency map. The
+square emphasizes the strong instants of the detail and is the formula the source writes.
+This exposition follows the written formula. Amplitudes at the seven orders are then the
+samples of (2.14) nearest to each frequency in F,
+pd(η) = EWp(ˆω, 2k⋆)
+||
+f=η ,
+η ∈F,
+d ∈{r, t, a}.
+(2.16)
+If a line falls between bins, the bin of maximum power inside a window of half a shaft
+order is taken, so that a 1 Hz speed drift does not zero the feature. The source does not
+describe an interpolation rule. The half-order window is a specification of this exposition,
+and it is narrower than the gap between adjacent members of F.
+Figure 2.5 shows the baseband power of the illustrative accelerations, normalized per
+state, with vertical lines at the same orders. It is a spectrum of the raw synthetic signal,
+included so the harmonic emphasis is visible without the filter bank. It is not a plot of
+(2.14).
+34
+
+
+===== PAGE 38 =====
+0
+20
+40
+60
+80
+100
+120
+Frequency (Hz)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Normalized power
+Normal
+0
+20
+40
+60
+80
+100
+120
+Frequency (Hz)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Normalized power
+Eccentric axle (EAF)
+0
+20
+40
+60
+80
+100
+120
+Frequency (Hz)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Normalized power
+Bearing pedestal (BPF)
+0
+20
+40
+60
+80
+100
+120
+Frequency (Hz)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Normalized power
+Sealing-ring wear (SRWF)
+Illustrative baseband spectra, 0–120 Hz
+Figure 2.5: Normalized baseband spectra of the illustrative accelerations. Vertical lines mark
+8, 16, 32, 48, and 64 Hz. Healthy energy favors f0 and its low harmonics; the eccentric state is
+dominated by f0; the pedestal and seal-wear states carry a stronger half-order.
+2.1.6
+Assembly of the twenty-two coordinates
+Collect the seven spectral samples on each axis and the radial severity:
+x =
+(VIBr,
+pt(1
+2f0), pt(f0), . . . , pt(6f0),
+pa(1
+2f0), pa(f0), . . . , pa(6f0),
+pr(1
+2f0), pr(f0), . . . , pr(6f0)
+)⊤∈R22.
+(2.17)
+The order of the blocks is a convention. Training and testing must use the same conven-
+tion, because the SVM kernel compares coordinates by index. The source's reading of
+its own Figure 9 fixes the meaning of the blocks even without a written index map. In
+the healthy state the tangential amplitudes exceed the axial and the radial ones, and the
+tangential maximum lies at f0. Under the eccentric axle the tangential maximum rises
+from 1.683 × 10−3 to 3.322 × 10−3 in the units of that figure, the axial energy spreads
+from f0 toward 1
+2f0, and the radial maximum rises from 4.574 × 10−4 to 2.492 × 10−3.
+Under the pedestal fault the tangential maximum rises further, to 4.701 × 10−3, and it
+35
+
+
+===== PAGE 39 =====
+sits at 1
+2f0 rather than at f0; axial energy grows at 5f0 and 6f0; radial energy shifts from
+f0 toward 1
+2f0, 3f0, and 4f0. Under sealing-ring wear the tangential amplitudes are again
+the largest, with emphasis at f0, 1
+2f0, and 2f0, and the axial and radial intensities fall
+between the eccentric and the pedestal cases. Those sentences are the specification of
+what Φ is supposed to make linearly visible. A correct implementation is one in which a
+scatter of the 22-vectors reproduces this pattern.
+2.1.7
+Normalization
+Coordinates of x do not share a unit.
+Severity is in millimetres per second and has
+magnitude near 1. A coefficient power sample is a squared spectral density of a squared
+wavelet coefficient, and the published tangential peaks lie near 10−3. Left unscaled, the
+Euclidean distances inside the radial kernel are severity distances, and the twenty-one
+spectral coordinates are ignored. The source states that training and testing vectors are
+normalized before classification in order to speed convergence. It does not state the map.
+This exposition uses an affine map to the unit interval, fit on the training sample only,
+˜x(j) = x(j) −u(j)
+v(j) −u(j) ,
+u(j) = min
+i∈train x(j)
+i ,
+v(j) = max
+i∈train x(j)
+i .
+(2.18)
+The same u(j) and v(j) are applied to the test vectors. Refitting the range on the test
+set would leak the test distribution into the feature and would inflate the estimate in
+Chapter 3. A coordinate with v(j) = u(j) is dropped; on this rig none of the twenty-two is
+constant. A z-score is an acceptable alternative and is not the map used in the formulae
+below.
+2.1.8
+The feature procedure
+The map Φ, ready to implement, is the following procedure.
+1. From each acceleration axis, form the velocity series by the chosen integrator and
+compute one radial severity by (1.11).
+2. For each axis, run J = 8 steps of (1.21) with the db4 filters. Compute the scalar
+energies (2.11) and the winning index k⋆by (2.12).
+3. Form the energy time-series (2.10) at level k⋆, its transform (2.13), and the power
+(2.14). Sample the seven orders by (2.16).
+4. Concatenate by (2.17).
+5. Apply (2.18) with ranges stored from the training fold.
+36
+
+
+===== PAGE 40 =====
+The cost is linear in N for the filter bank and O(Nc log Nc) for the single transform of the
+winning level. At N = 8192 this cost is negligible beside the cost of the SVM trainings
+inside the parameter search. The map contains no iterative optimization and no random
+seed. Given the filter, the integrator, and the tie break, Φ is a function.
+2.1.9
+How the four states separate inside the map
+A short mechanical reading says what a later classifier is asked to finish. Healthy running
+puts a moderate severity next to a tangential spectrum peaked at 16 Hz, with smaller
+lines at 32, 48, and 64 Hz and a supply artifact at 50 Hz that the order sampler, aimed
+at 48 Hz, is narrow enough to miss. Eccentric axle multiplies the severity by about three
+and multiplies the tangential f0 sample by about two, which is the stationary signature of
+a larger meΩ2 in (1.1). Bearing-pedestal fault leaves the severity almost unchanged and
+moves the tangential peak from 16 Hz to 8 Hz, which is the spectral form of a stiffness
+that repeats every two revolutions, and it raises high-order axial energy that the source
+attributes to flow-induced vibration and to component natural frequencies. Sealing-ring
+wear raises the severity to 1.70 mm/s and emphasizes 1
+2f0 together with 2f0, which is the
+hydraulic leakage writing on the orbit twice per turn as well as once every two turns.
+These four patterns are not orthogonal, and the pedestal pattern is the least stable of
+them because resonance and site interference share the bands the high orders occupy.
+The classifier of the next section is trained to draw the boundaries that these patterns
+only suggest.
+Triaxial
+acceleration
+Radial severity
+(1.11)
+Mallat bank
+energies E(2j)
+CPS at k⋆
+seven orders,
+three axes
+x ∈R22
+Train-only
+scaling (2.18)
+Figure 2.6: Data flow of the VWC map. Severity and the spectral block meet only at the
+concatenation.
+2.2
+Technology two: the MSFLA-SVM classifier
+2.2.1
+Hard margin
+The second technology starts from a binary labeled sample, because the multiclass pump
+problem is reduced to binary problems below. Let
+T =
+{
+(xi, yi)
+}n
+i=1,
+xi ∈Rd,
+yi ∈{+1, −1}.
+(2.19)
+37
+
+
+===== PAGE 41 =====
+A linear classifier is a pair (w, b) and the rule sgn(w⊤x+b). Among all pairs that separate
+T , the hard-margin SVM chooses the pair whose slab
+{
+x :
+||w⊤x + b
+|| ≤1
+}
+(2.20)
+is as thick as possible. The Euclidean thickness of the slab is 2/ ∥w∥. Maximizing the
+thickness is the same problem as
+min
+w,b
+1
+2 ∥w∥2
+subject to
+yi(w⊤xi + b) ≥1,
+i = 1, . . . , n.
+(2.21)
+The factor one half is traditional and makes the derivative equal to w. Points that lie on
+the boundary of the slab are the support vectors. They alone determine w. Moving a
+correctly classified point that sits strictly outside the slab does not change the solution,
+which is the geometric reason a small sample can still determine a stable rule: most of
+the sample is allowed to be absent.
+x(1)
+x(2)
+margin
+y = +1
+y = −1
+Figure 2.7: Hard-margin geometry in a feature plane. The solid line is the decision boundary.
+The dashed lines bound the slab. Only points on the dashed lines are support vectors.
+2.2.2
+Soft margin and the dual
+Pump features overlap, so the constraints of (2.21) can be empty. The soft-margin problem
+introduces a slack ξi ≥0 for each training point and a penalty C > 0 on the sum of slacks,
+min
+w,b,ξ
+1
+2 ∥w∥2 + C
+n
+X
+i=1
+ξi
+subject to
+yi(w⊤xi + b) ≥1 −ξi,
+ξi ≥0.
+(2.22)
+A small C permits a wide margin with many slacks and under-fits the four states. A
+large C forces the slacks toward zero and can memorize the 180 training vectors. This is
+the first of the two numbers the frog search has to set. The Lagrangian of (2.22) with
+multipliers αi ≥0 for the margin inequalities and µi ≥0 for the slack inequalities has a
+saddle point at which w = P
+i αiyixi and P
+i αiyi = 0. Eliminating w, b, and ξ produces
+38
+
+
+===== PAGE 42 =====
+the dual quadratic program that the source writes in kernel form. In the linear case it is
+max
+α
+−1
+2
+n
+X
+i=1
+n
+X
+j=1
+yiyjαiαj x⊤
+i xj +
+n
+X
+j=1
+αj
+subject to
+n
+X
+i=1
+yiαi = 0,
+0 ≤αi ≤C.
+(2.23)
+The box constraint 0 ≤αi ≤C is the algebraic face of the penalty. A point with αi = 0
+is outside the slab and does not appear in w. A point with 0 < αi < C lies on the margin
+boundary and is a free support vector. A point with αi = C lies inside the slab or on
+the wrong side and is a bound support vector. The decision rule, once any free support
+vector xj has been used to recover the threshold, is
+f(x) = sgn
+( n
+X
+i=1
+αiyi x⊤
+i x + b
+)
+,
+(2.24)
+b = yj
+(
+1 −αj
+C
+)
+−
+n
+X
+i=1
+yiαi x⊤
+i xj,
+(2.25)
+which is the linear special case of the source formulae. Sequential minimal optimization
+solves (2.23) by optimizing two multipliers at a time and keeping the equality constraint
+satisfied. The solver is deterministic given the data, C, and the kernel. All of the ran-
+domness in MSFLA-SVM sits in the outer search, not in the quadratic program.
+2.2.3
+The radial kernel
+Pump classes are not linearly separable in R22 after the normalization (2.18). A feature
+map Ψ into a Hilbert space H restores a linear problem in H provided the inner products
+⟨Ψ(x), Ψ(x′)⟩H can be evaluated. Mercer's theorem says that a continuous symmetric
+function K that is positive definite is such an inner product for some Ψ. The radial basis
+used by the source,
+K(x, x′) = exp
+(
+−∥x −x′∥2
+2σ2
+)
+= exp
+(−g ∥x −x′∥2)
+,
+(2.26)
+is positive definite for every σ > 0. The second writing defines the kernel parameter g =
+1/(2σ2) that the search actually stores. A large g makes K decay in a small neighborhood
+of each training point: the decision surface can weave among the 180 vectors and the risk
+of over-fit rises. A small g makes K almost constant on the unit cube: the surface is
+nearly linear and the risk of under-fit rises. The source notes that σ, or equivalently g,
+balances the influence of C. The pair (C, g) is the whole continuous degree of freedom of
+the classifier. Substituting K for the inner product in (2.23) gives the program the source
+39
+
+
+===== PAGE 43 =====
+states,
+min
+α
+1
+2
+n
+X
+i=1
+n
+X
+j=1
+yiyjαiαj
+(
+K(xi, xj) + 1
+C δij
+)
+−
+n
+X
+j=1
+αj
+subject to
+n
+X
+i=1
+yiαi = 0,
+αi ≥0,
+(2.27)
+where the diagonal term C−1δij is the source's way of writing the soft-margin quadratic,
+and the decision function is
+f(x) = sgn
+( n
+X
+i=1
+α⋆
+i yiK(x, xi) + b⋆)
+.
+(2.28)
+The threshold b⋆is computed from any multiplier strictly between 0 and C, by the kernel
+form of (2.25).
+2.2.4
+Four states from binary machines
+The label set of the pump is
+Y = {normal, EAF, BPF, SRWF},
+(2.29)
+not a pair. This exposition reduces Y by the one-versus-one scheme. Each pair of states
+trains one binary machine, which produces
+(4
+2
+)
+= 6
+(2.30)
+radial SVMs. A test vector is labeled by the state that wins the most of the six votes.
+Ties are broken by the signed sum of the six decision functions after each function has
+been oriented toward its positive class. One-versus-rest, with four machines, is the main
+alternative. It trains each machine on a more unbalanced binary problem, because the
+negative class then contains three states. The source does not name the reduction. One-
+versus-one is the specification here because each binary problem then has 90 training
+vectors, 45 per state, which matches the per-state training count the source publishes, and
+because it is the default reduction of the usual SVM solver. The search for (C, g) is shared:
+one pair is used for all six machines, and the fitness of that pair is the cross-validated
+accuracy of the voted label, not the accuracy of a single binary machine. Searching six
+independent pairs would multiply the capacity of the outer loop by six and, on 180 vectors,
+would over-fit the folds.
+40
+
+
+===== PAGE 44 =====
+2.2.5
+Cross-validated fitness
+A frog is a candidate pair z = (C, g) with C > 0 and g > 0.
+The search works in
+logarithmic coordinates
+u = (log10 C, log10 g),
+(2.31)
+so that a leap of fixed length means the same factor at C = 1 and at C = 103. The box
+of this exposition is
+log10 C ∈[−1, 3],
+log10 g ∈[−3, 1],
+(2.32)
+which covers penalties from 0.1 to 1000 and kernel parameters over four decades around
+the scale of the unit-cube features. The source does not publish a box. Equation (2.32) is
+a specification, chosen to match the range a careful grid search would have covered, and
+every leap is projected back into the box by truncation.
+The fitness of u is a stratified K-fold accuracy on the training set. With n = 180
+and four classes, K = 5 gives folds of 36 vectors, nine from each state. For each fold the
+six binary machines are trained on the complement, the fold is labeled by vote, and the
+accuracy is the fraction of correct labels. The fitness is the mean of the five accuracies,
+F(u) = 1
+K
+K
+X
+k=1
+Acc
+(T \ Tk; Tk; u
+)
+.
+(2.33)
+F is a step function. It changes only when a leap moves a training vector across a margin.
+Gradient methods are a poor match to it, which is why a derivative-free leap is the right
+outer loop. The value of F is the only information a frog receives. In particular the
+search never sees the test set. The numbers in Chapter 3 are computed after the search
+has returned its best u, by retraining on all 180 vectors and labeling the 60.
+2.2.6
+The unmodified shuffled frog-leaping search
+The unmodified search is the baseline called SFLA-SVM. A population of Nf frogs
+Ui = (ui,1, . . . , ui,d),
+d = 2,
+(2.34)
+is drawn uniformly in the box (2.32). The source's dimension d is the dimension of a frog,
+which is two, not the feature dimension 22. Fitness F(Ui) is evaluated by (2.33). The
+frogs are sorted so that F(U1) ≥F(U2) ≥· · ·, and they are dealt into M memeplexes of
+P frogs with Nf = MP. Frog i in the sorted list goes to memeplex
+z = (i −1) mod M,
+(2.35)
+41
+
+
+===== PAGE 45 =====
+which is the source rule z = i mod M up to the indexing of the first frog. Dealing by rank,
+rather than by chopping the sorted list into M contiguous blocks, puts a high-fitness frog
+in every memeplex. Each memeplex then has a local best frog Fb, the whole population
+has a global best frog Fg, and each memeplex has a worst frog Fw.
+The local leap tries to improve Fw by moving it toward Fb,
+D = rand(0, 1) · (Fb −Fw),
+Fnew
+w
+= clip
+(Fw + D; ±Dmax
+)
+,
+(2.36)
+where the clip enforces both the box and a maximum step length Dmax on each coordinate.
+If F(Fnew
+w ) is not strictly better than F(Fw), the same leap is repeated with Fg in place of
+Fb. If that also fails, Fw is replaced by a uniform random frog in the box. Each memeplex
+repeats its local improvement a fixed number of times. All memeplexes are then poured
+back into one population, sorted, and dealt again. The shuffle is the only communication
+between memeplexes, apart from the shared use of Fg. The loop stops at a maximum
+number of shuffles or when F(Fg) has met a prescribed accuracy.
+The two defects of this loop are visible from the formulae. The leap uses Fb and Fg
+only in sequence, and only the second if the first has already failed, so a frog that can
+gain from a combination of the two leaders never sees the combination. And the random
+replacement ignores Fw entirely. Late in the run, when most frogs lie near one another,
+both defects reduce diversity: the sequential leap copies the leaders, and the random
+replacement is rare only when leaps succeed, which is when the population has already
+collapsed.
+2.2.7
+Distance-weighted update of the worst frog
+The modified search changes the leap and the failure case. Inside memeplex z, write Xh
+for the position of its h-th frog and define the memeplex center by the coordinate-wise
+mean
+Uz,c = 1
+P
+P
+X
+h=1
+Xh.
+(2.37)
+The distance the source uses between two frogs i and j is not a plain Euclidean distance
+of their positions. It adds the distance of the centers of the memeplexes that hold them,
+FFdist(i, j) =
+v
+u
+u
+t
+d
+X
+t=1
+(Ui,t −Uj,t
+)2 + ∥Ui,c −Uj,c∥2.
+(2.38)
+A frog is therefore far from another frog either because its parameters differ or because
+it sits in a memeplex whose center differs. The second term keeps two memeplexes that
+have drifted apart from treating their members as neighbors merely because two of the
+42
+
+
+===== PAGE 46 =====
+members happen to be close. Let S be the index of the global best frog, and define
+Dg
+max = max
+i̸=S
+FFdist(i, S),
+Dg
+min = min
+i̸=S FFdist(i, S).
+(2.39)
+The learning weight on the global leader, for a frog i that is about to leap, is the normalized
+distance
+qi = FFdist(i, S) −Dg
+min
+Dg
+max −Dg
+min
+,
+hi = 1 −qi.
+(2.40)
+When the denominator vanishes, every frog is at the same distance from the leader and
+the weights are set to hi = qi = 1
+2. By construction hi + qi = 1 and both weights lie in
+[0, 1]. A frog close to the global best receives a small qi and a large hi: its leap is mostly
+toward the local best, which is a fine adjustment. A frog far from the global best receives
+a large qi: its leap is mostly toward the global best, which pulls outliers inward without
+waiting for the local leap to fail. The modified step is the single update
+Di = hi rand(0, 1) (Fb −Fw) + qi rand(0, 1) (Fg −Fw),
+Fnew
+w
+= clip
+(Fw + Di; ±Dmax
+)
+.
+(2.41)
+The two rand(0, 1) draws are independent. Equation (2.41) replaces the cascade (2.36).
+There is no second chance with a different leader, because both leaders are already in the
+step. If the new fitness is strictly better, Fnew
+w
+replaces Fw.
+Fg
+Fb
+Fw
+Fnew
+h large
+q large if far
+Close frogs: h ≫q, step toward the local best.
+Far frogs: q ≫h, step toward the global best.
+Figure 2.8: The modified leap. The new position of the worst frog is a convex combination,
+with random contractions, of the step toward the local best and the step toward the global best.
+The weights depend on distance to the global best.
+2.2.8
+Gaussian mutation when the leap fails
+If F(Fnew
+w ) ≤F(Fw), the unmodified search draws a new frog uniformly in the box. The
+modified search perturbs the current worst frog by an isotropic Gaussian factor,
+Fmut
+w
+= clip
+(Fw + Fw ⊙ε
+)
+,
+ε ∼N(0, I),
+(2.42)
+where ⊙is coordinate-wise multiplication and the clip returns the result to the box (2.32).
+Because the coordinates of Fw are logarithms of C and g, adding a multiple of the co-
+ordinate itself is a multiplicative perturbation in the original parameters: a coordinate
+43
+
+
+===== PAGE 47 =====
+u becomes u(1 + ε). A draw ε = −1 would send the coordinate through zero; the box
+truncation stops that case. The perturbation is local in the logarithmic chart whenever ε
+is order one, and it is still able to leave a shallow local maximum, which is the reason for
+using a unit normal rather than a very small one. The mutated frog replaces Fw whether
+or not its fitness improves. That acceptance of a worse mutant is what restores diversity
+after a failed leap. It is also the reason the mutant must stay in a neighborhood of Fw: a
+worse mutant thrown to the other end of the box would be the blind restart again. The
+source writes the mutation as Fw + Fw · N(0, 1), which is (2.42) before the clip. The clip
+is part of this exposition because an unconstrained Gaussian step on a bad frog can exit
+the box in one generation.
+2.2.9
+The modified procedure as a whole
+The full outer loop, with the inner SVM treated as a subroutine that returns F, is the
+following.
+1. Draw Nf = MP frogs uniformly in the box (2.32). Evaluate F by (2.33).
+2. Sort the frogs by decreasing fitness and deal them into M memeplexes by (2.35).
+3. For each memeplex, for a prescribed number of local steps: identify Fb, Fw, and the
+global Fg; compute centers and the weights (2.40); propose Fnew
+w
+by (2.41); if the
+fitness improves, accept it; otherwise replace Fw by the mutant (2.42).
+4. Shuffle all memeplexes into one population.
+5. If the shuffle budget is exhausted, or if F(Fg) has reached the prescribed accuracy,
+stop and return Fg. Otherwise return to step 2.
+6. Retrain the six binary SVMs on all 180 training vectors at the returned (C, g), and
+label the test vectors by vote.
+Population size, memeplex count, local-step count, shuffle budget, and Dmax are not
+printed in the source study. They are parameters of the search, not of the SVM. This
+exposition does not assign them numerical values disguised as the experimental settings.
+What the published estimate in Chapter 3 supports is the whole procedure as the source
+ran it, not a particular population size reconstructed after the fact. An implementation
+that needs numbers can start from a small memetic configuration, M = 5, P = 10, ten
+local steps, and thirty shuffles, and check that the cross-validated fitness has flattened.
+Those starting values are a suggestion for software, not a claim about the 2019 run.
+44
+
+
+===== PAGE 48 =====
+2.2.10
+Relation to the other outer loops
+The four classifiers in the published comparison share the VWC vector and differ in the
+map from that vector to a label.
+The backpropagation network fits (1.25) by gradi-
+ents and has no (C, g). ACROA-SVM fits the same dual (2.27) and proposes (C, g) by
+chemical-reaction moves: combinations of candidates, decompositions, and intermolecular
+collisions, accepted by a reaction criterion. SFLA-SVM proposes (C, g) by the cascade
+(2.36) and by random replacement. MSFLA-SVM proposes (C, g) by (2.41) and (2.42).
+Any difference in the tables of Chapter 3 is therefore a difference of inductive bias and of
+search, on a common feature. It is not a difference of sensors or of labels.
+A useful way to see the modified leap is to write the expected step, conditional on the
+current frogs, ignoring the clip. Because each rand(0, 1) has mean one half,
+E[Di | leaders] = hi
+2 (Fb −Fw) + qi
+2 (Fg −Fw).
+(2.43)
+The expected new position is an affine combination of Fw, Fb, and Fg whose weights on
+the two leaders sum to one half. The unmodified cascade has a different expectation:
+it moves toward Fb alone with probability one on the first try, and toward Fg only on
+failure. Equation (2.43) is biased toward exploration exactly when qi is large, which is
+when FFdist(i, S) is large. That is the diversity mechanism, expressed as a conditional
+expectation rather than as a slogan. The Gaussian mutant adds a zero-mean perturbation
+on the failure event, so it does not change (2.43) on the event that the leap succeeds, and
+it prevents the failure event from sampling the box uniformly.
+2.2.11
+Numerical safeguards
+A few safeguards keep the procedure inside the theory that justifies it. The kernel matrix
+is positive definite up to rounding; a practical solver adds a ridge of size about 10−8
+to the diagonal, which is a negligible shift of C−1 inside the box (2.32). Features enter
+only after (2.18), so a change of engineering unit cannot masquerade as a change of g.
+Fitness is computed on stratified folds, so a frog cannot score perfectly by ignoring the
+pedestal class, which has the same training count as the others but is harder. The test
+set is touched once, after the return of Fg. Repeating the search from several random
+populations and keeping the best training fitness would be a further outer loop and would
+require a fresh test set to stay honest. The published estimate is the result of the search
+the source ran, reported once.
+45
+
+
+===== PAGE 49 =====
+Population of
+pairs (C, g)
+Fitness F
+5-fold vote
+accuracy
+Deal into
+memeplexes
+Distance-weighted
+leap (2.41)
+If no improvement:
+Gaussian mu-
+tant (2.42)
+Shuffle and
+repeat
+Best pair,
+retrain, vote
+Figure 2.9: Outer loop of MSFLA-SVM. The SVM solver is inside the fitness block. The test
+set is used only in the final block.
+2.2.12
+What each technology contributes, and what it cannot
+VWC contributes a deterministic, mechanically readable vector of fixed dimension. It
+cannot invent separability that the sensor did not record. If the pedestal fault and the
+healthy state produce the same severity and the same seven amplitudes in all three axes,
+no outer loop will separate them. The source figures say that this identity does not hold:
+the half-order tangential amplitude moves. They also say that the move is contaminated
+by resonance and by site tones, which is why every classifier in the comparison, including
+MSFLA-SVM, scores its worst class on the pedestal fault.
+MSFLA contributes a search for (C, g) that uses both leaders on every leap and that
+mutates locally after a failure.
+It cannot raise the Bayes accuracy of the feature.
+A
+perfect search still returns the best radial SVM, not an oracle. The comparison with
+SFLA-SVM is the clean estimate of the modification, because the feature, the dual, the
+kernel family, and the fitness are shared. The comparison with ACROA-SVM estimates
+the modification against a different global search of similar ambition. The comparison
+with the backpropagation network estimates the whole margin-and-search construction
+against a gradient-trained network. Chapter 3 reads those three comparisons on the rig
+the next section describes, and it keeps their statistical size in view: sixty test vectors,
+fifteen per state.
+2.2.13
+A numerical walk-through of speed, orders, and severity
+The formulae of the feature map are short enough to evaluate by hand on the published
+operating point, and the arithmetic is worth doing once so that every later frequency has
+a known bin. The shaft turns at nrpm = 960. Equation (1.14) gives
+f0 = 960
+60 = 16 Hz
+(2.44)
+46
+
+
+===== PAGE 50 =====
+with no remainder. The seven orders that the coefficient sampler reads are therefore exact
+multiples,
+1
+2f0 = 8,
+f0 = 16,
+2f0 = 32,
+3f0 = 48,
+4f0 = 64,
+5f0 = 80,
+6f0 = 96,
+(2.45)
+all in hertz. The fourth of these coincides with blade pass for a four-blade impeller,
+Zf0 = 4 × 16 = 64 Hz,
+(2.46)
+so a line at 64 Hz is expected in the healthy pump and is not, by itself, a fault indicator.
+The supply tone reported in the healthy spectrum sits at 50 Hz, two hertz above 3f0. Any
+sampler aimed at 48 Hz has to be narrower than that gap.
+The analysis length used to describe the records is N = 8192 samples at fs = 10 kHz.
+Duration, resolution, and the number of shaft revolutions inside one record are
+Trec = 8192
+10000 = 0.8192 s,
+∆f = 10000
+8192 = 1.220703125 Hz,
+(2.47)
+Nrev = 0.8192 × 16 = 13.1072,
+Nspr = 10000
+16
+= 625,
+(2.48)
+where Nspr is the number of samples in one shaft revolution. Six hundred and twenty-
+five samples per revolution is a fine angular grid: an impact that lasts one millisecond
+occupies ten samples, and a half-order event that repeats every two revolutions occupies
+1250 samples. The Fourier bin nearest a frequency f has index
+k(f) = round
+( f
+∆f
+)
+= round
+(f N
+fs
+)
+.
+(2.49)
+Applying (2.49) to the family and to the supply line gives the indices in Table 2.1. The
+half-order, the shaft line, and the supply line fall in different bins. Bin 41 is the supply;
+bin 39 is 3f0. Nothing in the order sampler is asked to share a bin with the mains.
+47
+
+
+===== PAGE 51 =====
+Table 2.1: Fourier bin of each monitored frequency for N = 8192 and fs = 10 kHz. The exact
+bin coordinate f/∆f is shown before rounding.
+Tone
+Frequency (Hz)
+f/∆f
+Nearest bin
+1
+2f0
+8
+6.5536
+7
+f0
+16
+13.1072
+13
+2f0
+32
+26.2144
+26
+3f0
+48
+39.3216
+39
+Supply
+50
+40.9600
+41
+4f0 (blade pass)
+64
+52.4288
+52
+5f0
+80
+65.5360
+66
+6f0
+96
+78.6432
+79
+The same clock fixes the coefficient-domain grid at the level the source plots.
+At
+dyadic level j = 5 the coefficient rate and the coefficient length are
+fc = fs
+25 = 10000
+32
+= 312.5 Hz,
+Nc = N
+25 = 8192
+32
+= 256,
+(2.50)
+so the bin spacing of a transform of the level-5 coefficients is
+∆fc = fc
+Nc
+= 312.5
+256 = 1.220703125 Hz,
+(2.51)
+identical to ∆f of the full record. The coefficient-domain Nyquist frequency is fc/2 =
+156.25 Hz, which lies above 6f0 = 96 Hz. Every order in Table 2.1 is therefore a legal
+sample of the level-5 coefficient power spectrum. The map does not have to resample
+that level before it reads the family. If a future record selected a winning level j ≥7, the
+coefficient Nyquist would be fs/2j+1. At j = 7 that frequency is 39.0625 Hz, and orders
+from 3f0 upward would sit above it. The implementation note in Section 2.1 --- refuse
+an order above the coefficient Nyquist rather than report a folded line --- is exactly the
+protection this arithmetic asks for. On the records the source displays, the winning level
+is d5 and the protection is idle.
+Severity can be checked on a short series without pretending the series is a pump
+record. Take four velocity samples, in millimetres per second,
+v = (1.0, −1.0, 1.0, −1.0).
+(2.52)
+Equation (1.11) returns
+VIB =
+r
+1
+4
+(12 + (−1)2 + 12 + (−1)2)
+=
+√
+1 = 1 mm/s.
+(2.53)
+48
+
+
+===== PAGE 52 =====
+A constant shift of the same series up by c does not leave the severity unchanged, because
+severity is an RMS and not a standard deviation. For v′
+i = vi + c,
+VIB′ =
+p
+VIB2 + c2 + 2c ¯v,
+(2.54)
+and here ¯v = 0, so a drift of c inflates the severity by
+√
+1 + c2. That is why the integrator
+that produces velocity from acceleration is followed by a high-pass step in the illustrative
+construction, and why a published severity should be read together with the band in which
+it was computed. The four published radial severities remain the experimental numbers:
+1.051, 3.737, 1.161, and 1.70024 mm/s. Their ratios to the healthy value are
+3.737
+1.051 ≈3.56,
+1.161
+1.051 ≈1.10,
+1.70024
+1.051
+≈1.62.
+(2.55)
+Eccentricity multiplies intensity by about three and a half. The pedestal fault multiplies
+it by about one tenth above unity. Seal wear sits between them. A threshold placed
+anywhere between 2 and 3 mm/s would catch the eccentric state and miss the other two
+faults. The spectral coordinates exist to catch those two.
+The short-window map (2.3) has a unit that is easy to misread. Over τ = 0.01 s with
+sampling step ∆t = 10−4 s,
+vi ≈∆t
+99
+X
+m=0
+|a[m]| =
+1
+100 ·
+1
+100
+99
+X
+m=0
+|a[m]| × 100 = τ · MAi,
+(2.56)
+where MAi is the mean absolute acceleration inside the window. A window whose mean
+absolute acceleration is 2 m/s2 contributes vi = 0.02 m/s = 20 mm/s to the series that then
+enters the RMS. The RMS of those window values is not the RMS of a once-integrated
+acceleration, and it is not in the same proportion to ISO severity zones unless the window
+and the absolute value are part of the stated definition.
+This paper therefore never
+converts the published millimetre-per-second figures into an ISO zone letter. It uses them
+as comparative intensities under one fixed definition.
+2.2.14
+Karush--Kuhn--Tucker conditions of the soft-margin prob-
+lem
+The dual quadratic program is the form a solver accepts. The conditions that certify its
+solution are the Karush--Kuhn--Tucker conditions of the primal, and they are the reason
+a support vector is allowed to determine the threshold while a correctly classified interior
+point is not. Restoring the slack form (2.22), the Lagrangian is
+L = 1
+2 ∥w∥2 + C
+n
+X
+i=1
+ξi −
+n
+X
+i=1
+αi
+(yi(w⊤xi + b) −1 + ξi
+)
+−
+n
+X
+i=1
+µiξi,
+(2.57)
+49
+
+
+===== PAGE 53 =====
+with αi ≥0 and µi ≥0. Stationarity with respect to w, b, and ξi requires
+w =
+n
+X
+i=1
+αiyixi,
+n
+X
+i=1
+αiyi = 0,
+C = αi + µi.
+(2.58)
+Primal feasibility requires the margin inequality and ξi ≥0. Dual feasibility requires
+αi ≥0 and µi ≥0, hence 0 ≤αi ≤C once the third stationarity relation is substituted.
+Complementary slackness requires
+αi
+(yi(w⊤xi + b) −1 + ξi
+)
+= 0,
+µiξi = 0.
+(2.59)
+The three regimes used in Section 2.2 are these conditions read by cases. If αi = 0,
+then µi = C > 0, so ξi = 0, and the point satisfies the margin strictly or lies unused
+on the boundary; it does not appear in w. If 0 < αi < C, then µi > 0, so ξi = 0,
+and the first complementary condition places the point exactly on the margin boundary
+yi(w⊤xi + b) = 1. That point is a legal place to solve for b. If αi = C, then µi = 0, the
+slack may be positive, and the point is a margin violation that still pulls on w. Replacing
+the inner product by K does not change the case logic. It changes only the expression for
+the decision value,
+w⊤Ψ(x) + b =
+n
+X
+i=1
+αiyiK(xi, x) + b.
+(2.60)
+A frog evaluates fitness from labels of held-out folds, and those labels are the signs of
+(2.60). The KKT cases are how the solver represents the same rule with a few nonzero
+multipliers instead of with the full normal vector w, which for a radial kernel is an element
+of an infinite-dimensional space and is never stored.
+The threshold formula (2.25) is the margin-boundary equation solved for b at one free
+support vector, with the source's diagonal soft-margin term absorbed into the way the
+dual is written. Averaging b over every free support vector, rather than trusting one index,
+is a standard numerical safeguard and does not change the decision rule when the KKT
+conditions are met exactly. In floating point they are met up to a tolerance, and the
+average is the more stable of the two. This exposition uses the average when it describes
+an implementation, and it records that the source writes the single-index form.
+2.2.15
+A two-point illustration of the radial kernel
+The effect of g on (2.26) is visible on two unit-cube points, without any claim that these
+points are pump features. Let
+p = (0, 0),
+q = (1, 0),
+∥p −q∥2 = 1.
+(2.61)
+50
+
+
+===== PAGE 54 =====
+Then
+K(p, q) = exp(−g).
+(2.62)
+At g = 0.1, K ≈0.905: the two points are almost interchangeable and a hyperplane
+in the kernel space cannot bend between them. At g = 1, K ≈0.368: the points are
+distinct and a modest margin is available. At g = 4, K ≈0.018: each point is nearly
+orthogonal to the other, and a classifier can assign them opposite labels while ignoring
+every neighbor that sits a Euclidean distance 1 away. On the normalized pump cube the
+typical distance between two vectors from different states is of order one, because each
+coordinate has been mapped to [0, 1] and twenty-two coordinates of moderate difference
+accumulate. The box log10 g ∈[−3, 1] therefore runs from a kernel that is almost flat on
+that cube to a kernel that resolves distances well below the coordinate spacing. The box
+on C, from 10−1 to 103, runs from a penalty that tolerates many slacks to a penalty that
+treats a slack as three orders of magnitude more expensive than a unit of ∥w∥2. A leap
+that proposes a pair outside this box is clipped. A leap that proposes a pair inside it is
+scored by the five-fold vote accuracy (2.33), which changes only when the sign pattern on
+a fold changes.
+Consider the weights of the modified leap on a population that has already spread
+out. Suppose four frogs, in the logarithmic coordinates (log10 C, log10 g), sit at
+Fg = (2.0, −1.0),
+Fb = (1.5, −0.5),
+Fnear
+w
+= (1.8, −0.8),
+Ffar
+w = (0.0, 0.5),
+(2.63)
+and, for this illustration only, take memeplex centers coincident so that (2.38) reduces to
+Euclidean distance. Then
+FFdist(near, g) =
+p
+(0.2)2 + (0.2)2 ≈0.283,
+FFdist(far, g) =
+p
+(2.0)2 + (1.5)2 = 2.5.
+(2.64)
+With these two distances as the minimum and the maximum in (2.39),
+qnear = 0,
+hnear = 1,
+qfar = 1,
+hfar = 0.
+(2.65)
+The near frog's expected step (2.43) points entirely at the local best.
+The far frog's
+expected step points entirely at the global best. A frog halfway in distance would split
+the step. The unmodified cascade would, on its first try, point both frogs at the local
+best, and would consult the global best only after that try had failed to raise fitness. The
+numerical difference is the whole content of the modification: distance selects the mixture
+before the fitness is spent, instead of after a wasted training. The positions in (2.63) are
+an exposition. They are not a recovered state of the 2019 search.
+If the near leap fails, the Gaussian mutant (2.42) multiplies each logarithmic coordinate
+51
+
+
+===== PAGE 55 =====
+by an independent factor 1 + ε, ε ∼N(0, 1). A draw ε = 0.2 moves log10 C from 1.8 to
+2.16, which is a factor of about 100.36 ≈2.3 on C itself. A draw ε = −0.2 divides C by
+about the same factor. Unit normal noise on the logarithm is therefore a multiplicative
+jitter of a few-fold on the parameters, large enough to leave a flat step of the accuracy
+surface and small enough to remain in the neighborhood the clip is prepared to defend.
+A uniform redraw in the box, which is what the unmodified search does on failure, would
+replace (1.8, −0.8) by a point whose expected squared distance to the current frog is the
+mean squared distance between two uniform points of a rectangle of width 4 and height
+4. That distance is of order one in each coordinate, an order of magnitude larger than
+the typical successful leap late in the run. The mutant spends the failure case on a local
+move. The redraw spends it on a restart.
+2.2.16
+Operation count and a reference schedule
+The cost of one fitness evaluation dominates the cost of the feature map, and it is worth
+writing the count so that a schedule can be chosen without discovering it in a profiler. One
+binary SVM on nb training rows, solved by sequential minimal optimization, is observed
+in practice to scale between nb and roughly n2
+b kernel evaluations, depending on how many
+multipliers remain free. This exposition does not rely on a worst-case quadratic bound.
+It counts trainings. A one-versus-one reduction on four classes trains six binary machines.
+A stratified five-fold fitness trains each of them five times, on four fifths of the 180 rows.
+One frog evaluation is therefore
+Ntrain = 6 × 5 = 30
+(2.66)
+binary trainings, each on 144 rows, plus six cheap predictions on the complementary 36
+rows. A local step that proposes one leap evaluates fitness once, and evaluates it a second
+time if the leap fails and a mutant is scored. Scoring the mutant is optional for acceptance
+--- the procedure in Section 2.2 accepts the mutant whether or not it improves --- so an
+implementation may skip the second evaluation and pay it only when the mutant becomes
+the worst frog of a later step. Counting one evaluation per local step is the lower figure.
+A reference schedule, offered as a software starting point and not as the unpublished
+experimental setting, is M = 5 memeplexes, P = 10 frogs, L = 10 local steps per
+memeplex per shuffle, and S = 30 shuffles. The number of fitness evaluations is then
+NF = MP + S M L = 50 + 30 × 5 × 10 = 1550,
+(2.67)
+the first term being the initial population and the second the local steps. At 30 binary
+trainings per evaluation this is 46500 binary trainings on 144 rows of dimension 22. On
+a current desktop solver that training is a fraction of a second, and the schedule finishes
+52
+
+
+===== PAGE 56 =====
+in minutes. It is not a reason to reduce the fold count. Five folds on 180 stratified rows
+put nine vectors of each state in every test fold. Three folds would put fifteen, which is a
+coarser estimate of the same accuracy the frog is trying to maximize. The fitness surface
+is already a step function; coarsening it further hides the one-vector improvements the
+modification is designed to find.
+The feature map, by comparison, is paid once per record. Eight steps of a length-8
+filter bank on N = 8192 samples, three axes, plus one real transform of 256 coefficients,
+is well under 106 arithmetic operations per record. Two hundred and forty records are
+irrelevant next to NF. Precomputing Φ(a) and storing the 240 × 22 matrix, then letting
+every frog see only that matrix, is the right order of work. Recomputing the wavelet bank
+inside the fitness would multiply the map cost by NF and would not change a single label.
+Memory is equally one-sided. The kernel matrix of one binary problem is 144 × 144
+doubles, about 160 kB, and six such problems can be built and discarded in series. The
+population stores 50 pairs of scalars. Nothing in the search requires a kernel matrix of the
+full multiclass sample at once, because the six binary problems do not share multipliers.
+They share only the pair (C, g).
+2.2.17
+What a correct implementation is obliged to log
+Two implementations of the procedure can return different pairs (C, g) and the same test
+labels, or the same pair and different labels if a tie in the vote is broken differently. A log
+that makes the run auditable, given the raw records, contains six items.
+1. The mother wavelet, the analysis depth J, and the tie break for k⋆.
+2. The integrator that produced velocity, including the high-pass cutoff if one was used,
+and which axis supplied the single severity coordinate.
+3. The training ranges (u(j), v(j)) of (2.18), stored and reused on the test rows.
+4. The box, Dmax, the population schedule (M, P, L, S), and the random seed of the
+initial population.
+5. The returned (log10 C, log10 g) and the five fold accuracies that make up F at that
+pair.
+6. The vote matrix on the sixty test rows: six binary decisions and the final label, so
+that a tie and its break can be replayed.
+The source paper prints none of these six, because it prints the classification counts
+instead. This exposition prints the definitions that make the six meaningful, and it leaves
+the numerical log to a run that has the records. The estimate in Chapter 3 does not need
+the log. It needs the counts, and it has them. The log is the condition under which a
+later run is allowed to say that it reproduced the method rather than only the tables.
+53
+
+
+===== PAGE 57 =====
+2.2.18
+Limits of the two technologies, stated as engineering con-
+straints
+VWC assumes a single dominant shaft speed known to an accuracy better than the half-
+order window. At 960 r/min the half-order spacing is 8 Hz, and the sampler's window of
+half an order is 4 Hz. A speed error of one percent is 0.16 Hz at f0 and 0.96 Hz at 6f0, still
+inside the window. A speed error of ten percent walks 6f0 by 9.6 Hz and puts the sample
+on the neighboring order. The rig statement of a fixed 960 r/min is therefore part of the
+feature definition, not only part of the operating-point table. A variable-speed campaign
+would have to track f0 per record, resample the orders from that estimate, and re-derive
+the coefficient Nyquist check. None of that tracking is present here, and the published
+accuracies do not transfer to it by analogy.
+MSFLA assumes that the fitness F is a function of two continuous parameters and
+that spending thirty binary trainings to learn its value at one point is acceptable. If the
+decision rule grew a third parameter --- a selected subset of the twenty-two coordinates, or
+a per-axis kernel width --- the same schedule would search a volume instead of a rectangle,
+and 1550 evaluations would become a thin net. The modification of the leap does not
+change that scaling. It changes the direction of each evaluation. Feature selection inside
+the frog, which several of the genetic-algorithm papers in Chapter 1 do perform, is a
+different algorithm and would need its own estimate. This paper keeps every coordinate.
+The pedestal difficulty discussed in Chapter 3 may well live in a few of them, but the
+tables do not isolate which ones, and a search over subsets on 180 rows would be able to
+over-fit the folds faster than a search over (C, g).
+The two constraints together say where the method is entitled to be trusted. Fixed
+speed, four named states, triaxial casing acceleration, a 22-vector with one severity and
+twenty-one shaft-order amplitudes, a shared radial kernel, and a search whose only job
+is the pair (C, g): that is the operating envelope of the chapters that follow. Inside the
+envelope the published test counts are the estimate. Outside it the chapters supply a
+specification, and the specification is not a result.
+2.2.19
+Margin width on a separable pair, in numbers
+The geometric claim that the support vector machine maximizes a margin is easier to
+audit on four points than on the 180 pump rows, and the arithmetic fixes the scale of C
+54
+
+
+===== PAGE 58 =====
+used later. Take a training set in R2 that is linearly separable,
+x1 = (0, 0),
+y1 = +1,
+x2 = (0, 1),
+y2 = +1,
+x3 = (2, 0),
+y3 = −1,
+x4 = (2, 1),
+y4 = −1.
+(2.68)
+The two classes are vertical lines a distance 2 apart. The hard-margin solution is the
+mid-plane x(1) = 1, which can be written
+w = (1, 0),
+b = −1,
+(2.69)
+because
+yi(w⊤xi + b) =
+{
+
+
+1
+i = 1, 2,
+1
+i = 3, 4,
+(2.70)
+so every point lies on the boundary of the slab and every point is a support vector. The
+Euclidean margin, from the mid-plane to either boundary, is
+1
+∥w∥= 1,
+(2.71)
+and the slab thickness is 2. No separating line has a larger thickness: the classes themselves
+are only 2 apart.
+The objective
+1
+2 ∥w∥2 equals
+1
+2.
+Any other normal with the same
+orientation and a larger weight, say w = (2, 0) and b = −2, still classifies the four points
+but scores 2 in the objective and only 1
+2 in the margin. The optimizer refuses it. This is
+the entire content of (2.21) on a set that happens to be separable: among the rules that
+make no training error, take the one with the thickest empty slab.
+Now move x3 to (0.5, 0), so the classes overlap in the first coordinate and no line has
+an empty slab. A soft-margin solution may keep w near (1, 0) and pay a slack on the
+intruding point, or it may tilt and shrink the margin to reduce that slack. The trade is
+priced by C. At the moved point the signed margin of the old rule is
+y3(w⊤x3 + b) = −1 · (0.5 −1) = 0.5,
+(2.72)
+which misses the required value 1 by 0.5. A slack ξ3 = 0.5 restores feasibility and costs
+0.5 C in the objective, against the 1
+2 ∥w∥2 = 1
+2 already paid for the normal. If C = 0.1,
+the slack term costs 0.05 and the optimizer will happily tolerate the intrusion rather than
+inflate w. If C = 100, the same slack costs 50, and the optimizer will distort the slab, or
+recruit a kernel, to drive ξ3 down. The pump sample is the second situation in degree and
+the first in form. Healthy and eccentric vectors separate strongly along severity, as the
+55
+
+
+===== PAGE 59 =====
+factor 3.56 of (2.55) shows, and a modest C already isolates them. Pedestal and healthy
+vectors overlap along severity, the ratio 1.10, and they separate, when they separate, along
+the half-order tangential coordinate. A large C spends its budget on that overlap and can
+memorize the two or three pedestal training rows that sit on the wrong side of a smooth
+boundary. A small C ignores them and also ignores real half-order structure. The frog
+exists to put C, together with the kernel width that decides how local that boundary is,
+where five-fold accuracy on the 180 rows is highest. The toy set is not an estimate of that
+location. It is the reason the location matters by a factor of a thousand across the box
+(2.32), and the reason a default pair (C, g) = (1, 1) is not a substitute for the search.
+The same four points also show what normalization does to the margin. If the first
+coordinate is recorded in centimetres instead of in the unit interval, x3 −x1 becomes
+(200, 0) under a conversion of metres, or (0.02, 0) under a conversion the other way.
+The optimal ∥w∥scales as the inverse of that number, and a radial kernel with a fixed
+g changes its value from nearly 1 to nearly 0. Equation (2.18), fit on the training rows
+and frozen for the test rows, removes exactly this dependence. After it, a coordinate that
+spanned a factor of ten in engineering units spans [0, 1], and g means the same thing on
+severity as on a coefficient amplitude. Omitting the step would make the search over g
+a search over the accidental units of the wavelet implementation. The source states that
+the vectors were normalized and does not state the map. The unit-interval map is the
+specification that makes the box (2.32) a meaningful rectangle rather than a rectangle in
+mixed units.
+56
+
+
+===== PAGE 60 =====
+Chapter 3
+System Build and Estimation
+A feature map and a classifier become a diagnosis only when a machine, a sensor, and
+a clock produce the records they assume.
+This chapter specifies that build from the
+published rig description, then estimates the pair of technologies on the published clas-
+sification counts. The estimate is a reading of a completed experiment. It is not a new
+acquisition.
+3.1
+Construction of the diagnostic system
+3.1.1
+The hydraulic loop and the machine
+The rotating machine is a vertical axial-flow pump in a closed water loop. The pump
+drives water around the circuit, so the hydraulic load exists for the whole record and does
+not depend on an external consumer. Table 3.1 collects the operating point stated in the
+source. The rotational speed is 960 r/min, the flow is 550 m3/h, the head is 3 m, and the
+impeller has four blades. From the speed alone, equation (1.14) fixes the shaft rate at
+16 Hz. From the blade count, equation (1.4) fixes blade pass at 64 Hz. The head and
+the flow fix the duty, which matters because a seal-wear fault is a leakage superimposed
+on this duty, not a dry mechanical defect. A reader who repeats the experiment at a
+different flow should expect the hydraulic features, especially the seal-wear pattern and
+the high-order axial energy, to move.
+57
+
+
+===== PAGE 61 =====
+Table 3.1: Published operating point of the vertical axial-flow pump.
+Quantity
+Value
+Machine
+Vertical axial-flow pump
+Rotational speed
+960 r/min
+Shaft frequency f0
+16 Hz
+Flow rate
+550 m3/h
+Head
+3 m
+Impeller blade count Z
+4
+Blade-pass frequency Zf0
+64 Hz
+Installation
+Closed water loop
+The loop has a water inlet and a water outlet at the pump, a triaxial accelerometer
+on the casing, and the pump body itself as the dominant structure in the measurement
+path. Figure 3.1 is a schematic of that arrangement. It is not a dimensioned drawing
+of the laboratory.
+The accelerometer sits on the pump so that casing motion, rather
+than pipe-wall motion far from the rotor, is what enters Φ. Pipe vibration would still be
+present in the background, and the source attributes part of the high-order energy under
+the pedestal fault to flow-induced vibration of internal components. The schematic keeps
+the sensor on the machine because that is the path the severities were measured on.
+Water inlet
+Vertical axial-flow
+pump, 960 r/min
+Water outlet
+Triaxial charge
+accelerometer
+Charge amplifiers
+and PXI acquisition
+VWC map and
+MSFLA-SVM
+closed loop
+Figure 3.1: Schematic of the diagnostic build. The dashed path is the closed water loop. The
+solid vertical path is the measurement and decision chain.
+3.1.2
+The four operating states and how they are produced
+The experiment defines four mutually exclusive states. The healthy state is the pump at
+the duty of Table 3.1 with no intentional defect. The other three states are produced by
+a physical change, not by a numerical simulation.
+58
+
+
+===== PAGE 62 =====
+Eccentric-axle fault is produced by moving a weight on the shaft so that the mass
+center leaves the geometric axis. In the language of (1.1) the change is an increase of
+the unbalance me. The expected stationary signature is a rise of the force at f0 and,
+because severity integrates velocity rather than a single Fourier coefficient, a rise of VIB.
+Both are observed: severity goes from 1.051 to 3.737 mm/s, and the tangential coefficient
+spectrum peaks at f0 with a larger amplitude than in the healthy state. The source also
+notes energy at 28, 34, and 38 Hz and attributes it to crosstalk from other devices in the
+laboratory. Those tones are not members of F. A feature map that sampled only F is,
+by design, partly protected from them, and a feature map that used the whole spectrum
+as a long vector would have to learn to ignore them from forty-five training records. This
+is one practical reason the 22-vector is short.
+Bearing-pedestal fault begins in the rolling-element bearing and is observed at the
+pedestal that supports it. The source describes the usual bearing sequence: fatigue, wear,
+and adhesion, followed by a periodic jump of the pedestal, a change of the support stiffness,
+and an impact. The expected spectral signature of a stiffness that is not constant inside
+one revolution includes a half-order line. The published reading matches that expectation
+in the tangential direction, where the coefficient spectrum peaks at 1
+2f0 = 8 Hz. Severity
+barely moves, from 1.051 to 1.161 mm/s. The pedestal state is therefore a shape fault
+rather than an intensity fault, which is why it is included. A rig that only seeded unbalance
+would let severity do the classification and would not test VWC.
+Sealing-ring wear is a degradation of the ring that limits backflow from the discharge
+side and that keeps the impeller from rubbing the casing. Wear opens a leakage path
+and risks impeller damage. The expected signature is a hydraulic load at shaft order and
+at twice shaft order, together with a half-order component from the resulting asymme-
+try. The published reading again matches: severity rises to 1.70024 mm/s, intermediate
+between the healthy and the eccentric states, and the spectrum emphasizes f0, 1
+2f0, and
+2f0. The tangential direction carries the largest amplitudes, as it does in the other three
+states.
+The four states are run as four separate conditions. The published study does not
+include mixed faults, a slow ramp from healthy to faulty, or a speed sweep. The classifier
+is therefore a four-way state identifier at one duty point. Extending it to mixed faults
+would require a new sample and a decision about whether the label set stays a partition.
+3.1.3
+The sensor and the three directions
+The transducer is a B&K 4321 triaxial charge accelerometer. Table 3.2 lists the char-
+acteristics the source prints. The charge sensitivity is 9.8 pC/g within ±2%, which is
+approximately one picocoulomb per metre per second squared, because standard gravity
+is 9.81 m/s2. The stated frequency range, 0.1 Hz to 12 kHz, covers the shaft family and the
+59
+
+
+===== PAGE 63 =====
+resonances that dominate acceleration. The amplitude range is 500 g. The time-domain
+plots in the source have peaks of roughly 7 to 9 m/s2, about one g, so the records sit far
+below the range limit and clipping is not the explanation of any class error.
+Table 3.2: Published transducer and acquisition parameters.
+Element
+Parameter
+Value
+B&K 4321
+Type
+Triaxial charge accelerometer
+Charge sensitivity
+9.8 ± 2% pC/g
+Frequency range
+0.1 to 12 000 Hz
+Measuring range
+500 g
+PXI acquisition card
+Sampling frequency
+100 Hz to 100 kHz, set to 10 kHz
+Input channels
+8
+Input range
+±100 mV to ±10 V
+Stated precision
+±0.1% of full-scale range, DC
+Charge leaves the sensor and enters a charge amplifier, whose voltage output is sampled
+by a PXI card with eight input channels, a selectable range from ±100 mV to ±10 V, and
+a stated DC accuracy of ±0.1% of full scale. Three of the eight channels are required,
+one per axis. The card can sample at up to 100 kHz; the experiment sets 10 kHz. The
+Nyquist frequency is therefore 5 kHz. The sensor itself responds up to 12 kHz, which is
+above Nyquist, so an anti-alias filter before the converter is part of a correct build. The
+source table does not list that filter. A repetition of the rig should place the filter cutoff
+below 5 kHz with a stopband that covers the sensor's remaining bandwidth, and should
+record the cutoff next to the sampling rate. Without it, energy between 5 and 12 kHz folds
+into the analysis band and can move both the winning wavelet level and the high-order
+amplitudes.
+The three axes are radial, tangential, and axial relative to the vertical rotor. Figure 3.2
+names them. Unbalance forces lie in the plane perpendicular to the shaft, so they drive
+the radial and tangential channels. A vertical hydraulic load drives the axial channel. The
+published coefficient spectra say that the tangential channel has the largest amplitudes
+in every state. Keeping all three is still necessary, because the axial channel is where the
+pedestal fault shows the high-order growth at 5f0 and 6f0, and the radial channel is where
+the published severity is defined.
+60
+
+
+===== PAGE 64 =====
+tangential
+axial (vertical shaft)
+radial
+Sensor axes on the casing.
+Shaft frequency 16 Hz.
+Blade pass 64 Hz along
+the rotating load.
+Figure 3.2: The three measurement directions. The feature vector repeats the seven shaft-order
+amplitudes once in each direction and appends the radial severity.
+3.1.4
+Sampling arithmetic
+Several numbers that the later estimate depends on are fixed by the clock and the record
+length, and they are worth writing once. The sampling rate is fs = 104 Hz. The analysis
+length used to describe the records is N = 8192 samples, which is the right edge of the
+time-domain plots in the source. The duration, the frequency resolution of a full-length
+Fourier transform, the number of shaft revolutions inside the record, and the Nyquist
+frequency are
+Trec = N
+fs
+= 8192
+10000 = 0.8192 s,
+∆f = fs
+N = 1.2207 Hz,
+(3.1)
+Nrev = Trecf0 = 13.107,
+fNyq = fs
+2 = 5 kHz.
+(3.2)
+Thirteen revolutions are enough for a stable estimate of a once-per-revolution line and are
+short enough that a pedestal impact does not have to be stationary over a long average.
+The resolution 1.2207 Hz puts 3f0 = 48 Hz and the supply line at 50 Hz in different bins,
+with a gap of 1.64 bins. An order sampler aimed at 48 Hz with a half-order acceptance
+window of 4 Hz, as specified in Section 2.1, does not include 50 Hz. That exclusion is
+deliberate. It is also a limitation: a real supply harmonic that modulates a mechanical
+line inside the window will still be admitted.
+At level j of a dyadic bank the coefficient rate is fs/2j and the length of the coefficient
+sequence is about N/2j.
+For the level the source plots, j = 5, the coefficient rate is
+312.5 Hz and the coefficient record contains 256 samples. A Fourier transform of those
+coefficients has a bin spacing of 312.5/256 = 1.2207 Hz, the same spacing as the full-length
+transform of the original record, and a coefficient-domain Nyquist of 156.25 Hz. Every
+member of F, including 6f0 = 96 Hz, lies inside that coefficient-domain Nyquist frequency.
+The seven-order sampler is therefore well defined on d5 without a further resampling. Had
+the winning level been d3, the coefficient Nyquist would have been 625 Hz and the same
+orders would still lie inside it, with coarser relative localization. Had the winning level
+been deeper than d7, the coefficient Nyquist would fall below 96 Hz and 6f0 would cease
+61
+
+
+===== PAGE 65 =====
+to be observable at that level. The maximum-energy rule can in principle select such a
+level. On the records the source plots, it selects d5, where all seven orders are observable.
+An implementation should refuse an order that sits above the coefficient Nyquist of k⋆
+and should record the refusal, rather than report a folded frequency as if it were 6f0.
+3.1.5
+Sample size, split, and the unit of analysis
+The source collects 60 groups of data in each of the four states, 240 groups in all. Each
+group is one 22-vector. Forty-five groups per state are the training sample and fifteen are
+the test sample, so the design matrices have shapes
+Xtrain ∈R180×22,
+Xtest ∈R60×22.
+(3.3)
+The split is stratified by construction: each state contributes the same count to each
+matrix. The source does not say whether the fifteen test groups were drawn at random,
+taken from the end of each run, or chosen by hand. A repetition should draw them at
+random inside each state and should freeze the draw before any search over (C, g). Because
+the search described in Section 2.2 uses cross-validation inside the training matrix only,
+the sixty test rows are available for a single estimate.
+Sixty test vectors is a small denominator. One misclassified test vector moves a per-
+class rate by 1/15 ≈6.67 percentage points and moves the pooled rate by 1/60 ≈1.67
+percentage points. The difference between MSFLA-SVM and SFLA-SVM on the test set
+is one vector in the pooled count (56 against 55). That difference is real as a count and
+it is small as evidence. Section 3.2 reports it as a count.
+The source remarks that more records could not be collected under the conditions of
+the experiment, and that the SVM is used precisely because the sample is small. The
+system build should be read with that constraint in view. The acquisition is adequate for a
+four-class comparison at one duty. It is not a durability test, and it is not a variable-speed
+campaign.
+3.1.6
+The processing path
+Figure 3.3 assembles the path from a stored record to a label. The same path produces
+the training matrix and, with the normalization frozen, the test matrix. Baselines branch
+after the normalization. They do not receive a different feature.
+The backpropagation baseline is the network of the kind Huang and Xie trained for
+bearing diagnosis [43], used here as the source uses it: a nonlinear classifier of the 22-
+vector with no frog search. The ACROA-SVM baseline is the radial SVM with parameters
+proposed by the artificial chemical reaction search of Alatas, in the bearing configuration
+of Ao, Cheng, Li, and Truong [61, 49]. The SFLA-SVM baseline is the same radial SVM
+62
+
+
+===== PAGE 66 =====
+with the unmodified leap of Section 2.2. MSFLA-SVM is the modified leap. All four see
+˜x from (2.18). This common front end is what makes the table an estimate of classifiers
+rather than an estimate of features. The source does not publish an ablation that removes
+severity, or the half-order, or one of the axes. The present reading therefore cannot say
+which of the twenty-two coordinates carries the pedestal separation. It can say that the
+full vector, shared by four classifiers, is sufficient for a pooled test accuracy above 90%
+for every SVM variant and not for the neural baseline.
+Stored triaxial
+records,
+four states
+VWC map
+Φ
+Scale on
+training ranges
+BPNN
+ACROA-SVM
+SFLA-SVM
+MSFLA-SVM
+Label in Y
+Figure 3.3: Processing path. The four classifiers are interchangeable blocks after a shared,
+train-scaled VWC vector.
+3.1.7
+What the build guarantees and what it leaves open
+The build guarantees a constant speed, a constant hydraulic duty, a triaxial casing mea-
+surement, a sampling rate that places the shaft family and the supply line on a resolvable
+grid, a record long enough for about thirteen revolutions, and a stratified sample of sixty
+vectors per state. It leaves open the mother wavelet, the exact integrator inside the pub-
+lished severity, the anti-alias cutoff, the random seed of the split, and the population
+parameters of every evolutionary search. Chapter 2 specified the wavelet, the normaliza-
+tion, the coding of the four classes, and the box of (C, g) for this exposition, and it refused
+to invent the unpublished population parameters. The estimate in the next section is at-
+tached to the source's run, under the source's unpublished choices, and the numerical
+values are taken from the source's tables.
+3.2
+Estimation of diagnostic performance
+3.2.1
+Signatures of the four states
+The qualitative estimate comes before the percentages, because a classifier that scores well
+on a feature with no mechanical reading is a different claim from a classifier that scores
+well on VWC. Table 3.3 compresses the source's reading of its time-domain records, its
+coefficient spectra, and its energy time-spectra. Every state has its maximum wavelet
+63
+
+
+===== PAGE 67 =====
+energy at the d5 level in the radial plots the source prints. The states differ in severity
+and in which member of F dominates the tangential coefficient spectrum.
+Table 3.3: Published qualitative signatures of the four states, radial severity and tangential
+spectral emphasis.
+State
+Radial sever-
+ity
+Dominant tangential
+orders
+Notes published with the
+records
+Normal
+1.051 mm/s
+f0, then 2f0, 3f0
+Supply line at 50 Hz; blade-
+pass energy at 4f0 = 64 Hz.
+EAF
+3.737 mm/s
+f0
+Crosstalk at 28, 34, and
+38 Hz.
+Largest severity of
+the four states.
+BPF
+1.161 mm/s
+1
+2f0, with f0 and 3f0
+High-order axial growth at
+5f0 and 6f0, attributed to
+flow and to component nat-
+ural frequencies.
+SRWF
+1.700 mm/s
+f0, 1
+2f0, 2f0
+Tangential
+energy
+is
+the
+largest; axial and radial in-
+tensities lie between EAF
+and BPF.
+A few published amplitudes make the tangential dominance quantitative. Healthy
+tangential peak coefficient power is 1.683 × 10−3 at f0. Eccentric tangential peak power
+is 3.322 × 10−3. Pedestal tangential peak power is 4.701 × 10−3 at 1
+2f0. Healthy radial
+peak power is 4.574×10−4, and eccentric radial peak power is 2.492×10−3. The pedestal
+tangential peak is about 2.8 times the healthy tangential peak, while the pedestal severity
+is only 1.10 times the healthy severity. The spectral coordinate moves by a larger factor
+than the severity coordinate.
+That comparison is the empirical reason the 22-vector
+contains both, and the reason a severity threshold is not a substitute for the classifier.
+The illustrative spectra in Figure 2.5 were drawn to carry the same emphasis: healthy
+and eccentric energy at f0, pedestal and seal-wear energy with a stronger half-order.
+They should be used as a picture of the emphasis and not as a source of amplitudes. The
+amplitudes in the previous paragraph are the ones the source prints.
+3.2.2
+Training estimate
+Training accuracy is the accuracy of each finished classifier on the 180 vectors it was
+trained on. For the three SVM methods the finished classifier is the machine retrained
+on all 180 rows at the (C, g) the search returned, so the training accuracy is an in-sample
+number and is expected to sit above the cross-validated fitness that guided the search.
+64
+
+
+===== PAGE 68 =====
+Table 3.4 gives the count of correct training vectors. The percentages are those counts
+divided by 45, except where a printed percentage in the source decides an inconsistent
+count; the training table is internally consistent, and no such correction is required. Each
+row average is the unweighted mean of the four method percentages, matching the source.
+Each column average at the foot is the pooled accuracy, correct counts summed over states
+and divided by 180.
+Table 3.4: Training classification counts on 45 vectors per state. Pooled accuracy is correct-
+over-180.
+State
+BPNN
+ACROA-SVM
+SFLA-SVM
+MSFLA-SVM
+Row mean
+Normal
+42/45
+45/45
+45/45
+45/45
+98.333%
+93.333%
+100%
+100%
+100%
+EAF
+41/45
+44/45
+43/45
+45/45
+96.111%
+91.111%
+97.778%
+95.556%
+100%
+BPF
+40/45
+42/45
+42/45
+43/45
+92.778%
+88.889%
+93.333%
+93.333%
+95.556%
+SRWF
+42/45
+44/45
+44/45
+44/45
+96.667%
+93.333%
+97.778%
+97.778%
+97.778%
+Pooled
+165/180
+175/180
+174/180
+177/180
+91.667%
+97.222%
+96.667%
+98.333%
+The source prints the MSFLA pooled training accuracy as 98.334%. The exact ratio
+177/180 is 98.333 . . . %. The difference is rounding. This paper uses the ratio.
+Figure 3.4 shows the same rates. Three facts are visible without the figure. The healthy
+state is the easiest training class for every method, and every SVM variant classifies all
+45 healthy training vectors correctly. The pedestal state is the hardest training class for
+every method: 40, 42, 42, and 43 correct out of 45. MSFLA-SVM is the unique method
+that classifies all 45 eccentric training vectors correctly, and it is tied or ahead on every
+state. Its pooled gain over SFLA-SVM is three training vectors (177 against 174). Its
+pooled gain over the neural baseline is twelve training vectors.
+65
+
+
+===== PAGE 69 =====
+Normal
+EAF
+BPF
+SRWF
+70
+75
+80
+85
+90
+95
+100
+105
+Training accuracy (%)
+Training classification rate by state and method
+BPNN
+ACROA-SVM
+SFLA-SVM
+MSFLA-SVM
+Figure 3.4: Training accuracy by state and method, from Table 3.4.
+3.2.3
+Testing estimate
+Test accuracy is the quantity the search was not allowed to see.
+Fifteen vectors per
+state, sixty in all, are labeled by the finished classifiers. Table 3.5 records the result.
+For the backpropagation row of the sealing-ring state, the source prints a count of 12/15
+beside a percentage of 86.667%. Those two entries disagree, because 12/15 = 80% and
+13/15 = 86.667%. The four printed BPNN percentages 86.667, 86.667, 80, and 86.667
+average to the printed pooled value 85%, and the counts 13, 13, 12, and 13 sum to 51,
+with 51/60 = 85%. The count that agrees with the printed percentage and with the
+printed pooled accuracy is 13/15. Table 3.5 uses that count. No other test cell requires a
+correction: ACROA, SFLA, and MSFLA are consistent with their pooled rates of 91.667%,
+91.667%, and 93.333%.
+66
+
+
+===== PAGE 70 =====
+Table 3.5: Test classification on 15 vectors per state. The BPNN entry for SRWF is 13/15, the
+count consistent with the printed percentage 86.667% and the printed pooled accuracy 85%.
+State
+BPNN
+ACROA-SVM
+SFLA-SVM
+MSFLA-SVM
+Row mean
+Normal
+13/15
+15/15
+15/15
+15/15
+96.667%
+86.667%
+100%
+100%
+100%
+EAF
+13/15
+13/15
+14/15
+14/15
+90.000%
+86.667%
+86.667%
+93.333%
+93.333%
+BPF
+12/15
+13/15
+13/15
+13/15
+85.000%
+80.000%
+86.667%
+86.667%
+86.667%
+SRWF
+13/15
+14/15
+13/15
+14/15
+90.000%
+86.667%
+93.333%
+86.667%
+93.333%
+Pooled
+51/60
+55/60
+55/60
+56/60
+85.000%
+91.667%
+91.667%
+93.333%
+Normal
+EAF
+BPF
+SRWF
+70
+75
+80
+85
+90
+95
+100
+105
+Testing accuracy (%)
+Testing classification rate by state and method
+BPNN
+ACROA-SVM
+SFLA-SVM
+MSFLA-SVM
+Figure 3.5: Test accuracy by state and method, from Table 3.5. The pedestal state is the
+lowest bar in every group.
+67
+
+
+===== PAGE 71 =====
+BPNN
+ACROA-SVM
+SFLA-SVM
+MSFLA-SVM
+75
+80
+85
+90
+95
+100
+105
+Pooled accuracy (%)
+91.7
+85.0
+97.2
+91.7
+96.7
+91.7
+98.3
+93.3
+Pooled accuracy of the four classifiers
+Training (180 samples)
+Testing (60 samples)
+Figure 3.6: Pooled training and test accuracy. The vertical gap inside each pair is the in-sample
+drop on 60 unseen vectors.
+The pooled test accuracies are 85.0% for the neural baseline, 91.7% for ACROA-SVM,
+91.7% for SFLA-SVM, and 93.3% for MSFLA-SVM. In counts, MSFLA-SVM labels 56 of
+the 60 test vectors correctly, the other two SVM searches label 55, and the neural baseline
+labels 51. The modification of the leap is associated with one additional correct test vector
+relative to the unmodified leap and relative to the chemical-reaction search, and with five
+additional correct test vectors relative to the neural baseline. Per state, MSFLA-SVM is
+never behind SFLA-SVM. It ties SFLA-SVM on the healthy state (15/15), on the eccentric
+state (14/15), and on the pedestal state (13/15), and it labels one more sealing-ring vector
+correctly (14/15 against 13/15). The entire pooled gain of the modification, on this test
+set, is that one sealing-ring vector. Stating the result this way is more informative than
+stating only 93.3% against 91.7%.
+ACROA-SVM and SFLA-SVM land on the same pooled count by different per-class er-
+rors. ACROA-SVM misses two eccentric vectors and one pedestal vector and one sealing-
+ring vector, in the sense that its correct counts are 15, 13, 13, and 14. SFLA-SVM misses
+one eccentric vector, two pedestal vectors, and two sealing-ring vectors: correct counts
+15, 14, 13, and 13. The same number of errors is not the same error. A maintenance
+decision that treats seal wear as more urgent than a mild eccentricity would prefer the
+ACROA pattern to the SFLA pattern even though the pooled rates match, and would
+prefer the MSFLA pattern to both because it keeps the ACROA seal-wear count and
+the SFLA eccentric count together. The source does not publish the off-diagonal of the
+confusion matrix, so this paragraph accounts for misses per class and does not say which
+wrong label received them.
+68
+
+
+===== PAGE 72 =====
+3.2.4
+Generalization drop
+The drop from pooled training accuracy to pooled test accuracy is a direct estimate of
+in-sample optimism:
+∆= Acctrain −Acctest.
+(3.4)
+Table 3.6 evaluates (3.4) in percentage points and in counts. The neural baseline drops
+6.67 points, which is fourteen vectors of disagreement between the two rates' implied error
+counts (fifteen training errors out of 180, nine test errors out of 60). ACROA-SVM drops
+5.56 points, SFLA-SVM drops 5.00 points, and MSFLA-SVM drops 5.00 points. The
+modification does not enlarge the drop relative to the unmodified leap. That fact matters
+because a search that found a higher training accuracy by memorizing the folds would
+usually pay for it on the test set. MSFLA-SVM has both the highest training accuracy
+and the highest test accuracy, and its drop equals the drop of SFLA-SVM. On a sample of
+this size the equality is one or two vectors, not a theorem. It is still the right comparison
+to report, and it points in the direction the capacity argument of Chapter 1 predicts: the
+radial machines, all three of them, give up less accuracy when they leave the training
+sample than the neural baseline does.
+Table 3.6: Drop from pooled training accuracy to pooled test accuracy.
+Method
+Training errors / 180
+Test errors / 60
+Drop (points)
+BPNN
+15
+9
+6.67
+ACROA-SVM
+5
+5
+5.56
+SFLA-SVM
+6
+5
+5.00
+MSFLA-SVM
+3
+4
+5.00
+Per-class test means, averaged across the four methods as the source averages them, are
+96.667% healthy, 90% eccentric, 85% pedestal, and 90% sealing-ring. The healthy class is
+recognized by every SVM variant without a test error. The pedestal class contributes two
+test errors to each SVM variant and three to the neural baseline. The source's explanation
+is the one the signatures support. The raw pedestal record is restricted by component
+resonance and by field interference, so the high-order coordinates that should describe
+the fault are also the coordinates the interference occupies. VWC does not include a
+spatial filter or a coherence test against a second sensor that could reject a site tone. The
+residual confusion is therefore a property of the measurement, and a better leap does not
+remove it. MSFLA-SVM ties the other SVM methods at 13/15 on this class. The open
+improvement the source itself names, better signal conditioning and less interference, sits
+in front of Φ, not inside the leap.
+69
+
+
+===== PAGE 73 =====
+3.2.5
+How large the differences are
+A honest estimate states a difference in the unit the experiment controls, which is the
+labeled vector. On the test set:
+*  MSFLA-SVM against BPNN: five vectors, 56 against 51, pooled rates 93.333%
+against 85.000%.
+*  MSFLA-SVM against ACROA-SVM: one vector, 56 against 55.
+*  MSFLA-SVM against SFLA-SVM: one vector, 56 against 55, and that vector is a
+sealing-ring case.
+*  ACROA-SVM against SFLA-SVM: zero vectors in the pooled count, with a different
+distribution across classes.
+A five-vector gap against the neural baseline, on a sixty-vector test set, is large enough
+to be visible state by state: the neural baseline is behind on every state. A one-vector
+gap between two global searches is the smallest nonzero gap the experiment can print.
+It is consistent with the claim that the modified leap is not worse than the unmodified
+leap or the chemical-reaction search, and it is thin evidence for a claim that the modified
+leap is largely better. The training table, where MSFLA-SVM leads by three vectors over
+SFLA-SVM and by two over ACROA-SVM, points the same way with a slightly larger
+count. This paper reports both tables and does not promote the test gap of one vector
+into a percentage-point slogan detached from the denominator.
+No confidence interval is published by the source, and none is fabricated here from
+an independence assumption the split may not obey. If a reader assumes independent
+Bernoulli trials with success probability 0.933 and sixty trials, the standard deviation
+of the pooled accuracy is about
+p
+0.933 · 0.067/60 ≈0.032, a little over three points,
+comparable to the gap between MSFLA-SVM and the neural baseline and larger than the
+gap between MSFLA-SVM and the other SVM searches. The assumption is stronger than
+the evidence, because vectors from the same physical run are dependent. The arithmetic
+is recorded only to show that the one-vector gap sits inside ordinary binomial variation
+and the five-vector gap sits at its edge. A definitive ranking of the three searches would
+need a larger test set or a repeated split.
+3.2.6
+What the estimate establishes
+The estimate establishes the following, and no more than the following.
+1. The VWC vector, built from radial severity and from seven shaft-order coefficient
+amplitudes in three directions, separates the healthy pump from the three seeded
+faults well enough that a radial SVM labels at least 55 of 60 held-out vectors cor-
+rectly.
+70
+
+
+===== PAGE 74 =====
+2. The healthy state is linearly obvious in this vector for every SVM search: 15 of 15
+test vectors, and 45 of 45 training vectors.
+3. The eccentric state is the intensity fault. Its severity is 3.737 mm/s against 1.051 mm/s,
+and its test accuracy under MSFLA-SVM is 14/15.
+4. The pedestal state is the shape fault and the hard fault. Its severity is close to the
+healthy severity, its tangential energy moves to 1
+2f0, and every method, including
+the modified search, misses at least two of its fifteen test vectors.
+5. On a shared VWC vector, the modified leap reaches a higher training count (177/180)
+and a higher test count (56/60) than the unmodified leap (174/180 and 55/60) and
+than the chemical-reaction search (175/180 and 55/60). The test margin over each
+of those searches is one vector.
+6. The backpropagation baseline, on the same vector, reaches 165/180 in training and
+51/60 in testing. The margin of MSFLA-SVM over this baseline is twelve training
+vectors and five test vectors, and the baseline's train-to-test drop is the largest of
+the four.
+3.2.7
+What the estimate does not establish
+The estimate does not establish a detection latency, because the records are labeled con-
+ditions rather than a timed evolution from healthy to faulty. It does not establish perfor-
+mance at any speed other than 960 r/min, at any flow other than 550 m3/h, or under a
+mixture of two faults. It does not establish which coordinate of the 22-vector is necessary,
+because no ablation is published. It does not establish the numerical pair (C, g) that the
+leap returned, nor the population size, nor the number of shuffles. It does not establish
+that db4 was the mother wavelet of the 2019 run; db4 is the wavelet of the illustrative
+energy figure and of the specification in Chapter 2. It does not establish a ranking of
+MSFLA against every published optimizer. Particle swarm, genetic algorithm, and bee
+colony do not appear in the pump tables. The related work reviewed in Chapter 1 shows
+that those searches are competitive on other machines. A claim that the distance-weighted
+leap dominates them on this pump would be a new experiment.
+The illustrative signals support none of the six positive statements above.
+Those
+statements rest on the published severities, the published spectral reading, and the pub-
+lished counts. The signals support only the narrower pedagogical claim that a record
+with the published severity and the published harmonic emphasis looks like Figure 2.2
+and Figure 2.5, and that a db4 bank applied to such a record produces a nontrivial scale
+distribution, Figure 2.4.
+71
+
+
+===== PAGE 75 =====
+3.2.8
+Reading the result against the problem statement
+Section 1.3 asked for four things: a 22-dimensional feature that carries intensity, scale,
+and shaft order; a leap that uses both leaders and that mutates locally; a build that
+makes the feature meaningful; and an estimate that respects the denominator of the test
+set. The feature is specified in Section 2.1 and is the common input of Table 3.5. The
+leap is specified in Section 2.2 and is the unique difference between the SFLA column
+and the MSFLA column. The build is specified in Section 3.1, and the arithmetic (3.2)
+shows that the clock matches the frequency family the feature samples. The estimate is
+Table 3.5 read in counts. On those terms the pair of technologies does what the source
+claimed in direction and in magnitude: the modified search is the best of the four printed
+methods, the gain over the unmodified search is small, and the pedestal fault remains the
+open class. The practical recommendation that follows is modest and precise. Use the
+VWC vector rather than severity alone, because the pedestal fault is invisible to severity.
+Use a radial SVM rather than the unconstrained neural baseline on a training set of 180
+vectors, because the test drop is smaller and the test count is higher. Use the modified
+leap in preference to the unmodified leap if the implementation cost is the same, and do
+not expect more than a vector or two on a test set of sixty. Spend the next experimental
+effort on the interference in the pedestal records, which is where all four methods already
+agree that the present vector is weakest.
+3.2.9
+Reproducibility notes
+A third party who rebuilds the system from this paper and from the source can match
+the following without access to the unpublished raw waveforms: the shaft frequency, the
+blade-pass frequency, the record duration, the Fourier resolution, the coefficient-domain
+Nyquist at level 5, the shapes of the two design matrices, every cell of the corrected
+test table, and every cell of the training table.
+Matching the classifier byte for byte
+additionally requires the raw records, the mother wavelet, the integrator, the split, the
+search box actually used, and the population schedule. The source states that the data
+are available from the corresponding authors on request. Until those records are in hand,
+the illustrative figures of this paper should stay captioned as illustrations, and the tables
+of this chapter should stay captioned as a reading of the published counts. That division
+is the reproducibility condition of the estimate.
+3.2.10
+Error budget of the measurement chain
+The classification counts already include every error the chain actually made. A separate
+budget is still useful, because it shows which contributions are large enough to move a
+feature and which are not. Start from the sensor. The B&K 4321 charge sensitivity is
+72
+
+
+===== PAGE 76 =====
+stated as 9.8 pC/g within ±2%. A two-percent scale error multiplies every acceleration
+sample on that axis by a factor between 0.98 and 1.02. Severity, being an RMS of a
+quantity linear in acceleration, inherits the same relative error:
+∆VIB
+VIB ≈0.02.
+(3.5)
+On the healthy severity of 1.051 mm/s this is about 0.021 mm/s. On the eccentric severity
+of 3.737 mm/s it is about 0.075 mm/s. The gap between healthy and pedestal severities
+is 1.161 −1.051 = 0.110 mm/s. A two-percent calibration error is a fifth of that gap on
+the healthy reading and is smaller than the gap. It does not by itself explain a confusion
+between those two states, and it is negligible beside the factor 3.56 that separates the
+eccentric state from the healthy state. After the train-only normalization (2.18), a pure
+scale error that is constant for the whole campaign is absorbed into u(j) and v(j) of
+the severity coordinate, provided the same sensor and the same gain are used for every
+record. A scale error that changed between the training days and the test days would
+not be absorbed. The source does not report a recalibration, and the budget assumes the
+gain was held fixed.
+The acquisition card states a DC accuracy of ±0.1% of full-scale range. On the ±10 V
+range this is 10 mV. On the ±100 mV range it is 0.1 mV. Which range was selected is not
+printed. The time-domain plots show accelerations of roughly 7 to 9 m/s2, about one g.
+At 9.8 pC/g that motion produces about 10 pC at the peaks. The voltage that results is
+the charge divided by the amplifier's feedback capacitance, a setting the source also does
+not print. The relevant statement the budget can still make is comparative. A full-scale
+error of 0.1% is twenty times smaller than the sensor's 2% sensitivity tolerance, so on any
+range that actually uses a reasonable fraction of its bits the card is not the leading scale
+error. Quantization at, for example, a 16-bit converter on a range matched to a few g
+sits well below both. The chain is sensor-limited for amplitude, and it is clock-limited for
+frequency.
+Clock error moves the orders in Table 2.1. A sampling-rate error of ε moves every
+apparent frequency by the same relative amount. The widest order, 6f0 = 96 Hz, moves
+by 96ε. The half-order acceptance window specified for this exposition is 4 Hz. Keeping
+the true 6f0 inside that window requires
+96 |ε| < 4
+⇒
+|ε| < 0.042,
+(3.6)
+a four-percent clock, which any PXI timebase meets by a wide margin.
+The binding
+frequency constraint is not the clock. It is the mechanical speed. A one-percent speed
+drift, already discussed as an envelope of the method, moves 6f0 by about 1 Hz, still inside
+the window, and moves the supply-to-3f0 gap from 2.00 Hz to either 1.52 Hz or 2.48 Hz
+73
+
+
+===== PAGE 77 =====
+according to the sign.
+The 1.22 Hz bin can still hold them apart.
+A speed that was
+only nominally 960 r/min, and that wandered by several percent inside a record, would
+broaden every order and would raise the pedestal and seal-wear confusion first, because
+those states are identified by which order is largest rather than by a large severity. The
+source states a single speed. The budget treats residual speed wander as an unquantified
+contribution inside the pedestal errors, not as a number the tables support.
+Aliasing is the contribution the budget cannot bound from the printed table. The
+sensor responds to 12 kHz and the converter samples at 10 kHz, so energy between 5
+and 12 kHz folds into 0 to 5 kHz unless an analog filter stops it. Folded energy lands
+preferentially in the fine wavelet levels, and it can change which level wins k⋆. If the
+winning level moves, the coefficient rate changes and the amplitudes (2.16) are read on
+a different series. The source plots show d5 winning for the displayed records, which is
+evidence that, on those records, the mid band carried the energy, and it is not evidence
+that an anti-alias filter was present. A repetition of the build should state the filter cutoff
+next to the 10 kHz clock. Until that cutoff is known, high-frequency folding remains an
+open term in the budget and a candidate contributor to the two pedestal test errors that
+every SVM method still makes.
+Interference tones that the order sampler does not aim at --- the reported crosstalk at
+28, 34, and 38 Hz under the eccentric fault, and the supply line at 50 Hz --- are rejected
+by the sampler's narrow windows and are not rejected by the wavelet energy that chooses
+the level. They can change k⋆without entering x as their own coordinates. That indirect
+path is the reason a clean mechanical spectrum and a clean scale choice are both part
+of signal conditioning, which is the improvement the source itself defers to future work.
+The budget's conclusion is short. Calibration and quantization are too small to explain
+the published confusions. Speed error at the one-percent level is tolerable for the order
+windows. Unfiltered high-frequency energy and in-band interference are large enough, in
+mechanism, to move the pedestal features, and they are exactly the mechanisms named
+in the source discussion of that class.
+3.2.11
+An operating procedure for one labeled record
+The build is reproducible as a sequence even where some numerical settings remain those
+of the original run. One labeled record, from the command to start the pump through
+the row that enters X, is the following procedure. It is the system of Section 3.1 written
+as steps an operator can tick, not as a new experiment.
+1. Set the loop to the duty in Table 3.1: 960 r/min, 550 m3/h, 3 m head, four-blade
+impeller, closed circuit. Confirm f0 = 16 Hz from a tachometer or from the once-
+per-revolution line before any fault label is trusted.
+2. Install the fault for this record, or install none. Eccentric axle: displace the balance
+74
+
+
+===== PAGE 78 =====
+weight and record the mass and the radius, even though the classifier never sees
+those two numbers, because a later reader of the severity 3.737 mm/s will want
+them. Pedestal: seed the bearing defect the campaign has defined and confirm that
+the pedestal is the vibrating part under the sensor. Seal wear: use the worn ring the
+campaign has defined and confirm that the impeller is not rubbing. Do not combine
+two of these in one record. The label set is a partition.
+3. Mount the triaxial charge accelerometer on the casing.
+Note the direction that
+will be called radial, because that direction supplies the single severity coordinate.
+Check that the charge cables and the amplifier gains are the same ones used for the
+records already in the training matrix.
+4. Set the converter to 10 kHz, confirm the anti-alias cutoff is below 5 kHz, and arm a
+capture of at least 8192 samples on all three axes after the pump has been at speed
+long enough for the flow to be steady. Store the three series and the tachometer
+reading with the state label.
+5. Compute radial severity by the campaign's stated integrator and by (1.11). Run the
+eight-level db4 bank on each axis, select k⋆by (2.12) with the finer level winning a
+tie, and sample the seven orders of (2.45) from the coefficient power spectrum (2.14)
+through the frequency map (2.15). Refuse any order above the coefficient Nyquist
+of the winning level.
+6. Assemble (2.17). If the row is a training row, update nothing about scaling until
+the full training matrix exists, then fit (2.18). If the row is a test row, apply the
+training ranges already stored. Do not refit them.
+7. When 180 training rows are in hand, run the modified leap inside the box (2.32) with
+fitness (2.33), retrain the six binary machines on all 180 rows at the returned pair,
+and only then label the 60 test rows by vote. Log the six items of Section 2.2.16.
+Steps 1--4 are the rig.
+Steps 5 and 6 are VWC. Step 7 is MSFLA-SVM. A baseline
+replaces step 7 and does not replace steps 1--6. That separation is what makes Table 3.5
+a comparison of classifiers on one feature.
+The procedure also says what the operator does not do. The operator does not choose
+C and g by hand after looking at the test labels. The operator does not drop the pedestal
+records because they are harder. The operator does not lengthen the test set by moving
+training rows across the split after the search has run. Each of those moves would raise a
+number in Table 3.5 and would destroy the estimate. The published counts are informative
+because, as far as the source text shows, none of those moves was made.
+75
+
+
+===== PAGE 79 =====
+3.2.12
+The estimate in the unit the experiment controls
+Table 3.7 restates the published result as error counts, which is the unit in which a one-
+vector gap is not asked to look like a percentage-point discovery. Training errors are out of
+180. Test errors are out of 60. The per-class test errors follow by subtracting the correct
+counts of Table 3.5 from 15.
+Table 3.7: Error counts. Training errors are out of 180 pooled vectors. Test errors are out of
+60 pooled vectors, and the four class columns are out of 15.
+Method
+Train
+Test
+Normal
+EAF
+BPF
+SRWF
+BPNN
+15
+9
+2
+2
+3
+2
+ACROA-SVM
+5
+5
+0
+2
+2
+1
+SFLA-SVM
+6
+5
+0
+1
+2
+2
+MSFLA-SVM
+3
+4
+0
+1
+2
+1
+Read across the test columns, the modified search matches the better of the other two
+searches in every state: it matches SFLA-SVM on the eccentric axle (one error), matches
+both SVM searches on the pedestal (two errors), matches ACROA-SVM on seal wear (one
+error), and matches every SVM search on the healthy state (no error). It does not create
+a new kind of success on the pedestal. It collects, in one rule, the per-class results that
+the other searches hold only separately. That is a fair description of a one-vector pooled
+gain, and it is the description this estimate keeps.
+Read down the pedestal column, no method is in single digits of a different kind:
+the best pedestal result on the test set is two errors out of fifteen, which is 13/15. The
+training pedestal column of Table 3.4 is consistent with the same ranking. MSFLA-SVM
+misses two of forty-five pedestal training vectors, and every other method misses more.
+The feature, not the leap, is saturated on this class. Further optimization of (C, g) can
+rearrange one error among the easier classes, which is what the sealing-ring column shows,
+and it has not been observed to buy a pedestal test vector.
+The practical statement that closes the estimate is therefore a statement about effort.
+On this rig, with this sample, the VWC vector plus a radial SVM already carries the
+diagnosis from the neural baseline's nine test errors to five. The modified leap carries it
+from five to four, by avoiding one seal-wear error that the unmodified leap makes and
+one eccentric error that the chemical-reaction search makes.
+The two pedestal errors
+that remain are the next experiment: a second sensor, a stated anti-alias filter, or a
+conditioning step aimed at the site tones, scored on a new split. They are not a reason
+to discard the twenty-two coordinates or the leap that reads them. They are the part of
+the problem the published counts show is still open.
+76
+
+
+===== PAGE 80 =====
+Bibliography
+[1] L. You, W. Fan, Z. Li, Y. Liang, M. Fang, and J. Wang, (A fault diagnosis model for
+rotating machinery using VWC and MSFLA-SVM based on vibration signal analy-
+sis,) Shock and Vibration, vol. 2019, Article ID 1908485, 2019.
+[2] J. S. Sohre, (Operating problems with high-speed turbomachinery---causes and cor-
+rection,) in Proceedings of the 23rd Annual Petroleum Mechanical Engineering Con-
+ference, Dallas, TX, USA, 1968.
+[3] R. V. Beard, Failure Accommodation in Linear Systems through Self-Reorganization,
+Ph.D. thesis, Massachusetts Institute of Technology, Cambridge, MA, USA, 1971.
+[4] A. S. Willsky, (A survey of design methods for failure detection in dynamic systems,)
+Automatica, vol. 12, no. 6, pp. 601--611, 1976.
+[5] P. D. McFadden and J. D. Smith, (Model for the vibration produced by a single point
+defect in a rolling element bearing,) Journal of Sound and Vibration, vol. 96, no. 1,
+pp. 69--82, 1984.
+[6] A. Grossmann and J. Morlet, (Decomposition of Hardy functions into square inte-
+grable wavelets of constant shape,) SIAM Journal on Mathematical Analysis, vol. 15,
+no. 4, pp. 723--736, 1984.
+[7] I. Daubechies, (Orthonormal bases of compactly supported wavelets,) Communica-
+tions on Pure and Applied Mathematics, vol. 41, no. 7, pp. 909--996, 1988.
+[8] S. G. Mallat, (A theory for multiresolution signal decomposition: the wavelet repre-
+sentation,) IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 11,
+no. 7, pp. 674--693, 1989.
+[9] J. W. Cooley and J. W. Tukey, (An algorithm for the machine calculation of complex
+Fourier series,) Mathematics of Computation, vol. 19, no. 90, pp. 297--301, 1965.
+[10] P. D. Welch, (The use of fast Fourier transform for the estimation of power spec-
+tra: a method based on time averaging over short, modified periodograms,) IEEE
+Transactions on Audio and Electroacoustics, vol. 15, no. 2, pp. 70--73, 1967.
+77
+
+
+===== PAGE 81 =====
+[11] J. Mercer, (Functions of positive and negative type and their connection with the
+theory of integral equations,) Philosophical Transactions of the Royal Society A,
+vol. 209, pp. 415--446, 1909.
+[12] T. M. Cover, (Geometrical and statistical properties of systems of linear inequalities
+with applications in pattern recognition,) IEEE Transactions on Electronic Comput-
+ers, vol. EC-14, no. 3, pp. 326--334, 1965.
+[13] P. M. Frank, (Fault diagnosis in dynamic systems using analytical and knowledge-
+based redundancy---a survey and some new results,) Automatica, vol. 26, no. 3,
+pp. 459--474, 1990.
+[14] B. E. Boser, I. M. Guyon, and V. N. Vapnik, (A training algorithm for optimal margin
+classifiers,) in Proceedings of the Fifth Annual Workshop on Computational Learning
+Theory, pp. 144--152, 1992.
+[15] V. N. Vapnik, The Nature of Statistical Learning Theory. New York: Springer, 1995.
+[16] C. Cortes and V. Vapnik, (Support-vector networks,) Machine Learning, vol. 20,
+no. 3, pp. 273--297, 1995.
+[17] J. H. Holland, Adaptation in Natural and Artificial Systems. Ann Arbor, MI: Uni-
+versity of Michigan Press, 1975.
+[18] J. Kennedy and R. Eberhart, (Particle swarm optimization,) in Proceedings of the
+IEEE International Conference on Neural Networks, pp. 1942--1948, 1995.
+[19] J. Platt, (Fast training of support vector machines using sequential minimal opti-
+mization,) in B. Schölkopf, C. J. C. Burges, and A. J. Smola, Eds., Advances in
+Kernel Methods---Support Vector Learning. Cambridge, MA: MIT Press, 1999.
+[20] J. A. K. Suykens and J. Vandewalle, (Least squares support vector machine classi-
+fiers,) Neural Processing Letters, vol. 9, no. 3, pp. 293--300, 1999.
+[21] N. Tandon and A. Choudhury, (A review of vibration and acoustic measurement
+methods for the detection of defects in rolling element bearings,) Tribology Interna-
+tional, vol. 32, no. 8, pp. 469--480, 1999.
+[22] C. Edwards, S. K. Spurgeon, and R. J. Patton, (Sliding mode observers for fault
+detection and isolation,) Automatica, vol. 36, no. 4, pp. 541--553, 2000.
+[23] B. Li, M.-Y. Chow, Y. Tipsuwan, and J. C. Hung, (Neural-network-based motor
+rolling bearing fault diagnosis,) IEEE Transactions on Industrial Electronics, vol. 47,
+no. 5, pp. 1060--1069, 2000.
+78
+
+
+===== PAGE 82 =====
+[24] C. De Persis and A. Isidori, (A differential-geometric approach to nonlinear fault
+detection and isolation,) IEEE Transactions on Automatic Control, vol. 46, no. 6,
+pp. 853--865, 2001.
+[25] N. E. Huang, Z. Shen, S. R. Long, M. C. Wu, H. H. Shih, Q. Zheng, N.-C. Yen,
+C. C. Tung, and H. H. Liu, (The empirical mode decomposition and the Hilbert
+spectrum for nonlinear and non-stationary time series analysis,) Proceedings of the
+Royal Society A, vol. 454, pp. 903--995, 1998.
+[26] L. B. Jack and A. K. Nandi, (Fault detection using support vector machines and
+artificial neural networks, augmented by genetic algorithms,) Mechanical Systems
+and Signal Processing, vol. 16, nos. 2--3, pp. 373--390, 2002.
+[27] B. Samanta and K. R. Al-Balushi, (Artificial neural network based fault diagnostics
+of rolling element bearings using time-domain features,) Mechanical Systems and
+Signal Processing, vol. 17, no. 2, pp. 317--328, 2003.
+[28] V. Venkatasubramanian, R. Rengaswamy, K. Yin, and S. N. Kavuri, (A review of
+process fault detection and diagnosis. Part I: Quantitative model-based methods,)
+Computers and Chemical Engineering, vol. 27, no. 3, pp. 293--311, 2003.
+[29] M. M. Eusuff and K. E. Lansey, (Optimization of water distribution network design
+using the shuffled frog leaping algorithm,) Journal of Water Resources Planning and
+Management, vol. 129, no. 3, pp. 210--225, 2003.
+[30] Z. K. Peng and F. L. Chu, (Application of the wavelet transform in machine con-
+dition monitoring and fault diagnostics: a review,) Mechanical Systems and Signal
+Processing, vol. 18, no. 2, pp. 199--221, 2004.
+[31] B. Samanta, (Gear fault detection using artificial neural networks and support vec-
+tor machines with genetic algorithms,) Mechanical Systems and Signal Processing,
+vol. 18, no. 3, pp. 625--644, 2004.
+[32] X. Lou and K. A. Loparo, (Bearing fault diagnosis based on wavelet transform and
+fuzzy inference,) Mechanical Systems and Signal Processing, vol. 18, no. 5, pp. 1077--
+1095, 2004.
+[33] R. Isermann, (Model-based fault-detection and diagnosis---status and applications,)
+Annual Reviews in Control, vol. 29, no. 1, pp. 71--85, 2005.
+[34] J. S. Smith, (The local mean decomposition and its application to EEG perception
+data,) Journal of the Royal Society Interface, vol. 2, no. 5, pp. 443--454, 2005.
+79
+
+
+===== PAGE 83 =====
+[35] J. Antoni, (The spectral kurtosis: a useful tool for characterising non-stationary
+signals,) Mechanical Systems and Signal Processing, vol. 20, no. 2, pp. 282--307,
+2006.
+[36] A. K. S. Jardine, D. Lin, and D. Banjevic, (A review on machinery diagnostics and
+prognostics implementing condition-based maintenance,) Mechanical Systems and
+Signal Processing, vol. 20, no. 7, pp. 1483--1510, 2006.
+[37] M. Eusuff, K. Lansey, and F. Pasha, (Shuffled frog-leaping algorithm: a memetic
+meta-heuristic for discrete optimization,) Engineering Optimization, vol. 38, no. 2,
+pp. 129--154, 2006.
+[38] Q. Hu, Z. He, Z. Zhang, and Y. Zi, (Fault diagnosis of rotating machinery based on
+improved wavelet package transform and SVMs ensemble,) Mechanical Systems and
+Signal Processing, vol. 21, no. 2, pp. 688--705, 2007.
+[39] A. Widodo and B.-S. Yang, (Support vector machine in machine condition monitor-
+ing and fault diagnosis,) Mechanical Systems and Signal Processing, vol. 21, no. 6,
+pp. 2560--2574, 2007.
+[40] D. Karaboga and B. Basturk, (A powerful and efficient algorithm for numerical func-
+tion optimization: artificial bee colony (ABC) algorithm,) Journal of Global Opti-
+mization, vol. 39, no. 3, pp. 459--471, 2007.
+[41] Y. Lei, Z. He, and Y. Zi, (A new approach to intelligent fault diagnosis of rotating
+machinery,) Expert Systems with Applications, vol. 35, no. 4, pp. 1593--1600, 2008.
+[42] Z. Wu and N. E. Huang, (Ensemble empirical mode decomposition: a noise-assisted
+data analysis method,) Advances in Adaptive Data Analysis, vol. 1, no. 1, pp. 1--41,
+2009.
+[43] Z. G. Huang and Y. Xie, (Fault diagnosis method of rolling bearing based on BP
+neural network,) in Proceedings of the International Conference on Measuring Tech-
+nology and Mechatronics Automation, pp. 647--649, 2009.
+[44] N. Saravanan and K. I. Ramachandran, (Incipient gear box fault diagnosis using
+discrete wavelet transform (DWT) for feature extraction and classification using ar-
+tificial neural network (ANN),) Expert Systems with Applications, vol. 37, no. 6,
+pp. 4168--4181, 2010.
+[45] P. K. Kankar, S. C. Sharma, and S. P. Harsha, (Fault diagnosis of ball bearings
+using machine learning methods,) Expert Systems with Applications, vol. 38, no. 3,
+pp. 1876--1886, 2011.
+80
+
+
+===== PAGE 84 =====
+[46] R. B. Randall and J. Antoni, (Rolling element bearing diagnostics---a tutorial,) Me-
+chanical Systems and Signal Processing, vol. 25, no. 2, pp. 485--520, 2011.
+[47] J. Huang, X. Hu, and F. Yang, (Support vector machine with genetic algorithm
+for machinery fault diagnosis of high voltage circuit breaker,) Measurement, vol. 44,
+no. 6, pp. 1018--1027, 2011.
+[48] C.-C. Chang and C.-J. Lin, (LIBSVM: A library for support vector machines,) ACM
+Transactions on Intelligent Systems and Technology, vol. 2, no. 3, Article 27, 2011.
+[49] B. Alatas, (ACROA: Artificial chemical reaction optimization algorithm for global
+optimization,) Expert Systems with Applications, vol. 38, no. 10, pp. 13170--13180,
+2011.
+[50] R. X. Gao and R. Yan, Wavelets: Theory and Applications for Manufacturing. New
+York: Springer, 2011.
+[51] B. Schölkopf and A. J. Smola, Learning with Kernels. Cambridge, MA: MIT Press,
+2002.
+[52] C.-W. Hsu, C.-C. Chang, and C.-J. Lin, (A practical guide to support vector classi-
+fication,) Technical report, National Taiwan University, Taipei, 2003.
+[53] G. F. Bin, J. J. Gao, X. J. Li, and B. S. Dhillon, (Early fault diagnosis of rotating ma-
+chinery based on wavelet packets--empirical mode decomposition feature extraction
+and neural network,) Mechanical Systems and Signal Processing, vol. 27, pp. 696--711,
+2012.
+[54] Y. Lei, J. Lin, Z. He, and M. J. Zuo, (A review on empirical mode decomposition
+in fault diagnosis of rotating machinery,) Mechanical Systems and Signal Processing,
+vol. 35, nos. 1--2, pp. 108--126, 2013.
+[55] S. Dong and T. Luo, (Bearing degradation process prediction based on the PCA and
+optimized LS-SVM model,) Measurement, vol. 46, no. 9, pp. 3143--3152, 2013.
+[56] J. Seshadrinath, B. Singh, and B. K. Panigrahi, (Investigation of vibration signatures
+for multiple fault diagnosis in variable frequency drives using complex wavelets,)
+IEEE Transactions on Power Electronics, vol. 29, no. 2, pp. 936--945, 2014.
+[57] J. Dybaªa and R. Zimroz, (Rolling bearing diagnosing method based on empirical
+mode decomposition of machine vibration signal,) Applied Acoustics, vol. 77, pp. 195--
+203, 2014.
+81
+
+
+===== PAGE 85 =====
+[58] D. J. Bordoloi and R. Tiwari, (Optimum multi-fault classification of gears with in-
+tegration of evolutionary and SVM algorithms,) Mechanism and Machine Theory,
+vol. 73, pp. 49--60, 2014.
+[59] K. Dragomiretskiy and D. Zosso, (Variational mode decomposition,) IEEE Transac-
+tions on Signal Processing, vol. 62, no. 3, pp. 531--544, 2014.
+[60] B. Cai, Y. Liu, Q. Fan, Y. Zhang, Z. Liu, S. Yu, and R. Ji, (Multi-source information
+fusion based fault diagnosis of ground-source heat pump using Bayesian network,)
+Applied Energy, vol. 114, pp. 1--9, 2014.
+[61] H. L. Ao, J. S. Cheng, K. L. Li, and T. K. Truong, (A roller bearing fault diagnosis
+method based on LCD energy entropy and ACROA-SVM,) Shock and Vibration,
+vol. 2014, Article ID 825825, 2014.
+[62] Y. Tian, J. Ma, C. Lu, and Z. Wang, (Rolling bearing fault diagnosis under variable
+conditions using LMD-SVD and extreme learning machine,) Mechanism and Machine
+Theory, vol. 90, pp. 175--186, 2015.
+[63] X. Zhang, Y. Liang, J. Zhou, and Y. Zang, (A novel bearing fault diagnosis model
+integrated permutation entropy, ensemble empirical mode decomposition and opti-
+mized SVM,) Measurement, vol. 69, pp. 164--179, 2015.
+[64] C. Li, R.-V. Sanchez, G. Zurita, M. Cerrada, D. Cabrera, and R. E. Vásquez, (Multi-
+modal deep support vector classification with homologous features and its application
+to gearbox fault diagnosis,) Neurocomputing, vol. 168, pp. 119--127, 2015.
+[65] D. Yang, Y. Liu, S. Li, X. Li, and L. Ma, (Gear fault diagnosis based on support vec-
+tor machine optimized by artificial bee colony algorithm,) Mechanism and Machine
+Theory, vol. 90, pp. 219--229, 2015.
+[66] S. Yin, X. Zhu, and O. Kaynak, (Improved PLS focused on key-performance-
+indicator-related fault diagnosis,) IEEE Transactions on Industrial Electronics,
+vol. 62, no. 3, pp. 1651--1658, 2015.
+[67] W. Zhao, Z. Wang, J. Ma, and L. Li, (Fault diagnosis of a hydraulic pump based on
+the CEEMD-STFT time-frequency entropy method and multiclass SVM classifier,)
+Shock and Vibration, vol. 2016, Article ID 2609856, 2016.
+[68] B. Cai, L. Huang, and M. Xie, (Bayesian networks in fault diagnosis,) IEEE Trans-
+actions on Industrial Informatics, vol. 13, no. 5, pp. 2227--2240, 2017.
+[69] B. Cai, Y. Zhao, H. Liu, and M. Xie, (A data-driven fault diagnosis methodology
+in three-phase inverters for PMSM drive systems,) IEEE Transactions on Power
+Electronics, vol. 32, no. 7, pp. 5590--5600, 2017.
+82
+
+
+===== PAGE 86 =====
+[70] International Organization for Standardization, ISO 20816-1:2016, Mechanical
+vibration---Measurement and evaluation of machine vibration---Part 1:
+General
+guidelines. Geneva, 2016.
+[71] International Organization for Standardization, ISO 13373-1:2002, Condition moni-
+toring and diagnostics of machines---Vibration condition monitoring---Part 1: Gen-
+eral procedures. Geneva, 2002.
+[72] International Organization for Standardization, ISO 10816-1:1995, Mechanical
+vibration---Evaluation of machine vibration by measurements on non-rotating parts---
+Part 1: General guidelines. Geneva, 1995.
+[73] D. E. Newland, An Introduction to Random Vibrations, Spectral and Wavelet Anal-
+ysis, 3rd ed. Harlow: Longman, 1993.
+[74] A. V. Oppenheim and R. W. Schafer, Discrete-Time Signal Processing, 2nd ed. Upper
+Saddle River, NJ: Prentice Hall, 1999.
+[75] J. S. Bendat and A. G. Piersol, Random Data: Analysis and Measurement Procedures,
+4th ed. Hoboken, NJ: Wiley, 2010.
+[76] S. S. Rao, Mechanical Vibrations, 5th ed. Upper Saddle River, NJ: Prentice Hall,
+2011.
+[77] M. I. Khalil and M. M. Bayoumi, (A dyadic wavelet affine invariant function for
+2D shape recognition,) IEEE Transactions on Pattern Analysis and Machine Intel-
+ligence, vol. 23, no. 10, pp. 1152--1164, 2001.
+83

@@ -1,0 +1,80 @@
+\contentsline {chapter}{Abstract}{i}{chapter*.1}%
+\contentsline {chapter}{Nomenclature}{x}{chapter*.5}%
+\contentsline {chapter}{\numberline {1}Research on Previous Work}{2}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Research on feed-speed control}{3}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}What the feed speed is asked to do}{3}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Ground-wheel drive and slip}{4}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}Proportional--integral--derivative control of the meter shaft}{5}{subsection.1.1.3}%
+\contentsline {subsection}{\numberline {1.1.4}Machine vision on the meter}{6}{subsection.1.1.4}%
+\contentsline {subsection}{\numberline {1.1.5}Travel speed as a disturbance, not only as a setpoint}{7}{subsection.1.1.5}%
+\contentsline {subsection}{\numberline {1.1.6}Where feed-speed research stops for wooden seeds}{8}{subsection.1.1.6}%
+\contentsline {section}{\numberline {1.2}Research on multi-factor optimization}{8}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}The factors that actually move the fill ratio}{8}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Vacuum, hole diameter, and peripheral speed}{9}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Vibration and the seed-filling angle}{10}{subsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.2.4}Mechanical hardwood meters}{11}{subsection.1.2.4}%
+\contentsline {subsection}{\numberline {1.2.5}Why offline optimization is not a controller}{12}{subsection.1.2.5}%
+\contentsline {subsection}{\numberline {1.2.6}Where factor research stops}{13}{subsection.1.2.6}%
+\contentsline {section}{\numberline {1.3}Problem set}{14}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Indices that score a single-seed machine}{14}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}The coupled decision}{15}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}Requirements}{16}{subsection.1.3.3}%
+\contentsline {subsection}{\numberline {1.3.4}Research questions}{18}{subsection.1.3.4}%
+\contentsline {subsection}{\numberline {1.3.5}Scope}{19}{subsection.1.3.5}%
+\contentsline {subsection}{\numberline {1.3.6}How a spacing is measured, and why the index needs a procedure}{19}{subsection.1.3.6}%
+\contentsline {subsection}{\numberline {1.3.7}Particle forces underneath the factor map}{21}{subsection.1.3.7}%
+\contentsline {chapter}{\numberline {2}Design of the Two Controllers}{23}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Vision-guided feed-speed control}{23}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Role of the loop}{23}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Sensing and timing}{24}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Feature extraction}{24}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Kinematic command and the constraint}{26}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Motor model}{26}{subsection.2.1.5}%
+\contentsline {subsection}{\numberline {2.1.6}Discrete fuzzy proportional--integral--derivative law}{27}{subsection.2.1.6}%
+\contentsline {subsection}{\numberline {2.1.7}What the constraint does to a spacing sequence}{29}{subsection.2.1.7}%
+\contentsline {subsection}{\numberline {2.1.8}Worked numbers for a red-oak frame}{30}{subsection.2.1.8}%
+\contentsline {subsection}{\numberline {2.1.9}Fault states inside the feed loop}{31}{subsection.2.1.9}%
+\contentsline {section}{\numberline {2.2}Multi-factor model-predictive optimization}{31}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Role of the loop}{31}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Prediction model}{32}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}A numerical evaluation of the map}{34}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Cost and constraints}{35}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Relation to a quadratic program}{36}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}Information the coordinator is denied}{37}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}Stacking the loops}{38}{subsection.2.2.7}%
+\contentsline {subsection}{\numberline {2.2.8}Parameter summary}{39}{subsection.2.2.8}%
+\contentsline {subsection}{\numberline {2.2.9}Discrete realization of the speed loop}{39}{subsection.2.2.9}%
+\contentsline {subsection}{\numberline {2.2.10}A numerical fuzzy step}{41}{subsection.2.2.10}%
+\contentsline {subsection}{\numberline {2.2.11}Flight after release}{42}{subsection.2.2.11}%
+\contentsline {subsection}{\numberline {2.2.12}Response times of the two computers}{43}{subsection.2.2.12}%
+\contentsline {subsection}{\numberline {2.2.13}A slice of the cost grid}{44}{subsection.2.2.13}%
+\contentsline {subsection}{\numberline {2.2.14}Actuator lag and the slew limit}{45}{subsection.2.2.14}%
+\contentsline {subsection}{\numberline {2.2.15}Failure modes of the stack}{46}{subsection.2.2.15}%
+\contentsline {subsection}{\numberline {2.2.16}Quantization, one cell period, and a two-step horizon}{47}{subsection.2.2.16}%
+\contentsline {subsection}{\numberline {2.2.17}Rates and power a builder can check with a stopwatch}{49}{subsection.2.2.17}%
+\contentsline {subsection}{\numberline {2.2.18}What an empty cell does to the count}{50}{subsection.2.2.18}%
+\contentsline {subsection}{\numberline {2.2.19}What the extra analysis changes}{52}{subsection.2.2.19}%
+\contentsline {chapter}{\numberline {3}System Build and Estimation}{53}{chapter.3}%
+\contentsline {section}{\numberline {3.1}System build}{53}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}What the build is for}{53}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Mechanical path of a seed}{54}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Sensor list and what each signal is allowed to do}{55}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.4}Computers and the bus between them}{56}{subsection.3.1.4}%
+\contentsline {subsection}{\numberline {3.1.5}Software tasks}{57}{subsection.3.1.5}%
+\contentsline {subsection}{\numberline {3.1.6}Calibration procedure}{58}{subsection.3.1.6}%
+\contentsline {subsection}{\numberline {3.1.7}Safety interlocks}{59}{subsection.3.1.7}%
+\contentsline {section}{\numberline {3.2}Estimation}{59}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}What is being estimated}{59}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Mild red oak}{61}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Slope and harsh vibration on red oak}{62}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Pin oak and the multiple index}{63}{subsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.2.5}Bur oak and the miss index}{64}{subsection.3.2.5}%
+\contentsline {subsection}{\numberline {3.2.6}Mixed lot}{65}{subsection.3.2.6}%
+\contentsline {subsection}{\numberline {3.2.7}Energy and the price terms}{66}{subsection.3.2.7}%
+\contentsline {subsection}{\numberline {3.2.8}Where the estimation can mislead}{66}{subsection.3.2.8}%
+\contentsline {subsection}{\numberline {3.2.9}Answers to the research questions}{68}{subsection.3.2.9}%
+\contentsline {subsection}{\numberline {3.2.10}What a bench would have to show}{68}{subsection.3.2.10}%
+\contentsline {subsection}{\numberline {3.2.11}The runs that were summarised}{69}{subsection.3.2.11}%
+\contentsline {subsection}{\numberline {3.2.12}Reading the near-tie under harsh vibration}{70}{subsection.3.2.12}%
+\contentsline {subsection}{\numberline {3.2.13}A note on repeatability of the other scenarios}{70}{subsection.3.2.13}%
+\contentsline {subsection}{\numberline {3.2.14}Consolidated efficiency}{71}{subsection.3.2.14}%

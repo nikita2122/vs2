@@ -1,0 +1,94 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=2.35cm]{geometry}
+\usepackage{setspace}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,tabularx,longtable,multirow,array}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc,decorations.pathreplacing}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue}
+
+\onehalfspacing
+\setstretch{1.45}
+\setlength{\parskip}{0.35em}
+\setlength{\parindent}{1.25em}
+\raggedbottom
+
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{proposition}{Proposition}[chapter]
+\newtheorem{remark}{Remark}[chapter]
+
+\newcommand{\cmax}{C_{\max}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\1}{\mathbf{1}}
+
+\title{Research for Solving Multi-Target Scheduling of School Bag Factory Production by Using Resource-Coupled Graph Reinforcement Learning and Status-Synchronized Digital Twin Coordination}
+\author{Computer Science Thesis\\System Design and Optimization}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+A school bag factory is a flexible job shop with a particular kind of coupling. Cutting, embroidery, sewing, hardware assembly, inspection, and packing can each run on more than one machine, but an operation is not free to start merely because a machine is idle. It also needs a qualified operator, and often a shared token such as a cutting die or a colour-matched thread lot. While the schedule is running, the machines are not constant. Cutter wear, needle temperature, motor current, and thread-break counts change the time and the energy of the next cycle, and they change the chance that the cycle will be interrupted by a breakdown. The planner therefore has several targets at once: a short makespan, small tardiness against order due dates, low energy, balanced workload, and few failures. A rule that is excellent for one target is routinely poor for another.
+
+This thesis studies that planning problem and proposes two technologies that are designed to work as one system. The first, called resource-coupled heterogeneous graph attention scheduling (RCH-GAT), represents the shop as a graph of operations, machines, operators, and shared resource tokens. A preference-conditioned attention policy chooses, at each decision epoch, an operation together with a machine and a resource bundle. One policy serves a family of target weights, so the same system can be asked to protect due dates in one shift and energy in the next. The second technology, called the status-synchronized digital twin with chance-constrained rescheduling (SSDT-CC), keeps a live degradation state for every machine. Processing times become functions of that state. A chance constraint refuses an assignment whose predicted failure probability exceeds a set tolerance, and inserts a short preventive maintenance instead. Rescheduling is driven by the twin, not by a fixed clock: the policy is called again when health, a breakdown, or a newly released rush order makes the current plan unreliable.
+
+The first chapter reviews the two bodies of work these technologies come from, and sets the factory problem in a form that those bodies of work do not quite cover. The second chapter gives the models, the formulas, the decision procedures, and worked numerical steps. The third chapter describes the system that was built around the factory and reports a controlled estimation on a school-bag shop simulator. The estimation program is part of the thesis. On the nominal order book the full system improves the joint cost relative to first-in-first-out, shortest processing time, earliest due date, and apparent tardiness cost, and the two ablations (resource features removed, status features removed) each give back part of that gain. The results are estimates of this implementation, not figures copied from another factory.
+\end{abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter*{Notation}
+\addcontentsline{toc}{chapter}{Notation}
+\noindent
+The symbols below are used with a stable meaning. Local symbols are defined where they appear.
+
+\begin{longtable}{@{}p{0.22\textwidth}p{0.70\textwidth}@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+\endhead
+$J$, $M$, $K$, $Q$ & Sets of jobs (orders), machines, operators, and shared resource tokens. \\
+$O_{ij}$ & Operation $i$ of job $j$. \\
+$G_{ij}$ & Set of machine groups that can perform $O_{ij}$. \\
+$p_{ijko}(h)$ & Processing time of $O_{ij}$ on machine $k$ with operator $o$ at health $h$. \\
+$s_{ij k}$ & Sequence-dependent setup on machine $k$ before $O_{ij}$. \\
+$C_j$, $d_j$, $r_j$ & Completion time, due date, and release time of job $j$. \\
+$\cmax$ & Makespan, $\max_j C_j$. \\
+$T$ & Total tardiness, $\sum_j \max(0,C_j-d_j)$. \\
+$E$ & Total energy of processing, setup, maintenance, and expected repair. \\
+$B$ & Workload imbalance across machines. \\
+$\Phi$ & Expected number of breakdowns. \\
+$\omega$ & Preference vector over the targets. Its components are non-negative and sum to one. \\
+$h_k(t)$ & Degradation state of machine $k$ at time $t$. \\
+$\varepsilon$ & Chance-constraint tolerance on the failure probability of an assignment. \\
+$\mathcal{G}$ & Heterogeneous shop graph. \\
+$\alpha_{uv}^{(r)}$ & Attention weight on an edge of relation $r$. \\
+$\pi_\theta(a\mid s,\omega)$ & Scheduling policy. \\
+\bottomrule
+\end{longtable}
+
+\input{chapters/chapter1}
+\input{chapters/chapter2}
+\input{chapters/chapter3}
+\input{chapters/references}
+
+\end{document}

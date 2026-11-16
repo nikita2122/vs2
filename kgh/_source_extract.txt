@@ -1,0 +1,2581 @@
+
+
+===== PAGE 1 =====
+Research Article
+A Fault Diagnosis Model for Rotating Machinery Using
+VWC and MSFLA-SVM Based on Vibration Signal Analysis
+Lei You
+,1,2 Wenjie Fan,1 Zongwen Li,1 Ying Liang,3,4 Miao Fang
+,4 and Jin Wang
+1
+1School of Information Science and Engineering, Chengdu University, Chengdu 610106, China
+2Engineering Laboratory of Spatial Information Technology of Highway Geological Disaster Early Warning in Hunan Province,
+Changsha University of Science & Technology, Changsha 410114, China
+3College of Electronic and Information Engineering, Chengdu Aeronautic Polytechnic, Chengdu 610100, China
+4Key Laboratory of Pattern Recognition and Intelligent Information Processing of Sichuan, Chengdu University,
+Chengdu 610106, China
+Correspondence should be addressed to Miao Fang; miao_fang@qq.com and Jin Wang; wangjin@cdu.edu.cn
+Received 15 September 2018; Revised 1 December 2018; Accepted 12 December 2018; Published 12 February 2019
+Academic Editor: Stefano Marchesiello
+Copyright © 2019 Lei You et al. Tis is an open access article distributed under the Creative Commons Attribution License, which
+permits unrestricted use, distribution, and reproduction in any medium, provided the original work is properly cited.
+Fault diagnosis of rotating machinery mainly includes fault feature extraction and fault classiﬁcation. Vibration signal from the
+operation of machinery usually could help diagnosing the operational state of equipment. Diﬀerent types of fault usually have
+diﬀerent vibrational features, which are actually the basis of fault diagnosis. Tis paper proposes a novel fault diagnosis model,
+which extracts features by combining vibration severity, dyadic wavelet energy time-spectrum, and coeﬃcient power spectrum of
+the maximum wavelet energy level (VWC) at the feature extraction stage. At the stage of fault classiﬁcation, we design a support
+vector machine (SVM) based on the modiﬁed shuﬄed frog-leaping algorithm (MSFLA) for the accurate classifying machinery
+fault method. Speciﬁcally, we use the MSFLA method to optimize SVM parameters. MSFLA can avoid getting trapped into local
+optimum, speeding up convergence, and improving classiﬁcation accuracy. Finally, we evaluate our model on real rotating
+machinery platform, which has four diﬀerent states, i.e., normal state, eccentric axle fault (EAF), bearing pedestal fault (BPF), and
+sealing ring wear fault (SRWF). As demonstrated by the results, the VWC method is eﬃcient in extracting vibration signal features
+of rotating machinery. Based on the extracted features, we further compare our classiﬁcation method with other three fault
+classiﬁcation methods, i.e., backpropagation neural network (BPNN), artiﬁcial chemical reaction optimization algorithm
+(ACROA-SVM), and SFLA-SVM. Te experiment results show that MSFLA-SVM achieves a much higher fault classiﬁcation rate
+than BPNN, ACROA-SVM, and SFLA-SVM.
+1. Introduction
+Fault diagnosis of rotating machinery is a borderline dis-
+cipline with high integrity accompanied by the rapid de-
+velopment of modern industry. Fault feature extraction and
+fault classiﬁcation are hot topics in fault diagnosis. Te
+vibration signals from rotating machinery contain a lot of
+information which can be applied to determine whether the
+equipment is operating normally or not. Te diﬀerent fault
+types have diﬀerent features of vibration signals. Feature
+extraction involves analysis of the large quantity of raw data
+according to their corresponding analysis theory and al-
+gorithm, so as to extract feature parameters of the fault from
+the raw data and then provide accurate data for fault
+classiﬁcation. Based on the extracted fault signal features, we
+could further classify diﬀerent fault types which usually
+characterize diﬀerent fault types. Tus, we could obtain a
+rotating machinery operating state with fault diagnosis
+model and simultaneously identify the fault type for re-
+ducing fault risks.
+Fault diagnosis has always been a hot topic for scholars
+to study the fault feature extraction and fault classiﬁcation
+[1–21]. Based on the careful analysis of multiple mechanical
+accidents, Soher [1] classiﬁed mechanical faults into 9 cat-
+egories with 37 types. Beard [2] reported a fault diagnosis
+technology based on analytic redundancy. Aiming at early
+Hindawi
+Shock and Vibration
+Volume 2019, Article ID 1908485, 16 pages
+https://doi.org/10.1155/2019/1908485
+
+
+===== PAGE 2 =====
+fault of the incipient gear box, Saravanan and Ramachan-
+dran [22] exploited DWT to design a feature extraction
+method and then apply artiﬁcial neural networks (ANN) for
+fault classiﬁcation based on the extracted features. Samanta
+and Al-Balushi [23] extracted the features of the vibration
+signals under normal and fault states of the rotating ma-
+chinery and applied these data to the input of ANN. In this
+way, ANN can be used to do fault diagnosis for rotating
+machinery. Persis and Isidori [24] designed a fault detection
+ﬁlter and applied to nonlinear detection and isolation. Zhang
+et al. [25] proposed a hybrid model for motor-bearing fault
+detection and classiﬁcation. Meanwhile, they also applied
+SVM to classify the type of fault and assess its severity. Li
+et al. [26] came up with a new approach named multimodal
+deep support vector classiﬁcation, which reached a high
+classiﬁcation rate on spur and helical gearboxes. Bordoloi
+and Tiwari [27] used grid-search method, artiﬁcial-bee-
+colony algorithm (ABCA), and genetic algorithm (GA) to
+optimize SVM, which could classify four diﬀerent gear faults
+accurately. Dong and Luo [28] designed a prediction method
+for bearing degradation with PCA and LS-SVM methods,
+which uses particle swarm optimization (PSO) to select SVM
+parameters. Te experimental results indicate that this
+method is eﬃcient. Li et al. [29] proposed a novel fault
+diagnosis method combining time-frequency analysis and
+neural networks and analyzed vibration signals of motor
+bearing. Reference [30] gave a fault diagnosis model using
+empirical mode decomposition (EMD) and GA-SVM and
+analyzed high-voltage circuit breaker. Speciﬁcally, they
+combined EMD and energy entropy as the feature vector and
+used GA-SVM to improve generation ability and classiﬁ-
+cation accuracy. Aiming at gear fault diagnosis, Yang et al.
+[31] exploited ensemble empirical mode decomposition
+extracting fault features and used SVM for classifying faults.
+Furthermore, they adopted ABCA to optimize SVM pa-
+rameters and obtained higher classiﬁcation accuracy than
+GA-based and PSO-based methods. Seshadrinath et al. [32]
+used complex wavelets to identify multiple fault diagnosis in
+variable frequency drives and validated the eﬃciency in fault
+feature extraction with complex wavelets. Dybala and
+Zimroz [33] proposed to diagnose the faults of rolling
+bearing with the EMD algorithm, which could detect fault at
+the early stage of bearing failure. Reference [34] showed an
+early fault diagnosis model of rotation machinery, which
+combined wavelet packet decomposition and EMD to ex-
+tract fault characteristic frequency and used BPNN to
+process 10 rotor fault types. Te team of Cai et al. [10, 35, 36]
+has achieved remarkable achievements in the fault diagnosis.
+Tey used fault diagnosis for three-phase inverters using
+Bayesian networks (BNs). Reference [10] provided series of
+fault classiﬁcation methods for BNs. Cai et al. [36] proposed
+a multisource information fusion-based fault diagnosis
+method for ground-source heat pumps using BNs, signiﬁ-
+cantly improving the accuracy of fault diagnosis.
+Te traditional approach of feature extraction concerns
+the spectrum analysis based on the Fourier transform.
+However, Fourier transform is not capable when it comes to
+the analysis of nonstationary vibration signal of the high-
+speed rotating machinery with relatively lower accuracy.
+Tis paper proposed a time-frequency feature extraction
+method named VWC, which combines the vibration se-
+verity, dyadic wavelet energy time-spectrum, and coeﬃcient
+power spectrum (CPS) of the maximum wavelet energy
+level. VWC can extract fault vibration signal from time
+domain and time-frequency domain. It is known that the
+SVM algorithm based on the statistical learning theory is
+particularly suitable for learning from a small sample
+dataset. Te parameters of SVM usually inﬂuence classiﬁ-
+cation performance very much. Te selection of kernel
+function and cost parameter is important to SVM classiﬁ-
+cation result. Tis paper proposes an MSFLA-based opti-
+mizing method for SVM, which could obtain the optimum
+of kernel function and cost parameter. With the 22 features
+as input, in order to avoid being trapped into local optimum
+with random search, MSFLA exploits the improved position
+updating policy and Gaussian mutation for new solution.
+Compared with SFLA, MSFLA takes full advantage of global
+and local information. It keeps the diversity of population
+and avoids getting trapped into local optimum. Meanwhile,
+MSFLA can avoid blind search, speeding up convergence
+and improving classiﬁcation accuracy.
+2. Model
+Te raw data are extremely large containing both valid
+signals and interference signals. Te interference signals
+challenge the acquisition of vibration. Tus, it is necessary to
+extract vibrational signal features of rotating machinery for
+classifying fault types. Tis paper proposed the VWC
+method for fault feature extraction of rotating machinery.
+Te fault classiﬁcation of the fault signal, in nature, refers to
+the establishment of a correspondence between fault feature
+parameters and fault types, which can be used for accurate
+classiﬁcation of fault types. Tis paper proposed the MSFLA-
+SVM method for fault classiﬁcation.
+As demonstrated in Figure 1, the fault diagnosis model
+consists of the front-end data acquisition, the signal char-
+acteristics extraction, and the fault classiﬁcation identiﬁca-
+tion. Te front-end data acquisition consists of an axial ﬂow
+pump, an acceleration sensor, and a PCI extension for in-
+strumentation (PXI) data acquisition system. Te collected
+data are processed with the signal extraction method and
+then are used for fault classiﬁcation. Speciﬁcally, the data are
+divided into training data and test data. Te model could
+identify four operating states including three fault states and
+one normal state. Te research focus of this paper is on the
+extraction of the signal characteristics and recognition of the
+faults.
+Totally, three fault states are listed in the paper. EAF is a
+rotor imbalance fault. Under an ideal condition, the pressure
+generated on the bearing is equal when the gyrorotor in the
+rotary machine rotates; that is, the gyrorotor is balanced. Te
+imbalance of the rotor is caused by the quality eccentricity of
+the rotor components or the defects in the components. It is
+one of the most common faults in rotary machinery. EAF
+could cause fatigue damage and breakage of equipment,
+resulting in the vibration and noise of rotary machinery,
+speeding up the bearing wear, and reducing the working
+2
+Shock and Vibration
+
+
+===== PAGE 3 =====
+eﬃciency and service life of the machine and may cause the
+destructive accidents in severe cases. In the experiment, we
+manually changed the weight block on the shaft to cause the
+eccentricity faults of the shaft. BPF is caused by bearing
+faults. In rotary machinery with rolling bearings, the faults
+caused by bearings are common. Te bearing pedestal
+consists of a bearing and a box. Te fault of rolling bearing is
+mainly caused by fatigue ﬂake, wear, and gluing. When the
+bearing fails, the bearing pedestal used to support the
+bearing will periodically jump and result in the rigid change
+of the system with an impact eﬀect, thus causing looseness of
+the bearing pedestal. Sealing ring is mainly used to prevent
+the medium at the outlet from ﬂowing back, namely, playing
+the role of sealing. Meanwhile, it could avoid damage caused
+by direct touching between the impeller and the pump
+casing and could thus protect the impeller. SRWF could
+cause a backﬂow of the internal medium and could also get
+the impeller damaged.
+2.1. Feature Extraction Method: VWC. Vibration severity, a
+vibration signal time-domain parameter, is an important
+criterion for characterizing the degree of vibration of ma-
+chinery, measuring the vibration state of a machine and
+indicating the damage caused by vibration. Te rotor is the
+core of the rotating machine. When the rotor fails, the vi-
+bration frequency of the fault is closely related to the fun-
+damental frequency of the rotor. Among the vibration
+signals, there is the fundamental vibration of the rotor, as
+well as other frequency components, such as 1/2f0, f0, 2f0,
+and 3f0. Diﬀerent types of faults have diﬀerent eﬀects on
+these frequency components. When the fault occurs, the
+distribution of signal energy will be changed in each fre-
+quency band, and the fault types can be recognized
+according to the distribution of energy. Te vibration fea-
+tures are not particularly obvious but relatively weak when
+the machinery shows the sign of a fault in the early stage.
+Furthermore, these weak fault signals are likely to be sub-
+merged in the periodic signals and interference signals.
+Terefore, the dyadic wavelet energy time-spectrum method
+is used to deal with the vibration signal on the basis of the
+dyadic wavelet transform. By analyzing the signal energy
+distribution, the decomposition level of dyadic wavelet
+energy distribution can be found, and by analyzing the
+coeﬃcient power spectrum of maximum wavelet energy
+level, the feature extraction of the energy value for each
+feature frequency can be carried out. In this way, the weak
+vibration signals of the fault can be detected.
+2.1.1. Vibration Severity. Te vibration severity can be
+calculated as
+VIB 
+
+1
+T 􏽚
+T
+0 v2(t)dt
+􏽳
+,
+(1)
+where VIB is the vibration severity, v(t) is the vibration
+velocity value, and T is the sampling time.
+We obtain equation (2) with discretion of equation (1)
+and T  nΔt, that is,
+VIB 
+
+1
+nΔt 􏽘
+n−1
+i0
+v2
+i (i)Δt
+􏽶
+􏽴
+
+
+1
+n 􏽘
+n−1
+i0
+v2
+i (i)
+􏽶
+􏽴
+.
+(2)
+Here, the velocity vi could be computed as equation (3) from
+the acceleration value ai(t) obtained by acceleration sensor:
+vi  􏽚
+0.01
+0
+ai(t)
+􏼌􏼌􏼌􏼌
+􏼌􏼌􏼌􏼌dt.
+(3)
+Rotor rotation is a periodic motion, which stimulates the
+vibration. Te vibration frequency is the rotate velocity of a
+rotor, that is, the fundamental frequency f0. Te relationship
+between f0, the rotation frequency of the rotor fr, and the
+rotor velocity n is as follows:
+f0  fr  n
+60.
+(4)
+2.1.2. Dyadic Wavelet Energy Time Spectrum and Coeﬃcient
+Power Spectrum of Maximum Wavelet Energy Level. If
+f(t) ∈L2(R), L2(R) denotes square integrable space; we
+deﬁne dyadic wavelet as follows:
+ψ2j,b(t)  2−(j/2)ψ 2−j(t −b)
+􏽨
+􏽩,
+(5)
+here, ψ denotes mother wavelet, 2j denotes scale parameter,
+j ∈Z, and b denotes translation parameters. Te dyadic
+wavelet transform is
+Rotating machinery-
+vertical axial flow pump
+Vibration signal
+acquisition-PXI
+Signal feature extraction
+using VWC
+Training data
+Testing data
+Triaxial accelerometer
+sensor
+Normal
+EAF
+BPF
+SRWF
+Optimization of SVM
+parameters using MSFLA
+SVM
+parameters
+Fault identification
+and classification
+Classification results
+meet requirement?
+No
+Yes
+Normal
+EAF
+BPF
+SRWF
+Figure 1: Flow chart of the proposed fault diagnosis.
+Shock and Vibration
+3
+
+
+===== PAGE 4 =====
+WTf 2j, b
+ 􏼁 2−(j/2) 􏽒
++∞
+−∞f(t)ψ∗2−j(t −b)
+􏼂
+􏼃dt  f ∗ψ2j(b),
+ψ2j(u)  ψ2j(−u)  2−(j/2)ψ −u
+2j
+􏼒
+􏼓,
+⎧
+⎪
+⎪
+⎪
+⎪
+⎨
+⎪
+⎪
+⎪
+⎪
+⎩
+(6)
+where ψ∗denotes complex conjugate of ψ and ∗denotes the
+convolution calculation symbol.
+Equations (7) and (8) are well-known Mallat wavelet de-
+composition algorithm and Mallat wavelet reconstruction al-
+gorithm, respectively. Te coeﬃcients cA and cD obtained by
+wavelet decomposition can reconstruct the original waveform:
+cAj
+k  􏽘
+n∈Z
+cAj−1
+n 􏼊ϕj−1,n, ϕj,k􏼋 􏽘
+k∈Z
+cAj−1
+n h∗
+n−2k,
+cDj
+k  􏽘
+n∈Z
+cAj−1
+n 􏼊ϕj−1,n, ψj,k􏼋 􏽘
+k∈Z
+cAj−1
+n g∗
+n−2k,
+⎧
+⎪
+⎪
+⎪
+⎨
+⎪
+⎪
+⎪
+⎩
+(7)
+cAj−1
+k
+ 􏽘
+n∈Z
+cAj
+n􏼊ϕj,n, ϕj−1,k􏼋+ 􏽘
+n∈Z
+cDj
+n􏼊ψj,n, ϕj−1,k􏼋
+ 􏽘
+n∈Z
+cAj
+nhk−2n + 􏽘
+n∈Z
+cDj
+ngk−2n,
+(8)
+where 〈〉denotes inner product, ϕ denotes scaling function,
+h∗denotes low-pass reconstruction ﬁlter, and g∗denotes
+high-pass reconstruction ﬁlter.
+According to equations (6), (7), and (8), we derive
+WTf(t) 2j, b
+􏼐
+􏼑 cDj
+k  􏽘
+k∈Z
+cAj−1
+n g∗
+n−2k.
+(9)
+Ten, from the above equation, we further derive
+WTf(t) 2j, b
+􏼐
+􏼑
+􏼌􏼌􏼌􏼌􏼌
+􏼌􏼌􏼌􏼌􏼌
+2  cDj
+k
+􏼌􏼌􏼌􏼌􏼌
+􏼌􏼌􏼌􏼌􏼌
+2.
+(10)
+Assuming EWf(t)(2j) as the detail signal energy of the
+dyadic wavelet in the j level, the dyadic wavelet energy time-
+spectrum is computed as
+EWf(t) 2j
+􏼐
+􏼑 WTf(t) 2j, b
+􏼐
+􏼑
+􏼌􏼌􏼌􏼌􏼌
+􏼌􏼌􏼌􏼌􏼌
+2.
+(11)
+In particular, equation (11) could show the concentra-
+tion degree of the signal energy at diﬀerent j scales. Ten,
+assuming the maximum energy level as k, 1 ≤k ≤j, we
+compute its Fourier transform as equation (12) and obtain
+the corresponding coeﬃcient power spectrum of the max-
+imum wavelet energy level as the following equation:
+EWf(ω) 2k
+􏼐
+􏼑 􏽘
+N−1
+n0
+EWf(t) 2k
+􏼐
+􏼑e−iωt/N
+(
+).
+(12)
+Here, the symbol “^” denotes Fourier transform and N
+represents data length:
+EWp(􏽢ω) 2k
+􏼐
+􏼑
+EWf(􏽢ω) 2k
+ 􏼁
+􏼌􏼌􏼌􏼌􏼌
+􏼌􏼌􏼌􏼌􏼌
+2
+N
+.
+(13)
+Actually, equations (11) and (13) characterize the vari-
+ation of the energy of the vibration signal in diﬀerent scales.
+From equations (11) and (13), we can also ﬁnd the main
+frequency band of energy concentration, which is signiﬁcant
+for fault feature extraction of fault features.
+2.2. Fault Classiﬁcation Method: MSFLA-SVM
+2.2.1. SVM. Compared with traditional methods, SVM
+performs better in case of limit sampling data, global op-
+timization point, curse of dimensionality, etc. In engineering
+applications, it is usually a problem as the sample data are
+mostly nonlinear. Kernel function can be used to map linear
+nonseparable data of low-dimensional space to high-
+dimensional space, in which the data are separable. Here,
+the radical basis function (RBF) kernel function is as follows:
+K x · x′
+ 􏼁 exp
+−x −x′
+
+
+2
+2σ2
+⎛
+⎝
+⎞⎠ exp −g x −x′
+
+
+2
+􏼒
+􏼓,
+(14)
+where σ represents the kernel function width.
+Te algorithm steps for the SVM classiﬁer are as follows:
+Step 1. Assume the training data sample set as T 
+(x1, y1), . . . , (xn, yn)
+􏼈
+􏼉∈(Rn × Y)n:
+xi ∈Rn,
+yi ∈Y  1, −1
+{
+},
+i  1, . . . , n.
+(15)
+Step 2. Select the appropriate kernel function K(xi, xj) and
+cost parameter C > 0.
+Step 3. Construct and solve the optimization problem:
+min
+a
+1
+2 􏽘
+n
+i1
+􏽘
+n
+j1
+yiyjaiaj K xi, xj
+􏼐
+􏼑+ 1
+Cδij
+􏼒
+􏼓−􏽘
+n
+j1
+aj,
+s.t.
+􏽘
+n
+i1
+yiai  0,
+ai ≥0, i  1, . . . , n,
+δij 
+1,
+i  j,
+0,
+i ≠j.
+⎧
+⎪
+⎨
+⎪
+⎩
+(16)
+To obtain the optimal solution a∗ (a∗
+1, . . . , a∗
+n)T, the
+following steps are carried out.
+Step 4. Select the positive component a∗
+i ≥0 in a∗∈(0, C) to
+calculate the threshold b∗:
+b∗ yj 1 −
+a∗
+j
+C
+􏼠
+􏼡−􏽘
+n
+i1
+yia∗
+i K xi, xj
+􏼐
+􏼑.
+(17)
+Step 5. Construct the decision function:
+f(x)  sgn
+􏽘
+n
+i1
+a∗
+i yiK x, xi
+ 􏼁+ b∗
+⎛
+⎝
+⎞⎠.
+(18)
+In SVM, parameters C and σ have a great eﬀect on fault
+classiﬁcation. Small C usually leads to underﬁtting, thus
+causing lower training and prediction accuracy. In contrast,
+greater C could lead to overﬁtting and bring higher accuracy
+of training and prediction. σ can balance the impact of C.
+4
+Shock and Vibration
+
+
+===== PAGE 5 =====
+Reasonable C and σ could usually achieve balance between
+training accuracy, generalization ability, and classiﬁcation
+accuracy for SVM. Te parameters have great eﬀect on
+classiﬁcation results. In this paper, we use the MSFLA
+method to optimize SVM parameters.
+2.2.2. SFLA. As a heuristic algorithm, SFLA has the ad-
+vantages of the memetic algorithm (MA) and PSO, featured
+by simple structure, less parameters, fast convergence, and
+easy realization. In SFLA, one frog represents one candidate
+solution. Te frog population is divided into several
+memeplexes, each of which consists of some frogs. Tis
+algorithm combines global search and local search to evolve
+towards the global optimum.
+SFLA process is as follows:
+Step 1 (initial frog population). Generating N candidate
+solutions randomly and assuming the initial frog population
+as F  (X1, X2,. . ., XN), the candidate solution represented by
+the frog numbered i is Xi, Xi  (Xi1, Xi2,. . ., Xid), where d is
+the dimension of solution, 1 ≤i ≤N.
+Step 2 (calculate ﬁtness). Calculate the ﬁtness value of all
+frogs according to ﬁtness function, which is deﬁned as the
+classiﬁcation accuracy under cross-validation meaning.
+Step
+3
+(memeplex
+division). Arrange N frogs
+in the
+descending order according to their ﬁtness value and divide the
+population into M memeplexes. Allocate the ﬁrst frog to the
+ﬁrst memeplex, the second frog to the second memeplex, and
+the frog numbered M to the M memeplex. Ten, allocate the
+M+1 frog to the ﬁrst memeplex, the M+2 to the second
+memeplex, and so on, until N frogs are all allocated. Te whole
+population is divided into M memeplexes, with each containing
+P frogs, namely, N M× P. We represent z as memeplex
+number. Te division formula is as shown in equation (11):
+z  i%M.
+(19)
+Step 4 (local updating). Each time during the iterative cal-
+culation process within a memeplex, Fw will be adjusted with
+the method shown in equation (20). In each memeplex, Fb
+represents the frog that occupies the best position in its
+memeplex, Fw represents the frog that takes the poorest
+position in its memeplex, while Fg represents the frog that
+takes the best position in the whole population:
+Di  rand() × Fb −Fw
+ 􏼁,
+Fnew_w  Fw + Di −Dmax ≤Di ≤Dmax
+ 􏼁,
+⎧
+⎨
+⎩
+(20)
+here, Di represents the frog’s movement distance.
+Equation (20) represents the updated position of the
+poorest frog, where good positions indicate high ﬁtness
+values. Te valuation range of rand( ) is random data be-
+tween [0, 1]. Te range of frog’s movement distance is
+between (−Dmax, Dmax). After each iterative calculation of a
+memeplex, if the poorest frog in the memeplex has a position
+better than the previous one, i.e., Fnew_w > Fw, then the frog
+in this new position should take the place of the old frog,
+which means replacing Fw with Fnew_w to update Fw. Al-
+ternatively, Fg can be used to replace Fb in equation (20),
+e.g., equation (21), and then to repeat the above updating
+process. If the poorest frog in the population does not
+improve or its movement distance exceeds the maximum
+movement distance after calculating with equation (21), a
+new solution should be generated randomly to replace the
+original Fw. With this method, each memeplex will be
+updated for certain times internally and the poorest frog
+position will be updated until the local searching times:
+Di  rand() × Fg −Fw
+􏼐
+􏼑,
+Fnew_w  Fw + Di −Dmax ≤Di ≤Dmax
+ 􏼁.
+⎧
+⎪
+⎨
+⎪
+⎩
+(21)
+Step 5 (global updating). After each memeplex completes
+local search, all frogs are mixed. Repeat Step (2) ∼Step (4),
+until the largest number of global iterations or accuracy
+requirement is met.
+2.2.3. MSFLA. As the number of iterations increases, the
+convergence of individual frogs in SFLA leads to decreased
+population diversity, and the algorithm is easily trapped into
+local optimum and low accuracy of solution. Focusing on
+this problem, this paper proposes MSFLA. Te method
+improves the poorest frog Fw, and at the same time, replaces
+random new solution with Gaussian mutation, so as to avoid
+blind search in SFLA. MSFLA can balance the global and
+local search ability of SFLA in a better way and improve
+classiﬁed accuracy of solution.
+(1) Fw Updating Strategy. When updating Fw, SFLA ﬁrst
+compares Fw with Fb in one memeplex. If Fnew_w is worse
+than Fb, then compare it with Fg. Actually, SFLA does not
+make full use of Fg, which can facilitate SFLA converging to
+the local optimum easily. Tis paper proposes a novel Fw
+updating strategy based on equations (20) and (21).
+Suppose Uz_c is at the center of the zth memeplex, then
+this center point is shown by
+Uz_c  􏽐P
+h1Xhd
+P
+,
+(22)
+here, P denotes the number of frogs in the zth memeplex.
+Ten, assuming the Fg in the best position as S, 1 ≤S ≤N,
+we have three important deﬁnitions.
+Deﬁnition 1. Te distance between individual frogs is
+measured by Euclidean distance and is deﬁned as
+FFdist(i, j) 
+
+􏽘
+d
+t1
+Xit −Xjt
+􏼐
+􏼑
+2 + Ui_c −Uj_c
+􏼐
+􏼑
+2
+􏽶
+􏽴
+,
+(23)
+here, Xi and Xj represent two individual frogs (candidate
+solutions) and d represents dimension. In Deﬁnition 1, both
+the distance between individuals and the distance between
+Shock and Vibration
+5
+
+
+===== PAGE 6 =====
+the center points of the memeplexes where individuals locate
+are taken into consideration.
+Deﬁnition 2. Te maximum distance between individual
+frogs and the global optimal frog is deﬁned as
+MaxFFgdist  Max FFdist i, Fg
+􏼐
+􏼑
+􏽮
+􏽯,
+1 ≤i ≤N, i ≠S.
+(24)
+Deﬁnition 3. Te minimum distance between individual
+frogs and the global optimal frog is deﬁned as
+MinFFgdist  Min FFdist i, Fg
+􏼐
+􏼑
+􏽮
+􏽯,
+1 ≤i ≤N, i ≠S.
+(25)
+Tis paper proposes a new frog-position updating
+strategy as
+Di  h × rand() × Fb −Fw
+ 􏼁+ q × rand() × Fg −Fw
+􏼐
+􏼑,
+Fnew_w  Fw + Di −Dmax ≤Di ≤Dmax
+ 􏼁,
+⎧
+⎪
+⎨
+⎪
+⎩
+h + q  1,
+q 
+FFdist i, Fg
+􏼐
+􏼑−MinFFgdist
+MaxFFgdist −MinFFgdist
+,
+⎧
+⎪
+⎪
+⎪
+⎪
+⎪
+⎨
+⎪
+⎪
+⎪
+⎪
+⎪
+⎩
+(26)
+here, h and q denote the learning eﬃciencies of Fb and Fg,
+respectively.
+As for individual frogs close to Fg, simple local searching
+can increase the probability of learning from Fb. Meanwhile,
+with larger h and smaller q, Fb could inﬂuence Fnew_w more
+than Fg. On the contrary, the individual frogs far from Fg are
+more likely to learn from Fg, and thus, Fg inﬂuences Fnew_w
+more than Fb. As shown in Figure 2, the update of Fnew_w
+depends on distances between frogs and Fg with adjusted h
+and q. Since the update of Fw in each memeplex is based on
+Fb and Fg, it could maintain the population diversity and
+could prevent the algorithm from getting stuck in local
+optimum. Also, the method could help accelerate the al-
+gorithm converging to some extent.
+(2) Improved Mutation Process Based on Gaussian Pertur-
+bation. In SFLA, if the ﬁtness is still bad than the original one
+after several local and global searching, then a random new
+solution Fnew_w is generated to replace Fw., lowering the
+converging speed. Tis paper integrates a Gaussian random
+perturbation on Fnew_w as
+Fnew_w  Fw + Fw × N(0, 1),
+(27)
+here, N (0, 1) is a Gaussian distribution with mean 0 and
+variance 1. Particularly, the perturbation term Fw × N (0, 1)
+could avoid trapping into local optimum.
+3. Experiment and Analysis
+3.1. Experiment Environment. Te
+experiment
+focuses
+mainly on four working modes, namely, normal state, EAF,
+BPF, and SRWF, with the latter three known as typical
+rotating machinery faults. We use a vertical axial ﬂow pump
+in the experiment. Te fundamental frequency f0 is 16 Hz
+according to equation (3). Te experiment is carried out in a
+closed water loop, which drives the water to ﬂow in the
+circuit when the vertical axial ﬂow pump is running. A
+vibration acceleration sensor is installed on the vertical axial
+pump for the collection of vibration signals. Te sampling
+frequency of acquisition card is set to 10 kHz. Te experi-
+ment environment parameters are shown in Table 1. Te
+experiment site is shown in Figure 3.
+3.2. Working Condition and Analysis
+3.2.1. Normal State. From Figure 4(a), the waveforms are
+relatively messy. However, these signals contain rich fre-
+quency components. Te vibration severity of vibration
+signal is 1.051 mm/s. Furthermore, according to equation
+(11), we obtain its dyadic wavelet energy time-spectrum as
+Figure 4(c). Obviously, the d5 level is the maximum wavelet
+energy level. From Figure 4(b), a large amount of energy
+concentrates on f0. Meanwhile, the concentration of energy
+can also be found in the power spectrum at 32 Hz and 48 Hz
+(second harmonic and third harmonic). Tere is power
+interference at 50 Hz. 4f0 (64 Hz) energy impact is found,
+causing by the impeller of the vertical axial ﬂow pump.
+3.2.2. EAF. In Figure 5(a), the vibration severity of vibration
+signal is 3.737 mm/s. Te energy mainly focuses on f0. In
+Figure 5(b), due to some crosstalk from other devices in the
+experimental site, some energy exists at 28 Hz, 34 Hz, and
+38 Hz.
+3.2.3. BPF. From Figure 6(a), we obtain the vibration se-
+verity of 1.161 mm/s based on the raw data. Figure 6(c) is the
+Fw12
+Fw11
+Fw21
+Fb21
+Fb11
+Fw20
+Fb20
+Fb10
+Fw19
+Fw9
+Fb9
+Fb8
+Fb7
+Fb2
+Fw1
+Fw3
+Fb1
+Fg
+Fw2
+Fb3
+Close
+Middle
+h >> q
+h << q
+h > q ; h < q
+Fw6
+Fw7
+Fb19
+Fw18
+Fb18
+Fw17
+Fb17
+Fb16
+Fw16
+Fb15
+Fw15
+Fb14
+Fw14
+Fb13
+Fb6
+Fw5
+Fb12
+Fb5
+Fb4
+Fw13
+Far
+Fw8
+Fw10
+Fw4
+Figure 2: Fw updating strategy.
+6
+Shock and Vibration
+
+
+===== PAGE 7 =====
+change of dyadic wavelet energy time-spectrum of BPF.
+From Figure 6(b), the energy concentrates on f0 and
+highlights further the feature of 1/2f0 and 3f0.
+3.2.4. SRWF. In Figure 7(a), the vibration severity of vi-
+bration signal is 1.70024 mm/s. From Figure 7(b), the energy
+concentrates on f0 and highlights further the feature of 1/2f0
+and 2f0.
+3.2.5. Analysis and Discussion. After feature extraction, we
+select vibration severity and amplitude of wavelet CPS 1/2f0,
+f0, 2f0, 3f0, 4f0, 5f0, and 6f0 as feature parameters. Each
+frequency has 3 vibrational directions, i.e., axial, tangential,
+and radial directions. Tus, one group of data totally in-
+cludes 22 fault characteristic parameters. We collect 60
+groups of data for each fault type in this experiment. Because
+of the condition restriction, it cannot collect more sample
+data, but the advantage of SVM can apply to deal with small
+sample data. Terefore, we select 45 groups of four types of
+data sample as training data and the other 15 groups as
+testing data. Te training data are an input vector of
+180 × 22, and testing data are also an input vector of 60 × 22.
+Te training dataset is collected from 4 diﬀerent rotational
+machinery states, i.e., normal, EAF, BPF, and SRWF. Te 22
+features are composed of vibration severity, 1/2f0∼6f0 in
+three directions as Figures 8 and 9.
+From Figure 8, we can see that vibration severity of EAF is
+the largest, followed by the vibration severity of BPF and the
+vibration
+severity
+of
+normal
+state
+is
+the
+least.
+From
+Figures 9(a)–9(c), we can see that the amplitude of wavelet CPS
+in tangential direction is larger than that of axial and radial
+direction in the normal state, and the maximum value in
+tangential direction appeared in f0, which suggests that energy
+mainly concentrated in the f0 position in the normal state. From
+Figures 9(d)–9(f), the number of wavelet CPS in tangential
+direction increases from the maximum 1.683×10−3 in the
+normal state to 3.322×10−3. Meanwhile, we can also obtain
+from Figures 9(a) and 9(f) that the corresponding maximal CPS
+value at the 7 characteristic frequency points 1/2f0∼6f0 are
+increased when the equipment is in the EAF state. Compared
+with Figure 9(a), the waveform of 7 feature frequency points in
+Figure 9(d) is more chaotic and it is not so regular like the
+normal state. Compared with Figures 9(b) and 9(e), we can see
+that the axial energy is mainly concentrated in the f0 position
+in normal condition and dispersed to two frequency locations
+1/2f0 and f0 when EAF occurs. In Figures 9(c) and 9(f), the
+maximal CPS value increases from the normal state 4.574×10−4
+to 2.492×10−3. It can be seen from Figures 9(d)–9(f) that the
+main inﬂuence of the equipment in the EAF state is in the
+tangential direction and the maximum energy is mainly con-
+centrated in the f0 position in tangential direction, which is in
+line with the fault features of EAF. In Figures 9(g)–9(i), the
+largest energy also concentrated in the tangential direction.
+Compared with the normal state, when BPF occurs, the
+maximum value of CPS increases from 1.683×10−3 to
+4.701× 10−3. While in Figure 9(g), the energy is mainly con-
+centrated in 1/2f0, which is not consistent with normal state.
+However, when BPF occurs, the value of 1/2f0 is improved,
+indicating that BPF in tangential direction has the greatest
+inﬂuence on 1/2f0. Normally, the energy in the axial direction is
+concentrated at 1/2f0. From Figure 9(h), we can obtain that the
+energy at the frequency of 5f0 and 6f0 is increased. Te analysis
+suggests that these high-frequency energy shocks are caused by
+the ﬂow-induced vibration and natural frequency of the internal
+components of the equipment. It can be seen from Figures 9(c)
+and 9(i) that the energy in the radial direction slightly decreased
+and the energy is concentrated shifting from f0 to 1/2f0, 3f0, and
+4f0. Te maximum energy appears in the frequency position of
+1/2f0 in tangential direction when BPF happens. Tus, BPF
+mainly inﬂuences the tangential direction, which is consistent
+with the fault features of BPF. As shown in Figures 9(j)–9(l), the
+energy of SRWF in tangential direction reaches the maximum
+Vertical axial
+ﬂow pump
+Triaxial
+accelerometer
+Water inlet
+Water outlet
+Figure 3: Experiment of vertical axial ﬂow pump.
+Table 1: Experiment environment parameters.
+Content
+Parameter
+Value
+Rotating machinery
+(vertical axial
+ﬂow pump)
+Rotating speed
+960 r/min
+Flow rate
+550 m3/h
+Lift
+3 m
+Impeller
+4
+Acceleration sensor
+(B&K 4321)
+Type
+Triaxial charge
+accelerometer
+Charge sensitivity
+9.8 ± 2% pC/g
+Frequency range
+0.1 to 12000 Hz
+Measuring range
+500 g
+Acquisition card
+(PXI 11158)
+Sample frequency
+100 to 100 kHz
+(set to 10 kHz)
+Input channel
+8
+Range
+±100 mV to ±10 V
+Precision
+±0.1% FSR (DC)
+Shock and Vibration
+7
+
+
+===== PAGE 8 =====
+7.399
+6.000
+4.000
+2.000
+0.000
+–2.000
+–4.000
+–6.654
+0
+1638
+Vibration acceleration (m/s2)
+3276
+Data length (Sa)
+4915
+6553
+8191
+(a)
+0.0004
+0.0004
+0.0003
+0.0002
+Wavelet CPS (m/s2)2
+0.0001
+0.0000
+1
+28
+56
+Frequency (Hz)
+83
+110
+(b)
+d1
+d2
+d3
+d4
+d5
+d6
+d7
+d8
+4 ×10–4
+3
+2
+1
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.03
+0.02
+0.01
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.2
+0.15
+0.1
+0.05
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.8
+0.6
+0.4
+0.2
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+1.5
+1
+0.5
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.4
+0.3
+0.2
+0.1
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.04
+0.03
+0.02
+0.01
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.06
+0.04
+0.02
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+(c)
+Figure 4: Radial vibration of normal state. (a) Vibration acceleration in time domain. (b) Wavelet CPS (d5 level). (c) Dyadic wavelet energy
+time spectrum.
+8
+Shock and Vibration
+
+
+===== PAGE 9 =====
+6.902
+6.000
+4.000
+2.000
+0.000
+–2.000
+–4.000
+–6.000
+–7.792
+0
+1638
+Vibration acceleration (m/s2)
+3276
+Data length (Sa)
+4915
+6553
+8191
+(a)
+0.0029
+0.0025
+0.0023
+0.0020
+0.0018
+0.0015
+Wavelet CPS (m/s2)2
+0.0013
+0.0010
+0.0008
+0.0005
+0.0003
+0.0000
+1
+28
+56
+Frequency (Hz)
+83
+110
+(b)
+d1
+6 ×10–4
+4
+2
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+d2
+0.02
+0.015
+0.01
+0.005
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+d3
+0.08
+0.06
+0.04
+0.02
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+d4
+0.8
+0.6
+0.4
+0.2
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+d5
+10
+5
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+d6
+1.5
+1
+0.5
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+d7
+0.8
+0.6
+0.4
+0.2
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+d8
+1.5
+1
+0.5
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+(c)
+Figure 5: Radial vibration of EAF. (a) Vibration acceleration in time domain. (b) Wavelet CPS (d5 level). (c) Dyadic wavelet energy time
+spectrum.
+Shock and Vibration
+9
+
+
+===== PAGE 10 =====
+6.731
+4.000
+2.000
+0.000
+–2.000
+–4.000
+–6.000
+–7.504
+0
+1638
+Vibration acceleration (m/s2)
+3276
+Data length (Sa)
+4915
+6553
+8191
+(a)
+0.0005
+0.0004
+0.0003
+0.0002
+Wavelet CPS (m/s2)2
+0.0001
+0.0000
+1
+28
+56
+Frequency (Hz)
+83
+110
+(b)
+d1
+d2
+d3
+d4
+d5
+d6
+d7
+d8
+4 ×10–4
+3
+2
+1
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.03
+0.02
+0.01
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.2
+0.15
+0.1
+0.05
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.4
+0.3
+0.2
+0.1
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+2
+1.5
+1
+0.5
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.8
+0.6
+0.4
+0.2
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.08
+0.06
+0.04
+0.02
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.08
+0.06
+0.04
+0.02
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+(c)
+Figure 6: Radial vibration of BPF. (a) Vibration acceleration in time domain. (b) Wavelet CPS (d5 level). (c) Dyadic wavelet energy time
+spectrum.
+10
+Shock and Vibration
+
+
+===== PAGE 11 =====
+8.890
+6.000
+4.000
+2.000
+0.000
+–2.000
+–4.000
+–6.000
+–8.720
+0
+1638
+Vibration acceleration (m/s2)
+3276
+Data length (Sa)
+4915
+6553
+8191
+(a)
+0.0043
+0.0025
+0.0030
+0.0035
+0.0040
+0.0020
+0.0015
+0.0010
+Wavelet CPS (m/s2)2
+0.0005
+0.0000
+1
+28
+56
+Frequency (Hz)
+83
+110
+(b)
+d1
+d2
+d3
+d4
+d5
+d6
+d7
+d8
+6 ×10–4
+4
+2
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.03
+0.02
+0.01
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.4
+0.3
+0.2
+0.1
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+1.5
+1
+0.5
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+4
+3
+2
+1
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+1
+0.5
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.03
+0.02
+0.01
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+0.2
+0.15
+0.1
+0.05
+0
+0
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+Data length (Sa)
+(c)
+Figure 7: Radial vibration of SRWF. (a) Vibration acceleration in time domain. (b) Wavelet CPS (d5 level). (c) Dyadic wavelet energy time
+spectrum.
+Shock and Vibration
+11
+
+
+===== PAGE 12 =====
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10 11 12 13 14 15
+Data length (Sa)
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+Vibration severity (mm/s)
+Normal
+Eccentric axle fault
+Bearing pedestal fault
+Sealing ring wear fault
+Figure 8: Vibration severity in radial direction.
+10 11 12
+Data length (Sa)
+0
+0.2
+0.4
+0.6
+0.8
+1
+1.2
+1.4
+1.6
+1.8
+Wavelet CPS (m/s2)2
+×10–3
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 32Hz
+3f0 = 48Hz
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+13 14 15
+(a)
+10
+Data length (Sa)
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+Wavelet CPS (m/s2)2
+×10–4
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 32Hz
+3f0 = 48Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+11 12 13 14 15
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+(b)
+10 11 12
+Data length (Sa)
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+4.5
+5
+Wavelet CPS (m/s2)2
+×10–4
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 32Hz
+3f0 = 48Hz
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+13 14 15
+(c)
+10
+Data length (Sa)
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+Wavelet CPS (m/s2)2
+×10–3
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 32Hz
+3f0 = 48Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+11 12 13 14 15
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+(d)
+Figure 9: Continued.
+12
+Shock and Vibration
+
+
+===== PAGE 13 =====
+10 11 12 13
+Data length (Sa)
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+Wavelet CPS (m/s2)2
+×10–4
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 32Hz
+3f0 = 48Hz
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+14 15
+(e)
+10
+Data length (Sa)
+0
+0.5
+1
+1.5
+2
+2.5
+3
+Wavelet CPS (m/s2)2
+×10–3
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 32Hz
+3f0 = 64Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+11 12 13 14 15
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+(f)
+10 11 12 13
+Data length (Sa)
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+4.5
+5
+Wavelet CPS (m/s2)2
+×10–3
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 32Hz
+3f0 = 48Hz
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+14 15
+(g)
+10 11 12
+Data length (Sa)
+0
+1
+2
+3
+Wavelet CPS (m/s2)2
+×10–4
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 32Hz
+3f0 = 48Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+13 14 15
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+(h)
+10 11 12
+Data length (Sa)
+0
+1
+2
+3
+4
+5
+6
+7
+Wavelet CPS (m/s2)2
+×10–4
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 32Hz
+3f0 = 48Hz
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+13 14 15
+(i)
+10 11
+Data length (Sa)
+0
+0.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+4.5
+Wavelet CPS (m/s2)2
+×10–3
+1/2f0 = 8Hz
+1f0 = 8Hz
+2f0 = 16Hz
+3f0 = 48Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+12 13 14 15
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+(j)
+Figure 9: Continued.
+Shock and Vibration
+13
+
+
+===== PAGE 14 =====
+and the energy intensity of SRWF in axial and radial direction is
+between one of EAF and BPF.
+Before fault classiﬁcation, we normalize all training data
+and testing data, which could speed up the convergence. We
+evaluate MSFLA-SVM with 240 real small datasets. In
+particular, each of the 4 types has 60 datasets, consisting of
+22 features. We use 180 datasets for training sample and
+another 60 datasets for testing sample. Te comparison
+results of training classiﬁcation are shown in Table 2. Te
+comparison results testing classiﬁcation results are shown in
+Table 3. Te BPNN was proposed by Huang and Xie [37],
+and the ACROA-SVM was developed by Ao et al. [38].
+10 11 12
+14 15
+Data length (Sa)
+0
+1
+2
+3
+4
+5
+6
+7
+Wavelet CPS (m/s2)2
+×10–4
+1/2f0 = 8Hz
+1f0 = 80Hz
+2f0 = 32Hz
+3f0 = 48Hz
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+1
+2
+3
+4
+5
+6
+7
+8
+9
+13
+(k)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10 11
+Data length (Sa)
+0
+0.2
+0.4
+0.6
+0.8
+1
+1.2
+1.4
+1.6
+1.8
+2
+Wavelet CPS (m/s2)2
+×10–3
+12 13 14 15
+1/2f0 = 8Hz
+1f0 = 16Hz
+2f0 = 16Hz
+3f0 = 48Hz
+4f0 = 64Hz
+5f0 = 80Hz
+6f0 = 96Hz
+(l)
+Figure 9: Te signal analysis of testing sample. Wavelet CPS in (a) tangential direction (normal), (b) axial direction (normal), (c) radial
+direction (normal), (d) tangential direction (EAF), (e) axial direction (EAF), (f) radial direction (EAF), (g) tangential direction (BPF), (h)
+axial direction (BPF), (i) radial direction (BPF), (j) tangential direction (SRWF), (k) axial direction (SRWF), and (l) radial direction (SRWF).
+Table 2: Comparison results of training classiﬁcation.
+Type
+BPNN positive/total
+accuracy
+ACROA-SVM positive/
+total accuracy
+SFLA-SVM positive/
+total accuracy
+MSFLA-SVM positive/
+total accuracy
+Average
+accuracy (%)
+Normal
+42/45
+93.333%
+45/45
+100.000%
+45/45
+100.000%
+45/45
+100.000%
+98.333
+EAF
+41/45
+91.111%
+44/45
+97.778%
+43/45
+95.556%
+45/45
+100.000%
+96.111
+BPF
+40/45
+88.889%
+42/45
+93.333%
+42/45
+93.333%
+43/45
+95.556%
+92.778
+SRWF
+42/45
+93.333%
+44/45
+97.778%
+44/45
+97.778%
+44/45
+97.778%
+96.667
+Average accuracy (%)
+91.667
+97.222
+96.667
+98.334
+Table 3: Comparison results of testing classiﬁcation.
+Type
+BPNN positive/
+total classiﬁcation
+ACROA-SVM positive/
+total classiﬁcation
+SFLA-SVM positive/
+total classiﬁcation
+MSFLA-SVM positive/
+total classiﬁcation
+Average
+accuracy (%)
+Normal
+13/15
+86.667%
+15/15
+100.000%
+15/15
+100.000%
+15/15
+100.000%
+96.667
+EAF
+13/15
+86.667%
+13/15
+86.667%
+14/15
+93.333%
+14/15
+93.333%
+90.000
+BPF
+12/15
+80.000%
+13/15
+86.667%
+13/15
+86.667%
+13/15
+86.667%
+85.000
+SRWF
+12/15
+86.667%
+14/15
+93.333%
+13/15
+86.667%
+14/15
+93.333%
+90.000
+Average accuracy (%)
+85.000
+91.667
+91.667
+93.333
+14
+Shock and Vibration
+
+
+===== PAGE 15 =====
+From Table 3, we can obtain that the normal state has the
+highest classiﬁcation accuracy, with testing average classi-
+ﬁcation accuracy 96.667%, followed by EAF with 90.000%,
+and SRWF with 90.000%. BPF gets the least classiﬁcation
+rate, only 85.000%. It is lower than the other three states. Te
+main reason is that the raw signal of BPF is restricted by
+components resonance and ﬁeld interference signals, which
+may cause much lower classiﬁcation rate. Meanwhile,
+MSFLA-SVM achieves the best classiﬁcation accuracy of
+93.333%, much higher than 91.667% of ACROA-SVM,
+91.667% of SFLA-SVM, and 85.000% of BPNN.
+4. Conclusions
+Fault feature extraction and fault classiﬁcation are the core of
+fault diagnosis. Since the traditional Fourier transformation-
+based methods could only analyze stationary signal, how to
+analyze nonstationary signal is still an open topic. Te local
+signal features are very eﬃcient in fault diagnosis yet diﬃcult
+to extract. Focusing on this problem, this paper proposes a
+novel fault diagnosis model consisting of VWC and MSFLA-
+SVM. As the results demonstrated, VWC can accurately
+capture the local weak transient transformation of the signal.
+Based on the extracted features from VWC, we classify
+normal states, EAF, BPF, and SRWF with BPNN, ACROA-
+SVM, SFLA-SVM, and MSFLA-SVM. As demonstrated by
+the experiment results, the proposed MSFLA-SVM could
+achieve the best in terms of classiﬁcation accuracy in the four
+methods. Yet, due to the complexity of BPF signals, all the
+four methods have low classiﬁcation accuracy on the BFP
+signal. In the future, we will focus on improving the clas-
+siﬁcation rate of BPF by increasing signal conditioning and
+reducing interference signals.
+Data Availability
+Te data used to support the ﬁndings of this study are
+available from the corresponding author upon request.
+Conflicts of Interest
+Te authors declare that there are no conﬂicts of interest
+regarding the publication of this paper.
+Acknowledgments
+Tis research was supported by the Scientiﬁc Research Fund
+of State’s Key Project of Research and Development Plan
+(2016YFB0800600), Scientiﬁc Research Fund of Sichuan
+Provincial Education Department of China (17ZA0082),
+Sichuan Science and Technology Program (2018JY0292 and
+2018GZ0247), Open Fund of Engineering Laboratory of
+Spatial Information Technology of Highway Geological
+Disaster Early Warning in Hunan Province (Changsha
+University of Science & Technology, kfj170602), Scientiﬁc
+Research Fund of Key Laboratory of Pattern Recognition
+and Intelligent Information Processing of Sichuan, Chengdu
+University (MSSB-2018-04), and Chengdu Science and
+Technology Program (2018-YF05-00731-SN). Te authors
+would like to express their sincere thanks to Mr. Pan He
+(Nuclear Power Institute of China).
+References
+[1] J.
+S.
+Sohre,
+“Operating
+problems
+with
+high-speed
+turbomachinery-causes and correction,” in Proceedings of
+23rd Annual Petroleum Mechanical Engineering Conference,
+Dallas, TX, USA, September 1968.
+[2] R. V. Beard, Failure accommodation in linear system through
+self-reorganization, Ph.D. thesis, Massachusetts Institute of
+Technology, Cambridge, MA, USA, 1971.
+[3] A. Widodo and B.-S. Yang, “Support vector machine in
+machine condition monitoring and fault diagnosis,” Me-
+chanical Systems and Signal Processing, vol. 21, no. 6,
+pp. 2560–2574, 2007.
+[4] Y. Tian, J. Ma, C. Lu, and Z. Wang, “Rolling bearing fault
+diagnosis under variable conditions using LMD-SVD and
+extreme learning machine,” Mechanism and Machine Teory,
+vol. 90, pp. 175–186, 2015.
+[5] C. Edwards, S. K. Spurgeon, and R. J. Patton, “Sliding mode
+observers for fault detection and isolation,” Automatica,
+vol. 36, pp. 541–553, 2000.
+[6] Q. Hu, Z. He, Z. Zhang, and Y. Zi, “Fault diagnosis of rotating
+machinery based on improved wavelet package transform and
+SVMs ensemble,” Mechanical Systems and Signal Processing,
+vol. 21, no. 2, pp. 688–705, 2007.
+[7] W. Zhao, Z. Wang, J. Ma, and L. Li, “Fault diagnosis of a
+hydraulic pump based on the CEEMD-STFT time-frequency
+entropy method and multiclass SVM classiﬁer,” Shock and
+Vibration, vol. 2016, Article ID 2609856, 8 pages, 2016.
+[8] P. K. Kankar, S. C. Sharma, and S. P. Harsha, “Fault diagnosis
+of ball bearings using machine learning methods,” Expert
+Systems with Applications, vol. 38, no. 3, pp. 1876–1886, 2011.
+[9] R. Isermann, “Model-based fault-detection and diagnosis -
+status and applications,” Annual Reviews in Control, vol. 29,
+no. 1, pp. 71–85, 2005.
+[10] B. Cai, L. Huang, and M. Xie, “Bayesian networks in fault
+diagnosis,” IEEE Transactions on Industrial Informatics,
+vol. 13, no. 5, pp. 2227–2240, 2017.
+[11] J. O. Estima and A. J. Marques Cardoso, “A new algorithm for
+real-time multiple open-circuit fault diagnosis in voltage-fed
+PWM motor drives by the reference current errors,” IEEE
+Transactions on
+Industrial Electronics,
+vol. 60,
+no. 8,
+pp. 3496–3505, 2013.
+[12] M. I. Khalil and M. M. Bayoumi, “A dyadic wavelet aﬃne
+invariant function for 2D shape recognition,” IEEE Trans-
+actions on Pattern Analysis and Machine Intelligence, vol. 23,
+no. 10, pp. 1152–1164, 2001.
+[13] S. Yin, X. Zhu, and O. Kaynak, “Improved PLS focused on
+key-performance-indicator-related
+fault
+diagnosis,”
+IEEE
+Transactions on
+Industrial Electronics,
+vol. 62,
+no. 3,
+pp. 1651–1658, 2015.
+[14] Y. Lei, J. Lin, Z. He, and M. J. Zuo, “A review on empirical
+mode decomposition in fault diagnosis of rotating machin-
+ery,” Mechanical Systems and Signal Processing, vol. 35, no. 1-
+2, pp. 108–126, 2013.
+[15] T. D. Nguyen and H.-H. Lee, “A new SVM method for an
+indirect matrix converter with common-mode voltage re-
+duction,” IEEE Transactions on Industrial Informatics, vol. 10,
+no. 1, pp. 61–72, 2014.
+[16] P. Ghamisi, M. S. Couceiro, and J. A. Benediktsson, “A novel
+feature selection approach based on FODPSO and SVM,”
+Shock and Vibration
+15
+
+
+===== PAGE 16 =====
+IEEE Transactions on Geoscience and Remote Sensing, vol. 53,
+no. 5, pp. 2935–2947, 2015.
+[17] J.-S. Lee and K.-B. Lee, “An open-switch fault detection
+method and tolerance controls based on SVM in a grid-
+connected T-type rectiﬁer with unity power factor,” IEEE
+Transactions on Industrial Electronics, vol. 61, no. 12,
+pp. 7092–7104, 2014.
+[18] X. Wang, H. Du, and J. Tan, “Online fault diagnosis for
+biochemical
+process
+based
+on
+FCM
+and
+SVM,”
+In-
+terdisciplinary Sciences: Computational Life Sciences, vol. 8,
+no. 4, pp. 419–424, 2016.
+[19] H. Nourisola and B. Ahmadi, “Robust adaptive H controller
+based on GA-Wavelet-SVM for nonlinear vehicle suspension
+with time delay actuator,” Journal of Vibration and Control,
+vol. 22, no. 20, pp. 4111–4120, 2015.
+[20] C. H. Tang, Y. Xiang, Y. Wang, and B. H. Qiang, “Detection
+and classiﬁcation of anomaly intrusion using hierarchy
+clustering and SVM,” Security and Communication Networks,
+vol. 9, no. 16, pp. 3401–3411, 2016.
+[21] F. Kuang, W. Xu, and S. Zhang, “A novel hybrid KPCA and
+SVM with GA model for intrusion detection,” Applied Soft
+Computing, vol. 18, pp. 178–184, 2014.
+[22] N. Saravanan and K. I. Ramachandran, “Incipient gear box
+fault diagnosis using discrete wavelet transform (DWT) for
+feature extraction and classiﬁcation using artiﬁcial neural
+network (ANN),” Expert Systems with Applications, vol. 37,
+no. 6, pp. 4168–4181, 2010.
+[23] B. Samanta and K. R. Al-Balushi, “Artiﬁcial neural network
+based fault diagnostics of rolling element bearings using time-
+domain features,” Mechanical systems and signal processing,
+vol. 17, no. 2, pp. 317–328, 2003.
+[24] C. D. Persis and A. Isidori, “A diﬀerential-geometric approach
+to nonlinear fault detection and isolation,” IEEE Transactions
+on Automatic Control, vol. 45, no. 6, pp. 853–865, 2001.
+[25] X. Zhang, Y. Liang, J. Zhou, and Y. zang, “A novel bearing
+fault diagnosis model integrated permutation entropy, en-
+semble empirical mode decomposition and optimized SVM,”
+Measurement, vol. 69, pp. 164–179, 2015.
+[26] C. Li, R.-V. Sanchez, G. Zurita, M. Cerrada, D. Cabrera, and
+R. E. V´asquez, “Multimodal deep support vector classiﬁcation
+with homologous features and its application to gearbox fault
+diagnosis,” Neurocomputing, vol. 168, pp. 119–127, 2015.
+[27] D. J. Bordoloi and R. Tiwari, “Optimum multi-fault classi-
+ﬁcation of gears with integration of evolutionary and SVM
+algorithms,” Mechanism and Machine Teory, vol. 73, no. 2,
+pp. 49–60, 2014.
+[28] S. Dong and T. Luo, “Bearing degradation process prediction
+based on the PCA and optimized LS-SVM model,” Mea-
+surement, vol. 46, no. 9, pp. 3143–3152, 2013.
+[29] B. Li, M. Y. Chow, Y. Tipsuwan, and J. C. Hung, “Neural-
+network-based motor rolling bearing fault diagnosis,” IEEE
+Transactions
+on Industrial Electronics,
+vol. 47, no.
+5,
+pp. 1060–1069, 2002.
+[30] J. Huang, X. Hu, and F. Yang, “Support vector machine with
+genetic algorithm for machinery fault diagnosis of high
+voltage circuit breaker,” Measurement, vol. 44, no. 6,
+pp. 1018–1027, 2011.
+[31] D. Yang, Y. Liu, S. Li, X. Li, and L. Ma, “Gear fault diagnosis
+based on support vector machine optimized by artiﬁcial bee
+colony algorithm,” Mechanism and Machine Teory, vol. 90,
+pp. 219–229, 2015.
+[32] J. Seshadrinath, B. Singh, and B. K. Panigrahi, “Investigation
+of vibration signatures for multiple fault diagnosis in variable
+frequency drives using complex wavelets,” IEEE Transactions
+on Power Electronics, vol. 29, no. 2, pp. 936–945, 2013.
+[33] J. Dybala and R. Zimroz, “Rolling bearing diagnosing method
+based on empirical mode decomposition of machine vibration
+signal,” Applied Acoustics, vol. 77, no. 3, pp. 195–203, 2014.
+[34] G. F. Bin, J. J. Gao, X. J. Li, and B. S. Dhillon, “Early fault
+diagnosis of rotating machinery based on wavelet packets-
+Empirical mode decomposition feature extraction and neural
+network,” Mechanical Systems and Signal Processing, vol. 27,
+no. 1, pp. 696–711, 2012.
+[35] B. Cai, Y. Zhao, H. Liu, and M. Xie, “A data-driven fault
+diagnosis methodology in three-phase inverters for PMSM
+drive systems,” IEEE Transactions on Power Electronics,
+vol. 32, no. 7, pp. 5590–5600, 2017.
+[36] B. Cai, Y. Liu, Q. Fan et al., “Multi-source information fusion
+based fault diagnosis of ground-source heat pump using
+Bayesian network,” Applied Energy, vol. 114, pp. 1–9, 2014.
+[37] Z. G. Huang and Y. Xie, “Fault diagnosis method of rolling
+bearing based on BP neural network,” International Confer-
+ence on Measuring Technology and Mechatronics Automation,
+vol. 1, pp. 647–649, 2009.
+[38] H. L. Ao, J. S. Cheng, K. L. Li, and T. K. Truong, “A roller
+bearing fault diagnosis method based on LCD energy entropy
+and ACROA-SVM,” Shock and Vibration, vol. 2014, Article
+ID 825825, 12 pages, 2014.
+16
+Shock and Vibration
+
+
+===== PAGE 17 =====
+International Journal of
+Aerospace
+Engineering
+Hindawi
+www.hindawi.com
+Volume 2018
+Robotics
+Journal of
+Hindawi
+www.hindawi.com
+Volume 2018
+Hindawi
+www.hindawi.com
+Volume 2018
+ Active and Passive  
+Electronic Components
+VLSI Design
+Hindawi
+www.hindawi.com
+Volume 2018
+Hindawi
+www.hindawi.com
+Volume 2018
+Shock and Vibration
+Hindawi
+www.hindawi.com
+Volume 2018
+Civil Engineering
+Advances in
+Acoustics and Vibration
+Advances in
+Hindawi
+www.hindawi.com
+Volume 2018
+Hindawi
+www.hindawi.com
+Volume 2018
+Electrical and Computer 
+Engineering
+Journal of
+Advances in
+OptoElectronics
+Hindawi
+www.hindawi.com
+Volume 2018
+Hindawi Publishing Corporation 
+http://www.hindawi.com
+Volume 2013
+Hindawi
+www.hindawi.com
+The Scientific 
+World Journal
+Volume 2018
+Control Science
+and Engineering
+Journal of
+Hindawi
+www.hindawi.com
+Volume 2018
+Hindawi
+www.hindawi.com
+ Journal of
+Engineering
+Volume 2018
+Sensors
+Journal of
+Hindawi
+www.hindawi.com
+Volume 2018
+International Journal of
+Rotating
+Machinery
+Hindawi
+www.hindawi.com
+Volume 2018
+Modelling &
+Simulation
+in Engineering
+Hindawi
+www.hindawi.com
+Volume 2018
+Hindawi
+www.hindawi.com
+Volume 2018
+Chemical Engineering
+International Journal of
+ Antennas and
+Propagation
+International Journal of
+Hindawi
+www.hindawi.com
+Volume 2018
+Hindawi
+www.hindawi.com
+Volume 2018
+Navigation and 
+ Observation
+International Journal of
+Hindawi
+www.hindawi.com
+Volume 2018
+ Advances in 
+Multimedia
+Submit your manuscripts at
+www.hindawi.com

@@ -1,0 +1,121 @@
+\subsection{Installed gain at the lager lifts}
+\label{sec:installed}
+
+The diagonal of \eqref{eq:G} is not an arbitrary linearisation. It is the derivative of \eqref{eq:kv} at the lifts of Table~\ref{tab:steady}, with the mix pressure free to move. Holding the drop fixed isolates the valve. At beer lift $0.704$, $\Phi=0.314$ and $\ln R=\ln 50=3.912$, so
+\begin{equation}
+\label{eq:dphi}
+\frac{\mathrm{d}\Phi}{\mathrm{d}l}
+=
+\ln R\cdot\Phi
+=
+3.912\times 0.314
+=
+1.228.
+\end{equation}
+A fixed drop would therefore scale the beer flow by $\ln R$ for a unit of lift,
+\begin{equation}
+\left.\frac{\partial Q_h}{\partial l_h}\right|_{\Delta p}
+=
+Q_h\ln R
+=
+13.96\times 3.912
+=
+\SI{54.6}{\cubic\metre\per\hour}.
+\end{equation}
+The network gain in \eqref{eq:G} is $48.05$, about twelve percent smaller. The missing part is the rise in mix pressure that follows an opening of the beer valve. That rise shrinks the drop the valve was using, so the installed gain is below the fixed-drop gain. The same comparison on the water valve, $Q_w\ln R = 6.055\times 3.912 = 23.7$ against the network value $23.09$, is almost flat, because the water valve is the smaller flow and moves $p_m$ less. The final valve has the opposite sign: opening it lowers $p_m$, and the inlet valves then pass more flow, which is the positive $G_{13}=7.64$ and $G_{23}=2.64$.
+
+This is the installed characteristic of \citet{iec60534,fisher2005} written as a number the controller can use. An equal-percentage trim was chosen so that the local gain stays near $\ln R$ times the current flow over the whole stroke. At the lager point that product is about \SI{55}{\cubic\metre\per\hour} per unit lift on the beer valve before the network correction, and the correction is modest. A linear trim of the same $K_v$ would have put most of its gain near the shut end and very little at lift $0.70$, which is exactly where this skid lives. The predictive controller does not assume the gain is constant. It re-solves \eqref{eq:kv} at every node. The linear gain is used to size the baseline in \eqref{eq:pi} and to interpret the relative-gain array, not to predict the brand.
+
+\subsection{Bristol's array from the measured gain}
+\label{sec:bristol}
+
+The relative-gain array is $G$ multiplied elementwise by the transpose of $G^{-1}$ \citep{bristol1966}. The point of writing the arithmetic is to show that the pairing in Section~\ref{sec:problem} is a property of these three numbers and not a convention copied from a flow--flow--pressure textbook.
+
+Denote the rows of \eqref{eq:G} by the beer flow, the water flow and the mix pressure. The determinant is dominated by the product of the diagonal, $48.05\times 23.09\times(-2.14)$, which is about $-2370$, and the off-diagonal corrections do not change its sign. The $(1,1)$ entry of $G^{-1}$ is the beer-flow response to a beer-lift move after the other two outputs have been held at zero by the other two inputs. Multiplied back by $G_{11}$ it is $\Lambda_{11}=0.87$. The same construction gives $\Lambda_{22}=0.95$ and $\Lambda_{33}=0.82$. Each diagonal entry is the fraction of the open-loop gain that survives when the other loops are closed perfectly. A value near one means the other loops do not steal the actuator. A value near zero would mean the recommended pairing is the wrong one. A negative value would mean the loops fight.
+
+Thirteen percent of the beer-flow relative gain sits on the final valve, and five percent of the water-flow relative gain sits there too. Those are the terms a grade change excites, because a grade change moves all three lifts in the same few seconds, and perfect closure of the other loops is exactly what has not happened yet. At steady state, after the ratio station has settled, the same thirteen percent is a small trim on the pressure loop. The array therefore explains both observations in Chapter~\ref{ch:estimate}: the ratio station can hold a brand, and it is slow when the brand changes. It does not by itself choose the nonlinear map. Balling's denominator is outside $G$, and no arrangement of these nine gains puts it back.
+
+\subsection{How long the horizon has to be}
+\label{sec:horizon}
+
+The mixer time constant at the design flow is $\tau=\SI{14.4}{\second}$. The control sample is $\Delta t_c=\SI{4}{\second}$. The prediction uses two move blocks and three Euler steps of \SI{2}{\second} inside each block, so the horizon is
+\begin{equation}
+T_H = 2\times 3\times 2 = \SI{12}{\second},
+\end{equation}
+which is $0.83\,\tau$. A step in the inlet composition has, by \eqref{eq:exactdisc}, reached a fraction $1-\mathrm{e}^{-T_H/\tau}=1-\mathrm{e}^{-0.83}=0.56$ of its final value at the end of the horizon. The controller therefore sees a little more than half of the quality move that a valve decision will eventually produce. It does not see the whole settling tail. The tail is left to the next sample, which is the receding-horizon argument: only the first block is applied, and the remainder of the response is re-predicted when the state has moved.
+
+Lengthening the horizon to $2\tau$, about \SI{29}{\second}, would show $86$ percent of the step and would multiply the number of network solves by about two and a half. On a skid whose disturbance is a brand change that is known at the sample it begins, the extra tail is a smaller extract error at the far nodes, already shrinking by $\mathrm{e}^{-\alpha}$ each step, and the decision that matters is the first block. The case study keeps $T_H=\SI{12}{\second}$ for that reason. A disturbance that arrived as an unmeasured ramp over a minute, for example a slow header decay, would justify the longer horizon. The header step in the second scenario is a step, and \SI{12}{\second} covers its onset.
+
+The two blocks are not two independent valve trajectories. Inside a block the command is held, so the eight-vector $\mathbf{z}$ is
+\begin{equation}
+\mathbf{z}
+=
+\big(l_h^{(1)},l_w^{(1)},l_f^{(1)},\dot m_{\mathrm{CO_2}}^{(1)},
+l_h^{(2)},l_w^{(2)},l_f^{(2)},\dot m_{\mathrm{CO_2}}^{(2)}\big).
+\end{equation}
+Six Euler steps then see only two values of each actuator. The rate limit is enforced between the previous applied command and the first block, and again between the first block and the second. With a limit of $0.04$ lift per second, the first block may differ from the applied command by at most $0.04\times 4=0.16$ lift, and the second block may differ from the first by the same amount. In two samples the water valve can travel $0.32$ lift. The grade-change arithmetic of the previous subsection needs only about a tenth of a lift on that valve. The rate limit is not what makes the vessel take \SI{14}{\second}. The volume is.
+
+\subsection{A move that the rate limit does price}
+\label{sec:travel}
+
+Travel in Table~\ref{tab:kpi} is the sum of absolute lift increments over the run. On the grade change the ratio station travels $7.09$ and both predictive controllers travel about $1.65$. The difference is not a smoother optimum in the abstract. It is the incremental law \eqref{eq:pi} reacting to a flow error that the mixer has not yet produced. At the sample of the setpoint change the ratio station computes new flow setpoints immediately, the flows are still the lager flows, and the errors $e_h$ and $e_w$ are the full step of about $2.4$ and $2.3$ cubic metres per hour. The proportional increments are $0.018\times 2.4$ and $0.028\times 2.3$, a few hundredths of lift, and the integral keeps adding while the vessel is still exchanging. Each later sample sees a flow error of the opposite sign as the valves overshoot the new ratio, and the stems reverse. The sum of those reversals is the travel of $7$.
+
+The predictive controller applies one block that already points at the new steady lifts, then a second block that is close to the first, and then stops. The stage cost charges $0.4\,\|\Delta l\|^{2}/0.01$ for that one move and charges nothing further once the prediction says the vessel will arrive. The travel of $1.65$ is that move plus the small trims that follow the analyser. It is larger than the one-tenth lift of the steady-state arithmetic because the final valve and the dose move as well, and because the first sample cannot jump the whole way when the warm start is the lager command and the iteration budget is six. The budget spends itself on the first sample of the grade change. Later samples start next to a solution and barely move.
+
+The same accounting explains the third scenario, where the commissioned controller travels $0.63$ and the ratio station travels $0.20$. The extra travel is the deadband lead. The stem is commanded across a band of width $0.03$ that produces no flow, so that the flow, when it starts, is the flow the brand asked for. A travel column that is read as ``smaller is always better'' would punish the only controller that has understood the valve. The column is reported so that a reversal hunt, of the kind the untuned absolute-form law produced before the gains of \eqref{eq:pi} were fixed, cannot hide inside a good extract integral.
+
+\subsection{Where the carbon-dioxide dose sits in the same vector}
+\label{sec:dosegain}
+
+The dose is the fourth coordinate of each block and it does not appear in $G$, because $G$ was identified on the three lifts with the dose doing whatever holds \SI{5.20}{\gram\per\litre}. Its own gain is algebraic. One gram per second of carbon dioxide, divided by \SI{20}{\cubic\metre\per\hour}, is
+\begin{equation}
+\frac{1\,\mathrm{g\,s^{-1}}\times 3600}{20\times 10^{3}\,\mathrm{L\,h^{-1}}}
+=
+\SI{0.180}{\gram\per\litre}
+\end{equation}
+at the design flow, before the mixer lags it. The stage cost treats \SI{0.05}{\gram\per\litre} as one tolerance, so a dose error of $0.05/0.180=\SI{0.28}{\gram\per\second}$ costs the same, at steady state, as one tolerance of original extract. The optimiser can therefore spend a fraction of a gram per second to protect carbonation without giving up the brand, and it cannot hide a one-gram-per-second mistake. That scaling is why the dose belongs in $\mathbf{z}$ rather than in a slave loop with an unrelated gain. A slave loop can still implement the command. The predictive program decides it, jointly with the lifts, because a water-valve move changes the uncarbonated inlet at the same moment the dose should change.
+
+At the lager point the required dose is \SI{7.507}{\gram\per\second}. The upper bound in \eqref{eq:ineq} is \SI{15}{\gram\per\second}, which is twice the design and is the injector size used in the study. The bound is inactive at both brands. It would become active if the mother beer arrived nearly flat and the product specification stayed at \SI{5.2}{\gram\per\litre}, a case the commissioning range does not include. The program already has the inequality. No new term is required.
+
+The equilibrium pressure moves when the dose moves, because $c$ moves and $p_{\mathrm{eq}}=c/(\kappa_\zeta\zeta)$. A dose increase of \SI{1}{\gram\per\second} raises $c$ by about \SI{0.18}{\gram\per\litre} and $p_{\mathrm{eq}}$ by about $0.18/2.73=\SI{0.066}{bar}$ once the mixer has caught up. The margin constraint sees that rise. A controller that carbonates in a slave loop and only afterwards checks the valve throat will discover the lost margin one analyser delay later. The joint program discovers it inside the shooting node, while the dose is still a decision.
+
+\subsection{The first sample of a grade change}
+\label{sec:firstsample}
+
+Table~\ref{tab:horizon} collects the numbers that fix the first sample, so that the horizon is a design choice with units rather than a list of solver options.
+
+\begin{table}[htbp]
+\centering
+\caption{Prediction budget at the lager flow of \SI{20}{\cubic\metre\per\hour}.}
+\label{tab:horizon}
+\begin{tabular}{lr}\toprule
+Quantity & Value \\\midrule
+Mixer volume & \SI{0.080}{\cubic\metre} \\
+Residence time $\tau$ & \SI{14.4}{\second} \\
+Control sample $\Delta t_c$ & \SI{4}{\second} \\
+Euler step inside a block & \SI{2}{\second} \\
+Move blocks $\times$ steps & $2\times 3$ \\
+Horizon $T_H$ & \SI{12}{\second} \\
+Fraction of a step seen, $1-\mathrm{e}^{-T_H/\tau}$ & 0.56 \\
+Decision length & 8 \\
+Iteration limit & 6 \\
+Lift rate limit & \SI{0.04}{lift\per\second} \\
+Largest legal first move & 0.16 lift \\
+\bottomrule\end{tabular}
+\end{table}
+
+At the sample the light brand is requested, the vessel still holds the lager. Original extract is \SI{11.61}{\degree}P against a new target of \SI{9.687}{\degree}P. The error is \SI{1.93}{\degree}P, which is $38.5$ tolerances, and one stage of \eqref{eq:stage} charges about $1.5\times 10^{3}$ on extract alone. Six stages, if the command were left at the lager lifts, charge about $10^{4}$. The horizon sees only $56$ percent of a residence-time step, so a move that merely places the inlet on the new brand produces a predicted extract error that is still enormous at the last node. The solver spends the rate budget to make the inlet lighter than the brand, because that is the only way the predicted error inside \SI{12}{\second} falls by a useful fraction.
+
+On the commissioned model the plant is stepped and then the controller runs, so the new command appears one second later. The lager lifts are $0.703$, $0.713$ and $0.835$. The next applied lifts are $0.543$, $0.873$ and $0.675$. Each coordinate has moved by $0.160$, which is the rate limit of $0.04\times 4$ and not the tenth of a lift that separates the two steady states. Beer flow falls from \SI{13.8}{\cubic\metre\per\hour} to \SI{6.4}{\cubic\metre\per\hour} and water flow rises from \SI{6.1}{\cubic\metre\per\hour} to \SI{10.2}{\cubic\metre\per\hour}. The inlet mass fraction is near $0.39$, not $0.58$. The dose, which had been \SI{7.5}{\gram\per\second}, is raised with the extra water and reaches about \SI{11.6}{\gram\per\second} on the following sample. Four seconds after the upset the extract error is \SI{0.87}{\degree}P. A pure decay at $\tau=\SI{14.4}{\second}$ would still be at $\mathrm{e}^{-4/14.4}\times 1.93=\SI{1.46}{\degree}P$. The difference is the light inlet.
+
+The next samples spend the budget in the other direction. By \SI{16}{\second} the lifts are near $0.66$, $0.81$ and $0.79$, the flows are near \SI{11.4}{\cubic\metre\per\hour} and \SI{8.7}{\cubic\metre\per\hour}, and the extract error is \SI{0.037}{\degree}P, which is the first sample of the strict band in Table~\ref{tab:kpi}. One intermediate sample cuts the product flow to \SI{13.2}{\cubic\metre\per\hour} while the ratio is being restored. That sample is visible in the flow integral. Of the \SI{51}{(\cubic\metre\per\hour)\cdot s} charged to this controller, almost all of it sits in those first \SI{16}{\second}. The extract integral over the whole run is \SI{10.75}{\degree}P$\cdot$s. The same step, decayed at the residence time from an inlet that jumped exactly onto the new brand and integrated to infinity, would cost
+\begin{equation}
+\int_{0}^{\infty} 1.93\,\mathrm{e}^{-t/14.4}\,\mathrm{d}t
+=
+1.93\times 14.4
+=
+27.8
+\end{equation}
+in degree-Plato seconds. The commissioned run is below that number because the inlet was lighter than the brand, and the flow weight in \eqref{eq:stage} is what the optimiser paid in exchange. The payment is finite. The two other stations on the same run finish at \SI{31.30}{\degree}P$\cdot$s and \SI{32.29}{\degree}P$\cdot$s, and neither enters the band. Their integrals contain the vessel and a model, or a tuning, that keeps feeding the wrong inlet after the vessel could have been emptied.
+
+The nominal predictive controller is the second of those two numbers. It uses the same horizon, the same weights and the same rate limit. The only difference on that run is $\theta$. An extract integral that matches the ratio station, and a tail of about \SI{0.19}{\degree}P, is what an uncommissioned capacity and a \SI{0.10}{bar} header bias produce. The horizon arithmetic does not repair it. The twin does. The six-iteration budget is also visible: the intermediate flow dip is a correction a converged program would have spread more evenly. It does not keep the extract outside the band, and it is one reason the production solver of Section~\ref{sec:rti} replaces the iteration limit by a single warm-started quadratic program.

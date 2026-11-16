@@ -1,0 +1,3557 @@
+    Research for Improving Final Beer Quality in
+High-Gravity Blending by Using Three-Valve Nonlinear
+  Model Predictive Control and a Physics-Informed
+               Pressure Digital Twin
+
+
+              Department of Computer Science
+
+
+                       October 2026
+                                         Abstract
+
+
+High-gravity brewing ferments a concentrated mother beer and then blends it with cold
+deaerated water to the alcohol, original extract and carbonation of the beer that is sold.
+On the blend skid the actuators that actually set the product are three control valves—one
+on the high-gravity beer, one on the dilution water, and one on the line that leaves the
+skid—together with a carbon-dioxide injector. The beer flow, the water flow and the
+pressure at the mix point are one hydraulic network. A ratio controller that trims the
+water valve from a delayed extract reading, and a separate pressure controller on the final
+valve, can hold a quiet operating point. They do not plan the move that a brand change
+requires, and they have no model of the pressure at which dissolved carbon dioxide comes
+out of solution inside a valve.
+
+   This thesis formulates that skid as a computer-science problem in constrained opti-
+misation and in estimation. Two technologies are developed. The first is a three-valve
+nonlinear model predictive controller. At each sample it chooses the three valve lifts and
+the carbon-dioxide dose over a short horizon so that original extract, alcohol, carbon
+dioxide and product flow approach their setpoints, while the predicted pressure at each
+vena contracta stays above the composition-dependent equilibrium pressure. Original
+extract is computed from the nonlinear Balling map, so the controller does not treat extract
+and alcohol as two independent dilutions of the same ratio. The second technology is a
+physics-informed pressure digital twin of the same network. A commissioning experiment
+estimates the three valve capacities and the bias of the beer-header pressure transmitter
+to well inside one percent. Pipe roughness and the lumped minor-loss coefficient are not
+separately identifiable; their sum, an effective loss coefficient, is recovered to about two
+and a half percent. A residual neural network is trained with a mass-balance penalty and
+is then gated off, because on held-out step tests it increases the flow error. The predictive
+controller that uses the calibrated twin brings a lager-to-light grade change inside a band
+of 0.05◦ P in 16 s. A decay at the mixer residence time, from an inlet placed exactly on the
+new brand, would still be outside that band; the controller gets inside it by spending the
+valve rate limit on a lighter inlet. The same predictive controller, given only the nominal
+and biased model, leaves an offset of about 0.19◦ P and does no better on extract than
+the ratio controller. When the mother beer changes so that extract and alcohol can no
+longer be met together, the calibrated controller sits on the tolerance-weighted compromise.
+Dissolved oxygen that enters with the dilution water is estimated and is not removed by
+any valve motion.
+
+   The study is a reproducible dynamic simulation of an 80 L mix volume at 20 m3 h−1 .
+It is a design and estimation result, not a brewery trial.
+
+
+
+
+                                             2
+Contents
+
+
+Nomenclature                                                                               7
+
+
+1 Research on Previous Work                                                                9
+
+  1.1   Research on coordinated valve control for high-gravity blending . . . . . .        9
+
+        1.1.1   High-gravity brewing and the moment of dilution . . . . . . . . . .        9
+
+        1.1.2   The quality map that a ratio must hit . . . . . . . . . . . . . . . . 11
+
+        1.1.3   Ratio control and the relative-gain array . . . . . . . . . . . . . . . 13
+
+        1.1.4   Control valves, installed gain and the vena contracta . . . . . . . . 14
+
+        1.1.5   What can be measured on the pipe . . . . . . . . . . . . . . . . . . 16
+
+        1.1.6   Model predictive control, and where brewing has used it . . . . . . 17
+
+  1.2   Research on physics-informed digital twins . . . . . . . . . . . . . . . . . . 18
+
+        1.2.1   What is being duplicated . . . . . . . . . . . . . . . . . . . . . . . . 18
+
+        1.2.2   Twins that have been built for brewing . . . . . . . . . . . . . . . . 19
+
+        1.2.3   Hybrid models and physics-informed networks . . . . . . . . . . . . 20
+
+        1.2.4   Estimation, observability and stiction . . . . . . . . . . . . . . . . . 21
+
+        1.2.5   The gap the twin has to fill . . . . . . . . . . . . . . . . . . . . . . 22
+
+        1.2.6   A reading of the prior art against the skid . . . . . . . . . . . . . . 22
+
+  1.3   Problem set . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+
+        1.3.1   The skid and the signals that exist . . . . . . . . . . . . . . . . . . 23
+
+        1.3.2   Balances . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+
+
+
+                                             1
+        1.3.3   Why the linear ratio is already outside the tolerance . . . . . . . . . 26
+
+        1.3.4   Degrees of freedom and constraints . . . . . . . . . . . . . . . . . . 26
+
+        1.3.5   What is not known well enough to leave in a ratio station . . . . . . 28
+
+        1.3.6   The two technologies, stated as answers to this problem . . . . . . . 28
+
+
+2 The Two Technologies                                                                     30
+
+  2.1 Three-valve nonlinear model predictive control . . . . . . . . . . . . . . . . 30
+
+        2.1.1   Time scales and the model that is predicted . . . . . . . . . . . . . 30
+
+        2.1.2   Hydraulics inside each shooting node . . . . . . . . . . . . . . . . . 31
+
+        2.1.3   Composition prediction and carbon-dioxide loss . . . . . . . . . . . 32
+
+        2.1.4   The program solved at each sample . . . . . . . . . . . . . . . . . . 33
+
+        2.1.5   Steady solution and the relative-gain array . . . . . . . . . . . . . . 34
+
+        2.1.6   The ratio station used as the baseline . . . . . . . . . . . . . . . . . 35
+
+        2.1.7   Offset, feasibility and what the horizon does not prove . . . . . . . 36
+
+        2.1.8   A grade change, computed before the valves move . . . . . . . . . . 37
+
+        2.1.9   Installed gain at the lager lifts . . . . . . . . . . . . . . . . . . . . . 37
+
+        2.1.10 Bristol’s array from the measured gain . . . . . . . . . . . . . . . . 38
+
+        2.1.11 How long the horizon has to be . . . . . . . . . . . . . . . . . . . . 39
+
+        2.1.12 A move that the rate limit does price . . . . . . . . . . . . . . . . . 40
+
+        2.1.13 Where the carbon-dioxide dose sits in the same vector . . . . . . . . 41
+
+        2.1.14 The first sample of a grade change      . . . . . . . . . . . . . . . . . . 42
+
+  2.2   Physics-informed pressure digital twin     . . . . . . . . . . . . . . . . . . . . 44
+
+        2.2.1   What the twin contains . . . . . . . . . . . . . . . . . . . . . . . . . 44
+
+        2.2.2   Commissioning experiment . . . . . . . . . . . . . . . . . . . . . . . 45
+
+        2.2.3   Parameters that need their own experiment . . . . . . . . . . . . . 46
+
+        2.2.4   The residual network and the mass-balance gate . . . . . . . . . . . 46
+
+        2.2.5   The fast state, and the deadband . . . . . . . . . . . . . . . . . . . 47
+
+
+
+                                             2
+        2.2.6   How the twin changes the first technology . . . . . . . . . . . . . . 48
+
+        2.2.7   Information, interfaces and the safety boundary . . . . . . . . . . . 49
+
+        2.2.8   A hand solution of the lager network . . . . . . . . . . . . . . . . . 50
+
+        2.2.9   The mixer as a discrete linear system . . . . . . . . . . . . . . . . . 51
+
+        2.2.10 What one tolerance costs, in the units of the stage cost . . . . . . . 52
+
+        2.2.11 One shooting step, in order . . . . . . . . . . . . . . . . . . . . . . 53
+
+        2.2.12 The production solver . . . . . . . . . . . . . . . . . . . . . . . . . 54
+
+        2.2.13 Why roughness and minor loss share one column . . . . . . . . . . . 55
+
+        2.2.14 The residual network as a function . . . . . . . . . . . . . . . . . . 56
+
+        2.2.15 Observer, delay and the information the analyser still carries . . . . 57
+
+        2.2.16 Faults the cost already contains . . . . . . . . . . . . . . . . . . . . 58
+
+        2.2.17 What each technology is for . . . . . . . . . . . . . . . . . . . . . . 59
+
+
+3 System Build and Estimation                                                             60
+
+  3.1   System build . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 60
+
+        3.1.1   Pipes, valves and the sizing that sets the design point . . . . . . . . 60
+
+        3.1.2   Sensors, delays and the numbers the estimator may see . . . . . . . 62
+
+        3.1.3   Software and the phase that runs a brand . . . . . . . . . . . . . . 63
+
+        3.1.4   The three upsets . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64
+
+  3.2   Estimation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 65
+
+        3.2.1   The steady point the estimates are taken about . . . . . . . . . . . 65
+
+        3.2.2   Commissioning estimates . . . . . . . . . . . . . . . . . . . . . . . . 65
+
+        3.2.3   Grade change . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 68
+
+        3.2.4   A mother beer that makes the brand infeasible . . . . . . . . . . . . 71
+
+        3.2.5   Oxygen and a sticky water valve . . . . . . . . . . . . . . . . . . . . 75
+
+        3.2.6   Pressure drop, station by station . . . . . . . . . . . . . . . . . . . 77
+
+        3.2.7   What was estimated, and what a brewery still has to measure . . . 78
+
+
+
+                                             3
+List of Figures
+
+ 1.1 The three-valve high-gravity blend skid. Vh , Vw and Vf are the beer,
+       dilution-water and final valves. FT, PT and AT are flow, pressure and
+       quality measurements. Carbon dioxide is injected at the mixer. . . . . . . . 24
+
+
+ 3.1   Runtime of the two technologies. The programmable controller is the only
+       writer of solenoid outputs. The twin publishes a model; the predictive
+       controller publishes a setpoint. . . . . . . . . . . . . . . . . . . . . . . . . . 64
+
+ 3.2 Absolute pressure along the beer path at the lager steady point. The dashed
+       line is the carbon-dioxide equilibrium pressure of the finished beer. . . . . . 67
+
+ 3.3   Inherent equal-percentage capacity, scaled to the installed beer flow at lift
+       0.85, and the beer flow the network passes with the water and final valves
+       fixed. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 67
+
+ 3.4   Beer flow predicted by the nominal model and by the commissioned twin,
+       against the measured beer flow on the commissioning points. . . . . . . . . 69
+
+ 3.5   Grade change from the lager to the light brand at t = 20 s. The thin line is
+       the setpoint. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 71
+
+ 3.6 Valve lifts during the grade change. The ratio station continues to move
+       after the predictive controllers have stopped. . . . . . . . . . . . . . . . . . 72
+
+ 3.7   Integral absolute error of original extract from the upset to the end of each
+       run. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72
+
+ 3.8   Supply upset at t = 20 s: beer-header pressure down by 0.45 bar, mother
+       beer less attenuated. Setpoints are unchanged and are not jointly feasible.         74
+
+
+
+                                             4
+3.9   Dilution-water oxygen raised to 85 ppb and a water-valve deadband of 0.03
+      lift, from t = 20 s. Extract and alcohol stay near the lager setpoint only for
+      the commissioned controller. . . . . . . . . . . . . . . . . . . . . . . . . . . 76
+
+
+
+
+                                          5
+List of Tables
+
+ 1.1 What the prior art computes, and what it leaves to the blend skid. . . . . . 23
+
+
+ 2.1   Prediction budget at the lager flow of 20 m3 h−1 . . . . . . . . . . . . . . . . 42
+
+
+ 3.1   Clocks on the numerical skid. The plant step is the integration of the mixer.
+       The control step is when a new command may be published. . . . . . . . . 63
+
+ 3.2   Steady operating point of the sales-gravity lager on the plant model. . . . . 66
+
+ 3.3   Steady gain matrix and relative-gain array at the lager point. Outputs are
+       beer flow (m3 /h), water flow (m3 /h) and mix pressure (bar). Inputs are the
+       three valve lifts. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 66
+
+ 3.4   Commissioning estimates. Standard errors are from the linearised least-
+       squares covariance. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 66
+
+ 3.5   Closed-loop estimation of beer quality after each upset. IAE is integrated
+       from the upset to the end of the run. Settling time is the time after the
+       upset until original-extract error remains inside 0.05 ◦ P. . . . . . . . . . . . 67
+
+ 3.6   Commissioned grade change, at the control samples after the upset. Flows
+       are cubic metres per hour and the dose is grams per second. . . . . . . . . 70
+
+
+
+
+                                             6
+Nomenclature
+
+Symbols used in more than one chapter are collected here. A symbol that is local to a
+derivation is defined where it appears.
+
+        Symbol            Meaning
+
+        Aw                Alcohol by weight, in percent.
+        Er                Real extract, in percent by weight.
+        pOE               Original extract, in degrees Plato, identical to percent
+                          by weight on the Plato scale used here.
+        ABV               Alcohol by volume, in percent, at the density reference
+                          of the correlation.
+        c                 Dissolved carbon dioxide, grams per litre.
+        cDO               Dissolved oxygen, parts per billion, equivalent to micro-
+                          grams per litre.
+        ζ                 Carbon-dioxide absorption coefficient, grams per litre
+                          per bar.
+        κζ                Multiplicative scale on the Rammert–Pahl polynomial.
+        ρ                 Density, kilograms per cubic metre.
+        Qh , Qw , Qf      Volumetric flow of beer, water and product, cubic metres
+                          per hour.
+        vh , vw , vf      Mean liquid velocity in the beer, water and product
+                          pipes.
+        lh , lw , lf      Fractional lifts of the beer, water and final valves.
+
+
+
+
+                                                7
+Symbol                   Meaning
+
+Kv                       Valve flow coefficient in cubic metres per hour at a
+                         one-bar water drop.
+Φ                        Inherent relative valve capacity, between 1/R and 1.
+R                        Inherent rangeability of an equal-percentage valve, taken
+                         as 50.
+FL                       Liquid pressure-recovery factor of a valve.
+ph , pw , pm , pd , pb   Absolute pressures: beer header, water header, mix node,
+                         downstream of the blend line, bright-beer tank.
+pvc                      Absolute pressure at a vena contracta.
+peq                      Equilibrium pressure of dissolved carbon dioxide.
+CL                       Dimensionless line resistance, f L/D + K.
+f                        Darcy friction factor.
+K                        Sum of minor-loss coefficients.
+ε                        Absolute pipe roughness.
+w                        Mass fraction of mother beer in the product.
+V                        Liquid volume of the static mixer and adjacent pipe,
+                         cubic metres.
+u                        Manipulated vector (lh , lw , lf , ṁCO2 ).
+y                        Quality and hydraulic outputs used by the controller.
+
+
+
+
+                                              8
+Chapter 1
+
+Research on Previous Work
+
+The blend skid that this thesis designs is a small machine with a large effect on the beer
+that leaves the brewery. It is also a standard problem in multivariable control once it is
+written down in equations: three valves, one carbon-dioxide injector, a handful of fast
+hydraulic measurements, and a slower laboratory-grade statement of what the beer is.
+The previous work that matters splits into two bodies. The first is the engineering of
+high-gravity blending, of control valves, and of model predictive control. The second is
+the engineering of digital twins, hybrid models and constrained estimation. This chapter
+reviews those two bodies and then writes the problem that neither of them has closed.
+
+
+
+1.1     Research on coordinated valve control for high-
+
+        gravity blending
+
+1.1.1    High-gravity brewing and the moment of dilution
+
+High-gravity brewing is the practice of mashing, boiling and fermenting a wort that is
+stronger than the beer that will be sold, and of restoring the sales strength by adding
+water later [1, 2]. The capacity gain is real. The brewhouse, the fermenters and often the
+filters process less liquid per unit of sales beer, so a brewery can raise output without a
+new tank farm. Stewart [1] records the usual band of original gravities, about 15◦ to 20◦ P,
+
+
+
+                                             9
+and the usual penalty: foam proteins are lost out of proportion to the dilution, yeast is
+stressed, and the flavour of the diluted beer does not automatically match a beer that was
+brewed at sales gravity. The same points are developed for very-high-gravity fermentations
+by Puligundla et al. [3] and, for the yeast cell itself, by Gibson et al. [4] and Casey et al.
+[5]. Stewart et al. [6] returns to the foam question and notes that a beer fermented at
+20◦ P and then diluted can retain about half the hydrophobic polypeptide of the matching
+sales-gravity beer. Boulton and Quain [7] and the brewing handbooks [8, 9] place that
+stress in the wider account of how yeast handles strong worts.
+
+   Those fermentation facts set the boundary of this thesis. The blend skid cannot put
+hydrophobic polypeptides back into the beer. It can avoid adding a second, independent
+damage at the moment of dilution: oxygen, a wrong alcohol, a wrong original extract, or
+a loss of carbon dioxide because a valve was allowed to flash. Bamforth [10] treats beer
+quality as a set of properties that are fixed at particular process steps. Flavour stability is
+one of them. Vanderhaegen et al. [11] reviews the chemistry by which oxygen and storage
+time produce the carbonyls of stale beer, and Uchida and Ono [12] identifies the hydroxyl
+radical as a route from dissolved oxygen to that staling. The practical consequence on the
+skid is a dissolved-oxygen specification measured in tens of parts per billion, not in parts
+per million.
+
+   Industrial descriptions of the skid agree on the hardware and on the tolerances, and they
+agree that the control law is ratio control. Centec states a dosing accuracy of 0.05◦ P on
+original gravity and 0.03 % by volume on alcohol, with inline sensors and a ratio controller,
+and offers carbon dioxide injection on the same frame [13]. Corosys describes the same duty
+and adds the water specification that makes the duty possible: after filtration, dilution
+water is cooled and deaerated to a residual oxygen below 10 ppb to 20 ppb, and the control
+system must follow changes in flow and pressure quickly [14]. Palmer and Kaminski [15]
+adds a chemical constraint that no flow controller can satisfy by itself. The calcium of the
+dilution water has to stay below the calcium of the concentrated beer, or calcium oxalate
+can precipitate in the package and seed gushing. The skid can detect a bad water analysis.
+It cannot blend the calcium away without also moving the extract.
+
+   The water is therefore a raw material with its own certificate, not a free manipulated
+
+                                              10
+variable. The manipulated variables are the openings of the valves and the carbon-dioxide
+dose. That distinction is the start of the control problem.
+
+
+
+1.1.2     The quality map that a ratio must hit
+
+Original extract is not a substance that is still in the beer. It is the extract the wort
+would have had before fermentation, reconstructed from the alcohol and the real extract
+that remain. Balling’s mass balance, in the form used by Kunze [2], Holle [16] and the
+laboratory methods [17–19], is
+
+                                       100 (2.0665 Aw + Er )
+                               pOE =                         .                        (1.1)
+                                         100 + 1.0665 Aw
+
+The coefficient 2.0665 is the grams of extract consumed to produce one gram of alcohol,
+and 1.0665 corrects the denominator for the mass that left the liquid as carbon dioxide and
+yeast. Aw and Er are both percent by weight. Apparent extract, the number a hydrometer
+reads in alcoholic beer, is a different quantity. The classical laboratory separation is
+Tabarie’s relation between the specific gravity of the beer, the distillate and the residue.
+Inline instruments replace that separation by a pair of physical measurements, discussed
+below. Equation (1.1) remains the definition that the controller has to hit.
+
+   Alcohol by volume follows from alcohol by weight and density,
+
+                                                   ρ
+                                       ABV = Aw          ,                            (1.2)
+                                                  ρeth
+
+with ρeth = 789.24 kg m−3 . Density itself depends on Aw and Er . Dilution by a mass
+fraction w of mother beer therefore moves original extract and alcohol together, and it
+moves them through a nonlinear map. If the mother beer has alcohol Aw,h and real extract
+Er,h , the blend is
+                              Aw = wAw,h ,        Er = wEr,h ,                        (1.3)
+
+and pOE is then (1.1), not w times the original extract of the mother beer. The numerical
+size of that distinction is part of the problem statement in Section 1.3. A ratio station
+that multiplies flows by pOE,f /pOE,h is already using the wrong algebra, by an amount that
+
+                                             11
+can exceed the 0.05◦ P tolerance quoted by the instrument makers.
+
+   Carbon dioxide does not obey (1.3) in the same way, because the skid is allowed to
+add it. Solubility does obey Henry’s law in the beers, worts and ethanol solutions that
+have been measured [20–23]. The absorption coefficient depends on temperature and
+on composition. The polynomial of Rammert and Pahl [24], in the simplified beer form
+reproduced by Speers and MacIntosh [21], is the working expression used in this thesis:
+
+                                                 ABV
+                                                              !
+                                            E           s
+                         ζ = a(T ) − b(T )     +     +    ,                            (1.4)
+                                           128    43   27
+
+                     a(T ) = 3.36764 − 0.12723 T + 2.8256 × 10−3 T 2
+
+                             − 3.3597 × 10−5 T 3 + 1.5933 × 10−7 T 4 ,
+
+                     b(T ) = 0.4723 − 0.02988 T + 1.1605 × 10−3 T 2
+
+                             − 2.251 × 10−5 T 3 + 1.5933 × 10−7 T 4 .                  (1.5)
+
+
+Here T is in degrees Celsius, E is real extract in grams per litre, alcohol is in percent by
+volume, s is a salt term in grams per litre, and ζ is in grams per litre per bar. Dissolved
+carbon dioxide and absolute partial pressure are then related by c = κζ ζ p. Speers and
+MacIntosh [21] show that a single pressure–temperature chart, of the kind printed for
+decades in brewing methods [18], cannot cover the range from alcohol-free beer to strong
+beer. The chart that matches one lager mis-states the equilibrium pressure of another. A
+controller that treats “one bar gauge” as a universal carbonation pressure is using that
+chart.
+
+   Speers and MacIntosh [21] also record that the Rammert–Pahl polynomial is an
+approximation, accurate to the order of a few percent on the limited beer data, and that an
+Arrhenius form of Henry’s coefficient fits the charts with less systematic temperature error.
+The thesis keeps the polynomial because it is the expression that already carries extract
+and alcohol, and it estimates a single scale κζ from a bench measurement so that the local
+beer, not the published polynomial alone, sets the equilibrium pressure. That scale is a
+parameter of the second technology. The physical content that the first technology needs
+is already here: equilibrium pressure is a function of the beer that is in the pipe at that
+
+
+                                             12
+moment.
+
+
+
+1.1.3     Ratio control and the relative-gain array
+
+Ratio control is the classical way to run two flows at a prescribed proportion [25, 26]. One
+stream is the wild stream. The other is set to R times the measured wild flow, and a slow
+outer loop trims R from a composition measurement. On a high-gravity skid the wild
+stream is usually the beer, the manipulated stream is the water, and the outer measurement
+is original extract or alcohol [13, 14]. A third loop holds a pressure by moving the final
+valve. Nothing in that structure writes down the fact that opening the final valve increases
+both inlet flows, or that the extract loop and the pressure loop therefore share actuators.
+
+   Bristol [27] defined the relative-gain array for exactly this question. If G is the matrix
+of steady gains from valve lifts to the chosen outputs, the relative-gain array is
+
+
+                                      Λ = G ◦ (G−1 )T ,                                 (1.6)
+
+
+where ◦ is the element-wise product. A diagonal entry near one supports a single-loop
+pairing. A large off-diagonal entry says that the loop will be detuned, or even destabilised,
+by the other loops when they are closed. Skogestad [28] and Downs and Skogestad [29]
+put the same test inside plantwide design: inventory and pressure loops are arranged first,
+and quality loops are closed on what remains. Skogestad [30] then gives the SIMC rules
+that tune each loop once the pairing is chosen. Those rules are the right way to build the
+ratio-and-pressure baseline of this thesis. They do not by themselves coordinate a move in
+which beer flow, water flow and pressure must all change together while a composition
+constraint depends on the pressure.
+
+   The baseline used later is therefore not a straw man. It has Balling feedforward from
+the inlet analysis, incremental proportional–integral loops on the two flows and on the
+mix pressure, and carbon-dioxide feedforward from the measured flows. Its limitation is
+structural. The pressure setpoint is a number chosen by the designer. The extract loop
+does not know that a large water move will unload the final valve. The alcohol and the
+extract share one ratio, so an integral controller that is told to remove extract error will
+
+                                             13
+spend the whole ratio on extract and leave the alcohol where it falls.
+
+
+
+1.1.4     Control valves, installed gain and the vena contracta
+
+The flow through a control valve in non-choked turbulent liquid service is standardised by
+IEC 60534-2-1 and by the matching ISA equation [31, 32]. In the units used here—cubic
+metres per hour, bar, and density relative to 1000 kg m−3 —the sizing equation is
+
+                                                            ∆p
+                                                     s
+                                Q = FP FR Kv Φ(l)                .                        (1.7)
+                                                          ρ/1000
+
+FP is the piping-geometry factor and FR is the Reynolds-number factor. Both are near
+one for a line-sized valve in fully turbulent beer or water, which is the regime computed
+in Chapter 3. Φ(l) is the inherent characteristic. For an equal-percentage trim with
+rangeability R [33],
+                                         Φ(l) = R l−1 ,                                   (1.8)
+
+so that Φ(1) = 1 and Φ(0) = 1/R. The thesis takes R = 50, the common commercial
+value, and keeps the lifts inside the interval where the plug is off the seat. Near the seat
+the published characteristic is a poor description of the actual leakage, and a controller
+should not be asked to regulate there.
+
+   The installed flow is not Φ(l). As the valve opens, it spends a larger share of a finite
+header pressure, so the pressure drop across the valve falls and the gain dQ/dl flattens
+[25, 33]. On this skid the effect is stronger than in a single-valve line, because the mix
+pressure is itself an unknown of the network. Opening the beer valve raises the mix
+pressure, which reduces the drop on the beer valve and increases the drop that the final
+valve must pass. The map from (lh , lw , lf ) to (Qh , Qw , pm ) is the plant. Chapter 2 writes
+it as a scalar nonlinear equation and solves it at every prediction step.
+
+   Downstream of the mix point the blend line loses pressure by the Darcy–Weisbach law
+and by minor losses [34, 35],
+
+                                               L    ρv 2
+                                                         
+                                  ∆pline = f     +K      .                                (1.9)
+                                               D     2
+
+
+                                               14
+The friction factor for turbulent flow is computed from the explicit Haaland equation,
+                                             !1.11          
+                    1               ε/D                 6.9               ρvD
+                   √ = −1.8 log10                    +       ,     Re =       .          (1.10)
+                     f               3.7                Re                  µ
+
+Hygienic tubing is smooth. The numerical value of ε and the numerical value of K will
+turn out, in Chapter 3, to be inseparable from the step tests a skid can actually run. Their
+sum is not.
+
+   Choked flow and cavitation are also standardised [31–33]. The largest pressure drop
+that should be used in (1.7) is
+
+                                                                       q
+                  ∆pmax = FL2 (p1 − FF pv ),          FF = 0.96 − 0.28 pv /pc ,           (1.11)
+
+
+and the pressure at the vena contracta that corresponds to a given drop is
+
+                                                     p1 − p 2
+                                      pvc = p1 −              .                           (1.12)
+                                                       FL2
+
+For cold water, pv is a few millibar and cavitation is unlikely at the drops used on a blend
+skid. Beer is not cold water. Dissolved carbon dioxide leaves the liquid as soon as the
+local pressure falls below peq (c, T, Aw , Er ), which on a cold lager is of the order of two bar
+absolute, two orders of magnitude above the vapour pressure of water. The extension
+proposed in this thesis is to replace pv in the constraint, not necessarily in a retuning of
+FF , by
+                                   pv,eff = peq (c, T, Aw , Er ).                         (1.13)
+
+A valve that satisfies the water cavitation index can still flash carbon dioxide, fill the
+downstream pipe with bubbles, bias a density meter, and raise the dissolved oxygen by
+the turbulence of the collapse. Rohner and Thompkins [36] already treated carbonation
+as a stream that has to be controlled continuously rather than corrected in a tank. The
+constraint (1.13) is the same idea read backwards: the liquid valves have to be prevented
+from undoing the carbonation they sit beside.
+
+   The dynamic balances are the control-volume form used throughout process modeling
+
+
+                                                15
+[37]. The pressure dynamics that would make (1.9) a differential equation are fast. For a
+liquid volume V and bulk modulus β,
+
+                                   dp  β
+                                      = (Qin − Qout ).                                (1.14)
+                                   dt  V
+
+With β of the order of 2 × 109 Pa and V = 0.08 m3 , an imbalance of one cubic metre per
+hour moves the pressure by tens of bar per second. The hydraulic network may therefore
+be solved algebraically at the current composition. The composition itself moves on the
+residence time V /Q, which at 20 m3 h−1 is about 14 s. That separation is what lets a
+predictive controller recompute the network at every shooting node without integrating an
+acoustic model. It is also why a pressure controller and a composition controller live on
+different clocks, and why a predictive controller that ignores the separation will either be
+stiff or late.
+
+
+
+1.1.5      What can be measured on the pipe
+
+Three families of measurement appear on a modern skid.
+
+    Coriolis meters measure mass flow and, on the same tube, density [38]. Velocity follows
+from the volumetric flow and the pipe area. Density is the observation that identifies the
+small contraction term in the equation of state. The thesis uses volumetric flow in the
+valve law because that is how Kv is defined, and it converts with the density the meter or
+the model supplies.
+
+    Original extract and alcohol are inferred, not weighed. The industrial inline route
+combines oscillating-tube density with the speed of sound [39, 40]. Alcohol raises the speed
+of sound and lowers density. Extract raises density and moves the speed of sound only
+moderately. The two effects are independent enough to invert. Schöck et al. [40] showed
+that dissolved carbon dioxide itself moves the speed of sound and the compressibility in
+ethanol–sugar solutions, which is why a beer monitor adds a carbon-dioxide measurement
+before it reports extract. Near-infrared and mid-infrared spectra are the laboratory and
+at-line alternative [41–44]. They are selective, and they are also sensitive to the sugar
+spectrum of the particular mash. Grassi et al. [44] follow fermentation by FT-NIR; Iñón
+
+                                            16
+et al. [43] combine mid- and near-infrared for finished beer; Lachenmeier [42] uses FTIR
+for a rapid multivariate check of beer and spirits. The EBC and ASBC methods still
+define the reference analyses those calibrations are judged against [17–19]. For control, the
+relevant facts are the accuracy, which the instrument makers put near 0.02 % by weight
+on alcohol and 0.04 % by weight on extract [39], and the delay. A sensor downstream of a
+mixer reports the beer that left the mixer one transport time ago, plus its own filter. On
+the skid studied here that delay is 12 s, comparable to the residence time. A controller
+that waits for the outlet analysis before it moves has already missed one mixer volume.
+
+   Dissolved oxygen and dissolved carbon dioxide are measured by separate optical or
+thermal-conductivity probes. They enter the estimator as outputs. Oxygen does not enter
+the manipulated vector.
+
+
+
+1.1.6     Model predictive control, and where brewing has used it
+
+Model predictive control solves, at each sample, a finite-horizon optimal-control problem
+and applies the first move [45–50]. The industrial record reviewed by Qin and Badgwell
+[46] is dominated by linear models and quadratic costs on refining and chemical plants.
+The stability theory reviewed by Mayne et al. [47] adds a terminal cost or a terminal
+constraint so that the receding-horizon law inherits the decrease of a Lyapunov function.
+Nonlinear model predictive control carries the same idea onto a nonlinear predictor [51].
+Economic model predictive control replaces, or supplements, the quadratic stage cost with
+a stage cost that is the actual operating objective [52]. On the blend skid the stage cost is
+already economic in that limited sense: it is the squared violation of a quality tolerance,
+not the distance to an arbitrary linearisation.
+
+   The computation is a nonlinear program. A direct multiple-shooting or single-shooting
+transcription produces a structured program that an interior-point solver such as IPOPT
+can handle [53, 54]. For a horizon of a few seconds and four inputs, the real-time iteration
+of Diehl et al. [55] and its later development by Gros et al. [56] evaluates one quadratic
+program per sample, warm-started from the previous solution, and is fast enough for a
+valve. The case study in this thesis uses a short single-shooting program and a sequential
+
+
+                                             17
+quadratic solver, with the previous move as the initial guess. The production form of the
+same problem is the real-time iteration. Nothing in the formulation depends on which of
+those two solvers is called, provided the solver returns a feasible decrease of the same cost.
+
+   Brewing has used this machinery on the fermenter, not on the blend skid. Gee and
+Ramirez [57] built a flavour model. Andrés-Toro et al. [58] identified a kinetic model under
+industrial conditions. Carrillo-Ureta et al. [59] computed a temperature trajectory by a
+genetic algorithm. Trelea et al. [60] posed aroma production as a dynamic optimisation.
+Rodman and Gerogiorgis [61] treated the same fermentation as a multi-objective dynamic
+program. The manipulated variable in that literature is temperature, sometimes an
+aeration rate, and the horizon is measured in days. The measurements are slow. The
+blend skid is the opposite object: the horizon is a minute, the gains are hydraulic, and the
+quality constraint is an algebraic function of pressure. The fermentation papers are the
+evidence that brewing will accept a model-based move. They are not a controller for the
+three valves.
+
+   The gap is therefore specific. Ratio control is the installed law [13, 14, 25]. Predictive
+control is a mature algorithm [46, 48]. Valve equations and carbon-dioxide solubility are
+both published [21, 31]. They have not been put in one program that moves the beer
+valve, the water valve and the final valve together, under a Balling quality map and a
+vena-contracta constraint written with peq rather than with the vapour pressure of water.
+That program is the first technology of the thesis.
+
+
+
+1.2      Research on physics-informed digital twins
+
+1.2.1     What is being duplicated
+
+A digital twin is a running model joined to a particular piece of equipment by data that
+flow in both directions [62–64]. Kritzinger et al. [65] separate three objects that are often
+given the same name. A digital model is updated by hand. A digital shadow receives
+automatic measurements and does not act. A digital twin receives measurements and also
+sends decisions back to the equipment. The classification matters here because a monitor
+
+
+                                             18
+of original extract, however elaborate, is a shadow. The object proposed in Chapter 2 is a
+twin in the strict sense: its parameters are estimated from the skid, and the predictive
+controller that moves the valves is the channel through which the twin acts.
+
+   Reviews of enabling technology [62–64] list the same practical requirements: a model
+that is fast enough to run ahead of the process, a data interface, a rule for when the model
+is allowed to disagree with a sensor, and a bound on what the twin is permitted to change.
+On a blend skid the last of these is a safety statement. The twin may revise a valve
+setpoint inside a rate limit. It may not open a valve that the programmable controller has
+interlocked, and it may not lower the bright-tank pressure below the relief setting. ISA-88
+is the batch model in which a brand change is already a phase with a start, a run and
+a hold [66]. OPC Unified Architecture is the information model in which the lifts, the
+flows and the quality record can be named once and read by both the controller and the
+twin [67]. Those two standards are not the contribution. They are the shelf on which the
+contribution has to sit if a brewery is to run it.
+
+
+
+1.2.2     Twins that have been built for brewing
+
+The published brewing twins are about fermentation and about the brewhouse, not about
+the three valves. Goffi et al. [68] report a bidirectional twin of a fermentation sampling
+chamber. The physical side is pressurised to about seven bar, the digital side can command
+non-critical parameters, and the measured labour of sampling falls by about ninety percent.
+The safety argument of that paper—interlocks around a pressurised vessel, a progressive
+commissioning, a human-readable view of state—transfers directly to a blend skid, which
+is also a pressurised food line. The process model does not transfer. Their twin watches a
+fermenter. It does not solve a valve network, and it does not estimate a flow coefficient.
+
+   Plant-wide energy twins and brewhouse dashboards exist as industrial practice. They
+optimise steam and refrigeration, or they display a batch against a chosen golden batch.
+They are shadows or operational-research models of utility systems. They do not identify
+Kv from a step test, and they do not predict the pressure in a vena contracta. The absence
+of a blend-skid twin is not an accident of the search. The skid has been treated as a
+
+
+                                             19
+packaged ratio controller [13]. The research literature followed the fermenter, where the
+biochemistry is.
+
+
+
+1.2.3     Hybrid models and physics-informed networks
+
+Two traditions supply the model class.
+
+   The first is hybrid semi-parametric modelling [69–71]. A first-principles skeleton carries
+the balances that are known, and a data-driven block carries the kinetics, the sensor drift
+or the hydraulic residual that are not. Kadlec et al. [71] review soft sensors in the process
+industries and emphasise maintenance: a soft sensor that is not recalibrated becomes a
+biased instrument. von Stosch et al. [69] and Sansana et al. [70] argue that the useful
+industrial model is the hybrid one, because a pure network does not extrapolate to a new
+brand and a pure mechanistic model does not absorb a worn valve. The blend skid is a
+favourable case for that argument. Mass balances, the valve equation and Henry’s law are
+known. The worn Kv , the pressure-transmitter bias and the small density contraction are
+not, and they are constant for long enough to be estimated.
+
+   The second tradition writes the physical residual into the training loss of a network
+[72–74]. Raissi et al. [72] penalise the violation of a differential equation at collocation
+points. Karniadakis et al. [73] review the approach across physics. Cai et al. [74] review
+it for fluids, which is the closest neighbour of a valve network. The same idea has been
+carried into predictive control. Zheng and Wu [75] estimate uncertain parameters online
+inside a physics-informed recurrent model and trigger a model update when the prediction
+error grows. Wu et al. [76] embed a population balance in a recurrent network and use
+the network as the predictor of a crystalliser controller, with less data than a purely
+empirical network required. Both papers are about chemical reactors with uncertain
+kinetics. Neither is about a valve. The transfer that this thesis makes is the penalty, not
+the network architecture: after a physical model has predicted the three flows, a residual
+network may correct them, but the corrected flows are charged for any mass they fail to
+conserve. A network that improves the fit by inventing beer is rejected.
+
+   There is a second, less comfortable result in that literature, and the case study confirms
+
+
+                                             20
+it. If the physical parameters already put the prediction inside the sensor noise, a residual
+network trained on a short commissioning set fits the noise. Kadlec et al. [71] describe the
+same failure mode for soft sensors that are over-parameterised relative to the excitation.
+The correct engineering response is a gate. The residual block is deployed only when it
+lowers the error on step tests that it did not train on. Chapter 3 reports that on this skid
+the gate stays shut. That negative result is part of the technology, not a reason to omit
+the block from the design. The block is the place where an unmodelled valve defect would
+appear on the next skid, and the gate is what stops it from appearing when it is not there.
+
+
+
+1.2.4     Estimation, observability and stiction
+
+The classical recursive estimator is the Kalman filter [77]. The unscented filter extends
+it to a nonlinear map without a hand-written Jacobian [78]. Moving-horizon estimation
+replaces the recursion by a constrained least-squares problem on a window [79]. The
+window form is the one that matches this skid. Valve lifts are bounded, capacities are
+positive, and a pressure bias of several bar is not a credible estimate even if it lowers the
+residual for one sample. A single commissioning campaign, rather than a recursion at
+every second, is also the right experiment: the capacities drift over weeks, not over the
+minute of a grade change. During the grade change the fast state—the composition in the
+mixer—is reconstructed by integrating the measured flows, and the slow parameters stay
+at the commissioned values. That split is an application of the same time-scale separation
+already used for the pressure in (1.14).
+
+   Identifiability is not guaranteed by the existence of a least-squares problem. Two
+parameters that enter one pressure drop only as a sum cannot be separated by experiments
+that observe the sum. The Darcy term f (ε)L/D and the minor-loss coefficient K are such
+a pair. Chapter 3 shows the numerical consequence: the individual estimates wander and
+their standard errors explode, while the effective resistance
+
+                                               L
+                                      CL = f     +K                                    (1.15)
+                                               D
+
+is recovered. Reporting CL , and refusing to report a roughness that the data do not
+
+                                             21
+contain, is a result of the estimation rather than a failure of it.
+
+   Valve stiction is the other defect the data do contain. Choudhury et al. [80] model
+the stick–slip cycle with a stick band and a slip jump. Jelali and Huang [81] collect
+the industrial methods that detect the cycle from the controller output and the process
+variable. Kano and Ogawa [82], in a survey of chemical-process control practice, put
+stiction among the faults that operators still compensate by hand. On the blend skid the
+water valve is the likely site: it runs at a lower flow, it may sit for long periods at one
+brand, and a deadband of a few percent of lift is enough to move the extract by more than
+the tolerance once the valve finally slips. The twin uses a reduced form of the Choudhury
+model, a deadband with no slip jump, because that is the defect inserted in the case study.
+The compensator is the inverse deadband: the command leads the desired lift, in the
+direction of travel, by the estimated band. A predictive controller that does not know the
+band keeps integrating a flow error until the valve breaks, and then overshoots. Chapter 3
+compares those two behaviours.
+
+
+
+1.2.5     The gap the twin has to fill
+
+The twin literature tells us how to classify the object [65], how to join a balance to a
+network [69, 72, 75], and how to estimate under constraints [79]. The brewing literature
+tells us what a beer twin has been asked to do [68]. The valve literature tells us how
+a worn trim and a sticky stem appear in the data [31, 80]. None of these writes the
+estimation problem for the blend skid: three capacities, one header bias, one solubility
+scale, one density contraction, one effective line resistance, and a gated residual, with the
+commissioned model handed to the predictive controller of Section 1.1. That estimation
+problem, and the twin that solves it, is the second technology.
+
+
+
+1.2.6     A reading of the prior art against the skid
+
+Table 1.1 is the prior art sorted by the question it actually answers. The rows are not
+a ranking. They are a way to see which equations of Section 1.3 already exist in the
+literature and which ones do not.
+
+                                             22
+        Table 1.1: What the prior art computes, and what it leaves to the blend skid.
+
+  Source                           Computes                   Does not compute
+                             Why the mother beer is
+  High-gravity reviews [1, 3, 6]                              Valve lifts, pressures and
+                             strong, and what dilution        doses
+                             cannot restore
+  Brewing calculation hand- Balling’s map and the carbon-     A feedback law
+  books [2, 8, 16]           ation arithmetic
+  Inline instruments [38–40] Extract, alcohol, density and     The move that should follow
+                             flow on the pipe                  the measurement
+  Valve standards [31–33]    Kv , the installed drop and       A carbon-dioxide vapour
+                             the vena contracta                pressure
+  Solubility [20, 21, 24]    peq (T, c, composition)           The valve that must respect
+                                                               it
+  Ratio and plantwide control A legal pairing when Λ is di- The transient in which the
+  [25, 27, 28]                   agonal                        three valves move together
+  Fermentation MPC [57, 60, A temperature path over A hydraulic path over a
+  61]                            days                          minute
+  Predictive-control theory [46– The program and its stability The blend-skid model inside
+  48, 51]                        conditions                    the program
+  Twins and hybrid models [65, How to join a balance to data Kv , bh and CL of this skid
+  68, 72, 75]                    and how to classify the link
+
+
+   The table is the reason the thesis has two technologies rather than a survey. The first
+technology is the cell that is empty at the intersection of the valve row, the solubility row
+and the predictive-control row. The second technology is the cell that is empty at the
+intersection of the twin row and the valve row. Filling a cell that the table already marks
+as computed would be an implementation, not a result.
+
+
+
+1.3        Problem set
+
+1.3.1      The skid and the signals that exist
+
+Figure 1.1 is the skid. High-gravity beer arrives from a bright or a blending tank at a
+measured header pressure ph . Deaerated water arrives at pw . Each line has a control valve
+and a flow measurement. The streams meet, carbon dioxide is injected, and the mixture
+passes through a static mixer of liquid volume V = 0.08 m3 . A quality analyser and a
+pressure transmitter sit on the blend line. A third control valve sets the resistance between
+that line and the bright-beer tank at pressure pb . The tank pressure is a slow setpoint of
+
+
+
+                                              23
+the cellar, not a fast manipulated variable of the skid.
+
+                            FT
+
+
+        HG beer             Vh                 AT
+
+                                             mixer
+                                                                 Vf             BBT
+                                             + CO2
+
+                                               PT
+          DAW               Vw
+
+                            FT
+
+Figure 1.1: The three-valve high-gravity blend skid. Vh , Vw and Vf are the beer, dilution-water
+and final valves. FT, PT and AT are flow, pressure and quality measurements. Carbon dioxide
+is injected at the mixer.
+
+
+   The measurements that the problem is allowed to use are the ones a skid of this kind
+actually has: volumetric or mass flow on both inlets and on the product, pressures at both
+headers, at the mix node and at the tank, temperature, valve-stem position, and a quality
+record of original extract, alcohol, carbon dioxide and dissolved oxygen. The quality record
+on the outlet is delayed by 12 s. The quality record on the mother beer is delayed by 8 s.
+Header pressure is available immediately and may be biased. The vena-contracta pressures
+are not measured. They are computed from (1.12).
+
+   The design point used throughout the thesis is a cold lager blend at 2 ◦ C. The mother
+beer is Aw = 5.40 % by weight, Er = 6.10 % by weight, 5.50 g L−1 of carbon dioxide and
+8 ppb of oxygen. Equation (1.1) gives an original extract of 16.319◦ P. With the density
+correlation of Chapter 2, the alcohol is 6.923 % by volume and the density is 1011.9 kg m−3 .
+The sales lager is defined as the w = 0.70 dilution of that mother beer, carbonated
+to 5.20 g L−1 . It falls at 11.613◦ P and 4.833 % by volume. A light brand, used as the
+grade-change target, is the w = 0.58 dilution at 5.00 g L−1 of carbon dioxide, 9.687◦ P
+and 4.000 % by volume. The product flow is 20 m3 h−1 , which is 200 hL h−1 . Headers are
+4.80 bar, 5.30 bar and 2.40 bar absolute on the beer, the water and the bright tank.
+
+
+
+
+                                              24
+1.3.2     Balances
+
+Let ṁh and ṁw be the inlet mass flows. The mixer mass M = ρV obeys
+
+                          dAw
+                        M     = ṁh (Aw,h − Aw ) + ṁw (Aw,w − Aw ),                 (1.16)
+                           dt
+                          dEr
+                        M     = ṁh (Er,h − Er ) + ṁw (Er,w − Er ).                 (1.17)
+                           dt
+
+Water contributes neither alcohol nor extract. Carbon dioxide and oxygen are carried on
+a volumetric balance because they are measured per litre,
+
+                                   dc
+                               V      = Qh ch + Qw cw + ṁCO2 − Qf c,                (1.18)
+                                   dt
+
+with flows in litres per second and the dose in grams per second. The same form holds for
+dissolved oxygen, with a dose of zero. The product flow is not an independent input. It
+is the flow that the final valve passes at the solved mix pressure, and the mass balance
+ρh Qh + ρw Qw = ρf Qf closes the hydraulics.
+
+   At steady state, w = ṁh /(ṁh + ṁw ) and (1.3) holds. The carbon-dioxide dose that
+hits a target c⋆ is then fixed by algebra,
+
+
+                                    ṁCO2 = c⋆ Qf − ch Qh − cw Qw .                  (1.19)
+
+
+For the lager point this dose is about 7.51 g s−1 , or 27.0 kg h−1 . The number is derived
+again from the solved flows in Chapter 3; it is large enough that the injector has to be
+sized, and small enough that the gas does not change the liquid volume used in the valve
+equation. The gas is assumed to dissolve when the mix pressure and the vena-contracta
+pressure both lie above peq . When they do not, a single-pass disengagement efficiency
+removes part of the supersaturation. The efficiency is a property of this mixer and this
+final valve. It is not a universal constant, and at the design point it is inactive because
+the inequality is satisfied.
+
+
+
+
+                                                  25
+1.3.3     Why the linear ratio is already outside the tolerance
+
+Suppose an operator dilutes the mother beer in proportion to original extract, w =
+11.613/16.319 = 0.7116, on the assumption that original extract itself dilutes. The true
+blend at that mass fraction has
+
+
+                               Aw = 3.843,          Er = 4.341,
+
+
+and (1.1) returns pOE = 11.80◦ P . The beer is 0.19◦ P high, against a tolerance of 0.05◦ P.
+The error is four tolerances, and it is produced by arithmetic, not by a faulty valve. The
+mass fraction that does hit 11.613◦ P is w = 0.700, and the alcohol there is 4.833 % by
+volume. Any controller that trims a volumetric ratio from a linear gain inherits this offset
+until an integral on the outlet analysis removes it, one mixer volume later. The predictive
+controller removes it in the model, before the valve moves.
+
+   The same algebra shows when the problem becomes infeasible. Alcohol and extract are
+both multiplied by the single number w. A mother beer that arrives with more residual
+extract and less alcohol—a fermentation that attenuated less—cannot be blended onto
+an arbitrary pair (p⋆OE , ABV⋆ ). One ratio can hit one of them, or a weighted compromise.
+It cannot hit both. The case study of Chapter 3 uses a mother beer shifted by +0.45
+percentage points of real extract and −0.25 percentage points of alcohol. The original
+extract of that mother beer hardly changes. The alcohol at the old ratio falls by about
+0.21 % by volume. Restoring the alcohol raises the original extract by about half a degree
+Plato. The optimisation problem has to say which miss is cheaper. A single-loop extract
+controller will not say it. It will spend the ratio on extract.
+
+
+
+1.3.4     Degrees of freedom and constraints
+
+The fast manipulated vector is
+
+
+                                   u = (lh , lw , lf , ṁCO2 ).                       (1.20)
+
+
+
+
+                                               26
+Four quantities can be set: product flow, the mass fraction w, the carbon-dioxide concen-
+tration, and the mix pressure. That is a square problem when the mother beer is consistent
+with the brand. Dissolved oxygen is not in the list. It is fixed by the oxygen already in
+the two liquids and by any pickup at a flashing valve. Temperature is a disturbance from
+the cellar, slow relative to a grade change. Header pressures are disturbances, measured,
+and possibly biased. Calcium and any other water ion are monitored constraints of the
+kind Palmer and Kaminski [15] describes; if they are violated the phase is held, because
+no u repairs them.
+
+   The inequalities that define a feasible beer are
+
+
+                0.18 ≤ lh , lw , lf ≤ 0.90,                                                        (1.21)
+
+                0 ≤ ṁCO2 ≤ ṁmax
+                              CO2 ,                                                                (1.22)
+
+                |∆l| ≤ l˙max ∆t,                                                                   (1.23)
+
+                pvc,h , pvc,w , pvc,f ≥ peq + δp ,                                                 (1.24)
+
+                pm ≥ peq + δm ,                                                                    (1.25)
+
+                cDO ≤ cmax
+                       DO       (alarm if violated; not a manipulated repair).                     (1.26)
+
+
+The rate limit l˙max is 0.04 s−1 , a full stroke in 25 s, which is a realistic positioner on a
+process valve. The pressure margins δp and δm are design choices of the controller, set in
+Chapter 2 so that the solved lager point keeps almost one bar between pm and peq and
+about 0.37 bar between the final vena contracta and peq .
+
+   The objective the controller minimises is the weighted violation of the brand, plus a
+penalty on valve travel,
+
+                                              !2                                     !2
+                         ABV − ABV⋆                                       Qf − Q⋆f
+                  2                                          2
+    pOE − p⋆OE                                       c − c⋆
+                                                    
+ ℓ=                    +                           +               + 0.35                 + ℓsoft + ℓ∆u .
+       0.05                 0.03                      0.05                  0.5
+                                                                                                   (1.27)
+The denominators are the tolerances, so a unit of cost is one tolerance of that channel. The
+weights on extract and alcohol are therefore equal per tolerance, which is the statement
+that a legal alcohol error and a specification extract error are the same kind of miss. ℓsoft
+is large when a pressure margin or the oxygen alarm is violated. ℓ∆u keeps the valves from
+
+                                                     27
+chattering. Equation (1.27) is deliberately not a single economic currency in money. A
+brewery can replace the tolerance weights by costs of beer returns and of lost throughput.
+The structure of the problem does not change.
+
+
+
+1.3.5     What is not known well enough to leave in a ratio station
+
+The valve equation is only as good as Kv . A trim that has eroded, or a sizing calculation
+that was done for water and left uncorrected for beer, moves the true gain by several
+percent. Several percent of the beer-valve gain at the design point is several cubic metres
+per hour, which is several tenths of a degree Plato during a grade change. A pressure
+transmitter that reads 0.10 bar high, and a model that believes it, assigns the wrong drop
+to the beer valve and then attributes the wrong flow to Kv . These are the parameters the
+twin has to estimate before the predictive controller is entitled to its model.
+
+   The line resistance is real and, as (1.15) says, only partly structured. The solubility
+scale κζ is real and is not observable from a hydraulic step test, because a step test that
+stays inside the margin never flashes. It is observable from a bench equilibrium pressure
+on one sample of known composition. The density contraction is observable because the
+Coriolis meter reports density directly. A residual network is available for whatever those
+parameters leave behind, and it is required to conserve mass.
+
+   Stiction on the water valve is a discrete defect on top of this continuous model. It is
+estimated from the smallest command that produces a flow change, and it is compensated
+by a lead in the command. It is not absorbed into Kv , because a deadband and a wrong
+gain have different signatures: the gain scales every move, and the deadband swallows the
+small ones.
+
+
+
+1.3.6     The two technologies, stated as answers to this problem
+
+The first technology is three-valve nonlinear model predictive control. At each control
+sample it minimises the sum of (1.27) along a prediction of (1.7)–(1.18), subject to (1.21),
+and it applies the first block of u. The predictor uses the Balling map, so the linear-ratio
+offset computed above is zero in the model. The predictor uses peq from (1.4) inside (1.12),
+
+                                            28
+so a move that would flash carbon dioxide is expensive before it happens. The three lifts
+are one decision vector, so the final valve is not left to discover, after the fact, that the
+inlet valves have changed the flow it must pass.
+
+   The second technology is the physics-informed pressure digital twin that supplies that
+predictor. It estimates Kv,h , Kv,w , Kv,f , the beer-header bias, κζ , the density contraction
+and the effective loss CL from a short campaign of valve steps, a bench solubility point
+and the Coriolis density. It trains a residual network under a mass-balance penalty and
+deploys the network only if held-out steps improve. It reconstructs the mixer composition
+from the measured flows so that the predictive controller does not wait out the analyser
+delay, and it inverts a measured water-valve deadband.
+
+   The ratio-and-pressure station defined in Section 1.1 remains the baseline. It is
+the controller a skid has today, retuned by the same gain rules, with the same Balling
+feedforward an attentive designer would add. The estimation question of Chapter 3 is
+whether the two technologies improve on that station by enough to matter at the tolerances
+the brewers already publish, and whether the improvement survives a mother beer that
+makes the brand infeasible, a sticky water valve, and dilution water that arrives with too
+much oxygen.
+
+   The scope is the skid. Fermentation policy, foam-protein loss, and the design of the
+deaeration column are upstream. The bright-tank pressure is a boundary condition. The
+thesis does not claim a plant trial. It claims a formulated problem, two algorithms, and
+a numerical estimation of how those algorithms behave on a plant model that is more
+detailed than the model inside the controller.
+
+
+
+
+                                              29
+Chapter 2
+
+The Two Technologies
+
+This chapter specifies the two technologies named in Section 1.3. The first is the predictive
+controller that moves the three valves and the carbon-dioxide injector. The second is
+the twin that estimates the model inside that controller. Both are written so that a
+programmer can implement them, and so that the numerical choices of the case study are
+the same choices the text describes.
+
+
+
+2.1      Three-valve nonlinear model predictive control
+
+2.1.1     Time scales and the model that is predicted
+
+The controller runs every ∆tc = 4 s. Between samples the command is held. Inside a
+prediction the hydraulics are algebraic and the composition is integrated with a step of 2 s.
+The justification is the bulk-modulus argument of (1.14). Pressure equalises in a small
+fraction of a second. Composition equalises on
+
+                                     V     0.080
+                                τ=      =         = 14.4 s                              (2.1)
+                                     Qf   20/3600
+
+at the design flow. A horizon of 12 s therefore sees most of one residence time and does not
+pretend to see the next brand. The analyser delay is 12 s as well, so a controller that used
+only the outlet analysis would be aiming at a beer that has already left. The controller
+
+
+
+                                             30
+instead integrates the measured inlet flows through (1.16) and (1.18), and it uses the
+outlet analysis as a slow correction when it arrives. The state that enters the prediction is
+that integrated composition, plus a small allowance for flow-measurement noise.
+
+   The mother-beer analysis enters with its own delay of 8 s. During those eight seconds
+the predictor still uses the previous mother beer. The error is visible and short. It is not
+hidden inside a valve gain.
+
+
+
+2.1.2     Hydraulics inside each shooting node
+
+At a candidate lift (lh , lw , lf ) and a candidate dose, the mix pressure pm is the unknown.
+Inlet densities are evaluated at the inlet compositions. The product density is evaluated
+at the current mixer composition. With the equal-percentage law (1.8) and the sizing law
+(1.7) at FP = FR = 1,
+
+                                                 ph + b h − p m
+                                                    s
+                              Qh = Kv,h R   lh −1
+                                                                ,                       (2.2)
+                                                    ρh /1000
+                                                s
+                                                  pw − p m
+                              Qw = Kv,w R lw −1
+                                                           ,                            (2.3)
+                                                  ρw /1000
+
+when the drops are positive, and zero otherwise. The symbol bh is the header bias the
+model believes. On the true plant it is zero. In a nominal, uncommissioned model it is
+whatever the transmitter adds. The product flow demanded by mass is
+
+                                             ρh Qh + ρw Qw
+                                  Qmass
+                                   f    =                  .                            (2.4)
+                                                   ρf
+
+The blend line then drops by (1.9), using the Haaland friction factor at the velocity
+Qmass
+ f    /Af , and the final valve passes
+
+                                                  v
+                                            lf −1 t pm − ∆pline − pb
+                                                  u
+                          Qvalve = Kv,f                                                 (2.5)
+                                                  u
+                           f              R                          .
+                                                        ρf /1000
+
+
+The scalar residual Qvalve
+                     f     − Qmass
+                              f    changes sign between a mix pressure just above the
+tank and a mix pressure just below the lower header. A bracketed scalar solve, Brent’s
+method in the case study, returns pm . Vena-contracta pressures follow from (1.12) with
+
+                                               31
+the recovery factors of the three trims. If the bracket fails, the node is assigned a large
+cost and the solver steps away from it. That is a numerical guard, not a physical operating
+point. At the lager solution of Chapter 3 the residual is closed and the cost of the steady
+problem is numerically zero.
+
+   Density is the affine map identified for 2 ◦ C in the window of this skid,
+
+                                                                    
+                      ρ = 999.94 − 1.62 Aw + 4.05 Er         1 − γAw Er .               (2.6)
+
+
+The contraction γ is zero in the nominal model and is estimated by the twin. Equilibrium
+pressure uses (1.4) with the scale κζ . Alcohol uses (1.2). Original extract uses (1.1). None
+of these inversions is iterative beyond the scalar pressure solve, because Aw and Er are
+states, not outputs that have to be searched for.
+
+
+
+2.1.3     Composition prediction and carbon-dioxide loss
+
+From a solved hydraulic node the composition is stepped by the forward Euler form of
+(1.16) and (1.18). The eigenvalue of the mixer is −1/τ ≈ −0.07 s−1 . A step of 2 s multiplies
+a composition error by about 0.87 per step and does not oscillate. Euler is therefore
+enough. A production code can substitute a single exponential on the linear mixer without
+touching the optimiser.
+
+   Delivered carbon dioxide is not identical to the mixer concentration. If the final vena
+contracta lies below equilibrium, a fraction of the supersaturation leaves the liquid in one
+pass,
+                                                                
+                              cout = c − η max 0, c − κζ ζ pvc,f ,                      (2.7)
+
+with η = 0.35 for this skid. The same test, with a coefficient of 30 ppb/bar, adds dissolved
+oxygen when the margin is negative. Both expressions are inactive when the inequalities
+in (1.21) hold, which they do at the design point and throughout the closed-loop runs of
+Chapter 3. They exist so that a controller is charged for a flashing move in the prediction,
+rather than discovering the flash in the bright tank.
+
+
+
+
+                                              32
+2.1.4        The program solved at each sample
+
+The horizon is two move blocks of three integration steps. The decision vector is eight
+numbers,
+                                 (1)        (1)           (2)        (2)
+                         z = (lh , lw(1) , lf , ṁ(1) , lh , lw(2) , lf , ṁ(2) ).        (2.8)
+
+Inside a block the command is constant, and it is still limited by l˙max relative to the
+previous stem position, so a block cannot teleport a valve. The cost is the sum of (1.27)
+over the six steps. Soft pressure penalties are quadratic outside the margin, with a weight
+of 6 on each squared bar, which is large next to a unit tolerance cost. Valve travel is
+penalised as 0.4 ∥∆l∥2 /0.01, so a simultaneous move of 0.1 lift on one valve costs about
+0.4. That is less than one tolerance of extract and enough to suppress chatter.
+
+   Bounds are the lift limits and a dose limit of 15 g s−1 . The initial guess is the move that
+was applied at the previous sample, copied into both blocks. A sequential least-squares
+quadratic program then reduces the cost. In the case study the iteration limit is six, which
+is short on purpose: the warm start is already near a good move, and a valve controller
+that thinks for longer than a fraction of its sample has missed the sample. The production
+transcription of the same shooting problem is the real-time iteration [55, 56] solved by an
+interior-point code [53, 54]. The case-study solver is a stand-in that minimises the same
+function. It is not a claim that six sequential-quadratic iterations are a certified real-time
+iteration.
+
+   Only the first block is applied. The stem command is limited once more by l˙max ∆tc =
+0.16 lift per sample. The dose is applied as a flow setpoint to the injector, which is fast
+relative to the mixer.
+
+Algorithm 1 One sample of three-valve nonlinear model predictive control
+Require: Mixer state, delayed mother-beer analysis, header pressures, previous command,
+    brand setpoint
+ 1: Build the initial guess by repeating the previous command in both blocks
+ 2: Predict the horizon from z through the algebraic network and the mixer step
+ 3: Minimise the summed stage cost subject to lift and dose bounds
+ 4: Rate-limit the first block against the previous stem position
+ 5: If a deadband estimate is active, lead the water-valve command by that band in the
+    direction of travel
+ 6: Apply the three lifts and the dose; hold them until the next sample
+
+
+
+                                                   33
+   The deadband lead in line 5 is supplied by the twin and is zero until a stick has been
+observed. The predictive controller of the first technology does not invent it.
+
+
+
+2.1.5     Steady solution and the relative-gain array
+
+The same cost, with the derivatives removed and the composition replaced by its algebraic
+blend, is a four-variable steady program. At the lager brand, on the plant model, the
+solution is
+
+
+                 lh = 0.704,   lw = 0.711,      lf = 0.840,   ṁCO2 = 7.507 g s−1 .          (2.9)
+
+
+The flows are 13.962 , 6.055 and 20.000 m3 h−1 . The velocities are 1.134 , 0.762 and
+1.078 m s−1 in the 66 mm, 53 mm and 81 mm bores. Mix pressure is 2.855 bar absolute
+against an equilibrium pressure of 1.905 bar. The final vena contracta is 2.279 bar. Original
+extract, alcohol and carbon dioxide meet the brand to three decimals, and dissolved oxygen
+is 9.22 ppb, which is the flow-weighted inlet oxygen and no more. The steady cost is below
+10−8 . This is the point a grade change leaves and, for the light brand, the kind of point it
+has to reach.
+
+   Linearising the map (lh , lw , lf ) 7→ (Qh , Qw , pm ) with a step of 0.012 lift gives
+
+                                                                 
+                                   48.05        −3.21    7.64 
+                                                                 
+                                G=
+                                  −2.59          23.09   2.64  ,
+                                                                                            (2.10)
+                                                              
+                                                                 
+                                         2.09     0.89    −2.14
+
+with flows in cubic metres per hour and pressure in bar, per unit lift. The relative-gain
+array (1.6) is
+                                                             
+                                         0.87 0.00 0.13
+                                                             
+                                   Λ=
+                                     0.00 0.95 0.05 .
+                                                    
+                                                                                            (2.11)
+                                                   
+                                                             
+                                          0.13 0.05 0.82
+
+The diagonal dominates. Bristol’s test supports pairing beer lift with beer flow, water lift
+with water flow, and final lift with mix pressure. It does not say the off-diagonal terms
+
+
+
+                                                 34
+are zero. Thirteen percent of the beer-flow relative gain sits on the final valve, and the
+beer valve moves the pressure. A well-tuned decentralised station can hold this point. A
+simultaneous grade change excites the off-diagonal terms while the mixer is still full of the
+previous beer. That is the regime in which the predictive controller has work to do, and it
+is the regime of the first case in Chapter 3.
+
+   The sign of G33 is the operator’s sign: opening the final valve lowers the mix pressure.
+The pressure loop of the baseline is therefore reverse-acting. The predictive controller
+never needs that sentence, because the final lift is just a coordinate of z.
+
+
+
+2.1.6     The ratio station used as the baseline
+
+The baseline is the controller the relative-gain array recommends, built so that the
+comparison is against a competent station rather than against an untuned one.
+
+   Given the delayed mother beer, the station inverts (1.1) for the mass fraction wOE that
+hits the extract target, and it inverts (1.2) with the linear part of (2.6) for the mass fraction
+wABV that hits the alcohol target. The feedforward fraction is 0.55 wOE + 0.45 wABV . A
+slow integral on the delayed outlet extract, gain 0.006 per second, trims that fraction.
+Mass flows are split by w at the demanded product flow, converted to volumetric setpoints
+with the linear density, and tracked by incremental proportional–integral loops. With
+∆tc = 4 s the increments are
+
+
+                                              h ) + 0.0018 eh ∆tc ,
+                           ∆lh = 0.018 (eh − e−                                           (2.12)
+
+                                              w ) + 0.0030 ew ∆tc ,
+                           ∆lw = 0.028 (ew − e−                                           (2.13)
+
+                                             p ) + 0.022 ep ∆tc .
+                           ∆lf = 0.12 (ep − e−                                            (2.14)
+
+
+Here eh and ew are setpoint minus measurement in cubic metres per hour, and ep is
+measured mix pressure minus a fixed pressure setpoint. The fixed setpoint is peq + 0.90 bar
+evaluated at the lager steady state, which is 2.805 bar absolute. The integral gains were
+chosen so that KI Gii ∆tc lies near 0.3 on the diagonal of (2.10). For the beer valve,
+0.0018 × 48.05 × 4 ≈ 0.35. For the water valve, 0.0030 × 23.09 × 4 ≈ 0.28. For the pressure
+
+
+                                                35
+loop, 0.022 × 2.14 × 4 ≈ 0.19. These are the SIMC-sized gains for an algebraic process
+[30, 83]. They are not detuned to make the predictive controller look better.
+
+   Carbon dioxide is feedforward from (1.19) using the measured flows and the delayed
+mother-beer carbonation, plus an incremental correction from the delayed outlet analysis.
+The same rate limit is applied to the three lifts. Anti-windup is the incremental form itself:
+the state of the controller is the stem position, and the stem position is clipped to the lift
+bounds.
+
+   What this station cannot do is revise the pressure setpoint when the brand or the
+mother beer changes peq , trade extract against alcohol at the tolerance weights when both
+cannot be met, or refuse a move whose predicted vena contracta flashes. Those are the
+jobs of (1.27) and (1.21).
+
+
+
+2.1.7     Offset, feasibility and what the horizon does not prove
+
+A predictive controller that re-optimises from a measured state removes a constant
+disturbance that the model can see. It does not remove a constant error in its own gain.
+If Kv is wrong, the predicted flow of a given lift is wrong, the optimiser asks for the wrong
+lift, and the outlet integral of a ratio station may still be the faster way home. That is
+why the first technology, deployed on the nominal model, is not expected to dominate the
+baseline. The second technology exists to make the model that the first technology trusts.
+
+   Feasibility of the inequalities is not guaranteed for every mother beer. When extract
+and alcohol are inconsistent, the hard bounds on the lifts remain feasible and the quality
+targets become a soft compromise through (1.27). When a header pressure collapses so
+far that the product flow cannot be passed without entering the vena contracta, the soft
+pressure penalty outranks the flow penalty and the controller gives up flow. The case
+study does not include a collapse of that size. The header step in Chapter 3 is 0.45 bar,
+and every controller keeps a positive margin.
+
+   A terminal constraint to the steady set, of the kind Mayne et al. [47] use to prove
+stability, is the correct production addition to Algorithm 1. The case study does not
+implement it. The horizon is short, the rate limit is hard, and the steady program is feasible
+
+
+                                             36
+at both brands. The numerical evidence in Chapter 3 is an estimation of closed-loop
+error, not a Lyapunov certificate. Saying so keeps the first technology in the class of
+engineering predictive control reviewed by Qin and Badgwell [46] and Maciejowski [50],
+where certificates are added when the model and the constraints have settled.
+
+
+
+2.1.8     A grade change, computed before the valves move
+
+The light brand asks for w = 0.58 rather than 0.70. Product mass flow at the lager density
+is about 5.61 kg s−1 . The beer mass flow therefore falls from about 3.92 kg s−1 to about
+3.25 kg s−1 , and the water mass flow rises by the same 0.67 kg s−1 . In volumetric units the
+beer setpoint moves from 13.96 m3 h−1 toward about 11.6 m3 h−1 , and the water setpoint
+rises from 6.06 m3 h−1 toward about 8.4 m3 h−1 . Divided by the diagonal gains, those are
+lift changes of a few hundredths on the beer valve and about a tenth on the water valve.
+At 0.04 lift/s that water-valve move takes about three seconds. Holding the inlet exactly at
+the new brand after that move would still leave an extract error near 0.7◦ P one residence
+time later, because e−1 times the 1.93◦ P step has not yet entered the 0.05◦ P band. A
+controller that is inside the band in 16 s has therefore used an inlet lighter than the new
+brand while the vessel empties. Section 2.1.14 records that move on the commissioned
+model. A controller that is still outside the band two minutes later is limited by its model
+or by its tuning, not by the pipe. Chapter 3 uses that comparison directly.
+
+   The carbon-dioxide setpoint falls from 5.20 g L−1 to 5.00 g L−1 at the same moment.
+Because the water fraction rises, the dose does not fall in proportion: more uncarbonated
+water has to be made up. The predictive controller sees both effects in (1.18). The baseline
+sees them in (1.19), which is algebraically the same at steady state and is blind to the
+trajectory between.
+
+
+
+2.1.9     Installed gain at the lager lifts
+
+The diagonal of (2.10) is not an arbitrary linearisation. It is the derivative of (1.7) at the
+lifts of Table 3.2, with the mix pressure free to move. Holding the drop fixed isolates the
+
+
+
+                                             37
+valve. At beer lift 0.704, Φ = 0.314 and ln R = ln 50 = 3.912, so
+
+                          dΦ
+                             = ln R · Φ = 3.912 × 0.314 = 1.228.                         (2.15)
+                          dl
+
+A fixed drop would therefore scale the beer flow by ln R for a unit of lift,
+
+                     ∂Qh
+                            = Qh ln R = 13.96 × 3.912 = 54.6 m3 h−1 .                    (2.16)
+                     ∂lh ∆p
+
+The network gain in (2.10) is 48.05, about twelve percent smaller. The missing part is
+the rise in mix pressure that follows an opening of the beer valve. That rise shrinks the
+drop the valve was using, so the installed gain is below the fixed-drop gain. The same
+comparison on the water valve, Qw ln R = 6.055 × 3.912 = 23.7 against the network value
+23.09, is almost flat, because the water valve is the smaller flow and moves pm less. The
+final valve has the opposite sign: opening it lowers pm , and the inlet valves then pass more
+flow, which is the positive G13 = 7.64 and G23 = 2.64.
+
+   This is the installed characteristic of Int [31], Fis [33] written as a number the controller
+can use. An equal-percentage trim was chosen so that the local gain stays near ln R times
+the current flow over the whole stroke. At the lager point that product is about 55 m3 h−1
+per unit lift on the beer valve before the network correction, and the correction is modest.
+A linear trim of the same Kv would have put most of its gain near the shut end and very
+little at lift 0.70, which is exactly where this skid lives. The predictive controller does not
+assume the gain is constant. It re-solves (1.7) at every node. The linear gain is used to size
+the baseline in (2.12) and to interpret the relative-gain array, not to predict the brand.
+
+
+
+2.1.10      Bristol’s array from the measured gain
+
+The relative-gain array is G multiplied elementwise by the transpose of G−1 [27]. The
+point of writing the arithmetic is to show that the pairing in Section 1.3 is a property of
+these three numbers and not a convention copied from a flow–flow–pressure textbook.
+
+   Denote the rows of (2.10) by the beer flow, the water flow and the mix pressure. The
+determinant is dominated by the product of the diagonal, 48.05 × 23.09 × (−2.14), which
+
+
+                                              38
+is about −2370, and the off-diagonal corrections do not change its sign. The (1, 1) entry
+of G−1 is the beer-flow response to a beer-lift move after the other two outputs have been
+held at zero by the other two inputs. Multiplied back by G11 it is Λ11 = 0.87. The same
+construction gives Λ22 = 0.95 and Λ33 = 0.82. Each diagonal entry is the fraction of
+the open-loop gain that survives when the other loops are closed perfectly. A value near
+one means the other loops do not steal the actuator. A value near zero would mean the
+recommended pairing is the wrong one. A negative value would mean the loops fight.
+
+   Thirteen percent of the beer-flow relative gain sits on the final valve, and five percent
+of the water-flow relative gain sits there too. Those are the terms a grade change excites,
+because a grade change moves all three lifts in the same few seconds, and perfect closure
+of the other loops is exactly what has not happened yet. At steady state, after the ratio
+station has settled, the same thirteen percent is a small trim on the pressure loop. The
+array therefore explains both observations in Chapter 3: the ratio station can hold a brand,
+and it is slow when the brand changes. It does not by itself choose the nonlinear map.
+Balling’s denominator is outside G, and no arrangement of these nine gains puts it back.
+
+
+
+2.1.11       How long the horizon has to be
+
+The mixer time constant at the design flow is τ = 14.4 s. The control sample is ∆tc = 4 s.
+The prediction uses two move blocks and three Euler steps of 2 s inside each block, so the
+horizon is
+                                   TH = 2 × 3 × 2 = 12 s,                                (2.17)
+
+which is 0.83 τ . A step in the inlet composition has, by (2.35), reached a fraction
+1 − e−TH /τ = 1 − e−0.83 = 0.56 of its final value at the end of the horizon. The controller
+therefore sees a little more than half of the quality move that a valve decision will eventually
+produce. It does not see the whole settling tail. The tail is left to the next sample, which
+is the receding-horizon argument: only the first block is applied, and the remainder of the
+response is re-predicted when the state has moved.
+
+   Lengthening the horizon to 2τ , about 29 s, would show 86 percent of the step and
+would multiply the number of network solves by about two and a half. On a skid whose
+
+                                              39
+disturbance is a brand change that is known at the sample it begins, the extra tail is
+a smaller extract error at the far nodes, already shrinking by e−α each step, and the
+decision that matters is the first block. The case study keeps TH = 12 s for that reason. A
+disturbance that arrived as an unmeasured ramp over a minute, for example a slow header
+decay, would justify the longer horizon. The header step in the second scenario is a step,
+and 12 s covers its onset.
+
+   The two blocks are not two independent valve trajectories. Inside a block the command
+is held, so the eight-vector z is
+
+                                                                             
+                                 (1)      (1)   (1)    (2)       (2)    (2)
+                        z = lh , lw(1) , lf , ṁCO2 , lh , lw(2) , lf , ṁCO2 .         (2.18)
+
+
+Six Euler steps then see only two values of each actuator. The rate limit is enforced
+between the previous applied command and the first block, and again between the first
+block and the second. With a limit of 0.04 lift per second, the first block may differ from
+the applied command by at most 0.04 × 4 = 0.16 lift, and the second block may differ
+from the first by the same amount. In two samples the water valve can travel 0.32 lift.
+The grade-change arithmetic of the previous subsection needs only about a tenth of a lift
+on that valve. The rate limit is not what makes the vessel take 14 s. The volume is.
+
+
+
+2.1.12      A move that the rate limit does price
+
+Travel in Table 3.5 is the sum of absolute lift increments over the run. On the grade
+change the ratio station travels 7.09 and both predictive controllers travel about 1.65. The
+difference is not a smoother optimum in the abstract. It is the incremental law (2.12)
+reacting to a flow error that the mixer has not yet produced. At the sample of the setpoint
+change the ratio station computes new flow setpoints immediately, the flows are still the
+lager flows, and the errors eh and ew are the full step of about 2.4 and 2.3 cubic metres
+per hour. The proportional increments are 0.018 × 2.4 and 0.028 × 2.3, a few hundredths
+of lift, and the integral keeps adding while the vessel is still exchanging. Each later sample
+sees a flow error of the opposite sign as the valves overshoot the new ratio, and the stems
+reverse. The sum of those reversals is the travel of 7.
+
+                                                  40
+   The predictive controller applies one block that already points at the new steady lifts,
+then a second block that is close to the first, and then stops. The stage cost charges
+0.4 ∥∆l∥2 /0.01 for that one move and charges nothing further once the prediction says
+the vessel will arrive. The travel of 1.65 is that move plus the small trims that follow
+the analyser. It is larger than the one-tenth lift of the steady-state arithmetic because
+the final valve and the dose move as well, and because the first sample cannot jump the
+whole way when the warm start is the lager command and the iteration budget is six. The
+budget spends itself on the first sample of the grade change. Later samples start next to a
+solution and barely move.
+
+   The same accounting explains the third scenario, where the commissioned controller
+travels 0.63 and the ratio station travels 0.20. The extra travel is the deadband lead. The
+stem is commanded across a band of width 0.03 that produces no flow, so that the flow,
+when it starts, is the flow the brand asked for. A travel column that is read as “smaller
+is always better” would punish the only controller that has understood the valve. The
+column is reported so that a reversal hunt, of the kind the untuned absolute-form law
+produced before the gains of (2.12) were fixed, cannot hide inside a good extract integral.
+
+
+
+2.1.13      Where the carbon-dioxide dose sits in the same vector
+
+The dose is the fourth coordinate of each block and it does not appear in G, because G
+was identified on the three lifts with the dose doing whatever holds 5.20 g L−1 . Its own
+gain is algebraic. One gram per second of carbon dioxide, divided by 20 m3 h−1 , is
+
+                                1 g s−1 × 3600
+                                               = 0.180 g L−1                             (2.19)
+                                20 × 103 L h−1
+
+at the design flow, before the mixer lags it. The stage cost treats 0.05 g L−1 as one tolerance,
+so a dose error of 0.05/0.180 = 0.28 g s−1 costs the same, at steady state, as one tolerance
+of original extract. The optimiser can therefore spend a fraction of a gram per second to
+protect carbonation without giving up the brand, and it cannot hide a one-gram-per-second
+mistake. That scaling is why the dose belongs in z rather than in a slave loop with an
+unrelated gain. A slave loop can still implement the command. The predictive program
+
+                                              41
+decides it, jointly with the lifts, because a water-valve move changes the uncarbonated
+inlet at the same moment the dose should change.
+
+   At the lager point the required dose is 7.507 g s−1 . The upper bound in (1.21) is 15 g s−1 ,
+which is twice the design and is the injector size used in the study. The bound is inactive
+at both brands. It would become active if the mother beer arrived nearly flat and the
+product specification stayed at 5.2 g L−1 , a case the commissioning range does not include.
+The program already has the inequality. No new term is required.
+
+   The equilibrium pressure moves when the dose moves, because c moves and peq =
+c/(κζ ζ). A dose increase of 1 g s−1 raises c by about 0.18 g L−1 and peq by about 0.18/2.73 =
+0.066 bar once the mixer has caught up. The margin constraint sees that rise. A controller
+that carbonates in a slave loop and only afterwards checks the valve throat will discover
+the lost margin one analyser delay later. The joint program discovers it inside the shooting
+node, while the dose is still a decision.
+
+
+
+2.1.14     The first sample of a grade change
+
+Table 2.1 collects the numbers that fix the first sample, so that the horizon is a design
+choice with units rather than a list of solver options.
+
+                Table 2.1: Prediction budget at the lager flow of 20 m3 h−1 .
+
+                      Quantity                                    Value
+                      Mixer volume                             0.080 m3
+                      Residence time τ                            14.4 s
+                      Control sample ∆tc                               4s
+                      Euler step inside a block                        2s
+                      Move blocks × steps                          2×3
+                      Horizon TH                                     12 s
+                      Fraction of a step seen, 1 − e−TH /τ          0.56
+                      Decision length                                   8
+                      Iteration limit                                   6
+                      Lift rate limit                         0.04 lift/s
+                      Largest legal first move                  0.16 lift
+
+
+   At the sample the light brand is requested, the vessel still holds the lager. Original
+extract is 11.61◦ P against a new target of 9.687◦ P. The error is 1.93◦ P, which is 38.5
+
+
+                                              42
+tolerances, and one stage of (1.27) charges about 1.5 × 103 on extract alone. Six stages,
+if the command were left at the lager lifts, charge about 104 . The horizon sees only 56
+percent of a residence-time step, so a move that merely places the inlet on the new brand
+produces a predicted extract error that is still enormous at the last node. The solver
+spends the rate budget to make the inlet lighter than the brand, because that is the only
+way the predicted error inside 12 s falls by a useful fraction.
+
+   On the commissioned model the plant is stepped and then the controller runs, so the
+new command appears one second later. The lager lifts are 0.703, 0.713 and 0.835. The
+next applied lifts are 0.543, 0.873 and 0.675. Each coordinate has moved by 0.160, which
+is the rate limit of 0.04 × 4 and not the tenth of a lift that separates the two steady
+states. Beer flow falls from 13.8 m3 h−1 to 6.4 m3 h−1 and water flow rises from 6.1 m3 h−1
+to 10.2 m3 h−1 . The inlet mass fraction is near 0.39, not 0.58. The dose, which had been
+7.5 g s−1 , is raised with the extra water and reaches about 11.6 g s−1 on the following
+sample. Four seconds after the upset the extract error is 0.87◦ P. A pure decay at τ = 14.4 s
+would still be at e−4/14.4 × 1.93 = 1.46◦ P . The difference is the light inlet.
+
+   The next samples spend the budget in the other direction. By 16 s the lifts are near
+0.66, 0.81 and 0.79, the flows are near 11.4 m3 h−1 and 8.7 m3 h−1 , and the extract error
+is 0.037◦ P, which is the first sample of the strict band in Table 3.5. One intermediate
+sample cuts the product flow to 13.2 m3 h−1 while the ratio is being restored. That sample
+is visible in the flow integral. Of the 51 (m3 /h) · s charged to this controller, almost all of
+it sits in those first 16 s. The extract integral over the whole run is 10.75◦ P·s. The same
+step, decayed at the residence time from an inlet that jumped exactly onto the new brand
+and integrated to infinity, would cost
+
+                          Z ∞
+                                1.93 e−t/14.4 dt = 1.93 × 14.4 = 27.8                    (2.20)
+                            0
+
+
+
+in degree-Plato seconds. The commissioned run is below that number because the inlet
+was lighter than the brand, and the flow weight in (1.27) is what the optimiser paid
+in exchange. The payment is finite. The two other stations on the same run finish at
+31.30◦ P·s and 32.29◦ P·s, and neither enters the band. Their integrals contain the vessel
+
+
+                                               43
+and a model, or a tuning, that keeps feeding the wrong inlet after the vessel could have
+been emptied.
+
+   The nominal predictive controller is the second of those two numbers. It uses the same
+horizon, the same weights and the same rate limit. The only difference on that run is θ.
+An extract integral that matches the ratio station, and a tail of about 0.19◦ P, is what an
+uncommissioned capacity and a 0.10 bar header bias produce. The horizon arithmetic does
+not repair it. The twin does. The six-iteration budget is also visible: the intermediate flow
+dip is a correction a converged program would have spread more evenly. It does not keep
+the extract outside the band, and it is one reason the production solver of Section 2.2.12
+replaces the iteration limit by a single warm-started quadratic program.
+
+
+
+2.2      Physics-informed pressure digital twin
+
+2.2.1     What the twin contains
+
+The twin is a second copy of the equations of Section 2.1, with a parameter vector that
+the skid is allowed to disagree about, a residual correction that is allowed to be zero, and
+an interface that hands the commissioned copy to Algorithm 1. In the classification of
+Kritzinger et al. [65] it is a twin because that hand-off moves the valves. A display of the
+same equations would be a shadow.
+
+   The parameter vector is
+
+                                                                             
+                θ = log Kv,h , log Kv,w , log Kv,f , log ε, log K, bh , κζ , γ .       (2.21)
+
+
+Logarithms keep the capacities, the roughness and the minor-loss coefficient positive. The
+bias bh is in bar and may have either sign. The solubility scale and the contraction are
+estimated from different experiments than the valve steps, because they are barely visible
+in those steps. They are stored in θ because the predictor reads them there.
+
+   The nominal twin, before commissioning, is the model a project would start from:
+capacities 29.4 , 13.2 and 58.0 m3 h−1 against true values 32 , 12 and 64 ; roughness 15 µm
+
+
+                                              44
+against 2 µm; minor loss 8 against 14; solubility scale 1 against 0.93; contraction 0; and a
+belief that the beer-header transmitter is truth when it reads 0.10 bar high. Those errors
+are the size of a worn or mis-sized trim and a transmitter that has not been zeroed. They
+are not a caricature.
+
+
+
+2.2.2       Commissioning experiment
+
+Twenty-eight steady points are collected. Each point holds a random lift triple in [0.40, 0.82]
+and a random dose, long enough for the mixer to settle, and records the three flows and
+the mix pressure. Flow noise is 0.03 m3 h−1 standard deviation. Pressure noise is 0.008 bar.
+The beer-header measurement used by the estimator is the true header plus 0.10 bar plus
+that noise. Inlet composition is the mother beer of the design point, known because the
+campaign is run on one tank. This is a few hours of a skid, not a month of history. The
+point of a physics-based estimator is that a few hours are enough [71, 75].
+
+   The hydraulic residual stacks four normalised errors per point,
+
+                                                              
+                                      (Qh − Q̃h )/0.08 
+                                                       
+                                     (Qw − Q̃w )/0.05
+                                                       
+                                   r=                  ,                               (2.22)
+                                                       
+                                      (Qf − Q̃f )/0.08 
+                                                       
+                                                       
+                                                       
+                                            (pm − p̃m )/0.02
+
+and θ enters Q and pm through the network of Section 2.1. The estimator minimises
+∥r(θ)∥2 by a bound-aware nonlinear least-squares method, starting from the nominal
+capacities. An approximate covariance follows from the Jacobian J of the converged
+residual,
+                                                                    ∥r∥2
+                          Cov(θ̂) ≈ σ̂ 2 (J T J)−1 ,     σ̂ 2 =           .              (2.23)
+                                                                   N − nθ
+
+Standard errors on Kv are the standard errors on log Kv , multiplied by Kv . This is the
+local Gaussian approximation used throughout nonlinear least squares. It is honest about
+precision only when the parameters are locally identifiable. Chapter 3 shows that for
+roughness and minor loss they are not, and the enormous standard errors are the estimator
+saying so.
+
+                                                 45
+2.2.3     Parameters that need their own experiment
+
+Solubility is estimated from one bench point. A sample of known Aw , Er and dissolved
+carbon dioxide is brought to equilibrium at 2 ◦ C, the headspace pressure is read, and
+
+                                                    c
+                               κ̂ζ =                           .                       (2.24)
+                                       ζpoly (T, E, ABV) pmeas
+
+One point identifies one scale. It does not re-identify the polynomial. A brewery that
+changes beer style enough to leave the polynomial’s range repeats the bench point on the
+new style. That is a laboratory sample, not a flashing test on the line.
+
+   Contraction is estimated from the Coriolis density. At each steady point,
+
+                                           1 − ρ̃i /ρlin (Aw,i , Er,i )
+                                                                     !
+                          γ̂ = mediani                                  ,              (2.25)
+                                                    Aw,i Er,i
+
+taken over points where Aw Er > 1 so that the denominator is not a trace of noise. The
+median rejects a single bad density reading. The linear map ρlin is the parenthesis in (2.6).
+
+   Effective line resistance is not a seventh search variable. After ε and K have been
+estimated, or have failed to be estimated, it is computed from (1.15) at Re = 4 × 104 ,
+which is the blend-line Reynolds number at the design point. The twin may be rebuilt
+with that single CL in place of the pair (ε, K). In the case study the deployed twin keeps
+the estimated pair because, although each member is nonsense, the sum CL lands within
+three percent of the truth. The text reports both facts so that the next skid estimates CL
+directly and does not publish a roughness.
+
+
+
+2.2.4     The residual network and the mass-balance gate
+
+After the physical parameters are fixed, the flow residual on the training points is a target
+for a small network. The input is the standardised vector (lh , lw , lf , Aw , Er , pm ). The
+network has one hidden layer of eight hyperbolic-tangent units and a linear output of
+three flow corrections. Twenty-two of the twenty-eight points train it. Six are held out.
+Training is Adam for 900 steps at learning rate 0.02, with a weight decay of 2 × 10−3 .
+
+
+
+                                               46
+   Every fifth step adds a physics penalty. If q is the physically predicted flow plus the
+network correction, the penalty is the squared mass imbalance
+
+                                                             2
+                                      ρh qh + ρw qw − ρf qf        ,                  (2.26)
+
+
+scaled so that it does not drown a residual that is already at the sensor floor. This is the
+blend-skid form of the collocation penalty of Raissi et al. [72]. The conservation law is
+algebraic rather than a differential equation, because the quantity being corrected is a
+steady flow. Cai et al. [74] make the same substitution whenever a fluid constraint is a
+flux balance rather than a momentum residual.
+
+   The gate is the held-out root-mean-square flow error. If the network increases it,
+the deployed twin uses ∆Q = 0. The architecture stays in the software so that a later
+campaign, on a valve whose characteristic is not equal-percentage, can open the gate
+without a rewrite. Wu et al. [76] and Zheng and Wu [75] deploy the network because their
+reactors have a kinetic discrepancy that the parameters do not absorb. This skid, after Kv
+and bh are estimated, does not. The gate is how the twin tells those two situations apart.
+
+Algorithm 2 Commissioning of the physics-informed pressure twin
+Require: Step-test records, one bench equilibrium pressure, Coriolis densities
+ 1: Estimate log Kv , log ε, log K and bh by least squares on (2.22)
+ 2: Compute standard errors from (2.23); if a standard error exceeds the estimate, replace
+    that parameter by the identifiable combination CL
+ 3: Estimate κζ from (2.24) and γ from (2.25)
+ 4: Train the residual network on all but six step tests, with the penalty (2.26)
+ 5: If the held-out flow error rises, set the residual to zero
+ 6: Publish θ and the residual gate to the predictive controller
+
+
+
+
+2.2.5     The fast state, and the deadband
+
+During a run the slow parameters stay at the commissioned values. The mixer state is
+integrated from the measured flows and the delayed mother-beer analysis. This observer
+is a soft sensor in the sense of Kadlec et al. [71], and it is almost a balance rather than
+a regression: if the flows and the inlet composition are right, the mixer composition is
+determined. Noise of a hundredth of a percent by weight is added in the case study to
+
+                                                47
+represent the imperfection of that statement. An unscented filter [78] or a moving-horizon
+estimator [79] is the right replacement when an inlet meter drops out and the outlet
+analysis has to carry the state alone. With all three Coriolis meters healthy, the balance is
+the estimator.
+
+   Water-valve stiction is detected as a deadband S: the stem does not move until the
+command has led the reported position by S. The case-study fault is S = 0.03 lift, with
+no slip jump, which is the stick band of Choudhury et al. [80] reduced to one parameter.
+The inverse used by the twin-backed controller is
+
+
+                           lw,cmd = lw,des + S sign(lw,des − lw,pos ),                  (2.27)
+
+
+applied only when the desired move exceeds a small threshold, so that a valve already at
+the setpoint is not dithered. Jelali and Huang [81] discuss the limit cycle that a naive
+inverse can excite. The threshold and the rate limit are what keep (2.27) from becoming a
+knocker. The predictive controller that does not receive S has no inverse. It sees a flow
+that refuses small moves and, if its gain is wrong as well, it walks away from the setpoint.
+
+
+
+2.2.6     How the twin changes the first technology
+
+Algorithm 1 does not contain θ. It contains a model. Commissioning replaces that model.
+Three substitutions are visible in the closed loop of Chapter 3.
+
+   The capacities and the header bias are the substitutions that repair the grade change.
+An eight-percent error in Kv,h is an error of about 1 m3 h−1 at the lager point, because the
+valve is not fully open and the equal-percentage gain is steep. The predictive controller
+converts that flow error into a composition error and then holds it, because the model
+believes the composition is already right. The ratio station, which integrates measured
+flow rather than predicted flow, is less sensitive to Kv and more sensitive to the interaction
+during the move. The numerical comparison falls out of that difference.
+
+   The solubility scale and the contraction are the substitutions that keep the pressure
+constraint and the alcohol conversion honest. At the design point κζ = 0.93 lowers ζ from
+
+
+
+                                               48
+the bare polynomial by seven percent and raises peq by the same fraction. A controller
+that ignores the scale guards the wrong pressure. The contraction shifts density by about
+4 kg m−3 on the mother beer and by about 2 kg m−3 on the lager. Alcohol by volume,
+through (1.2), moves in proportion. The shift is smaller than the alcohol tolerance and is
+still worth removing, because the tolerance budget should be spent on the mother beer,
+not on the equation of state.
+
+   The deadband inverse is the substitution that matters when the water valve sticks. It
+does not change the steady mathematics of w. It changes the first samples after a small
+flow error appears.
+
+   The residual network, in this campaign, is the substitution that is not made. Publishing
+that fact is a duty of the estimator. A twin that always adds its network, after the network
+has failed a hold-out test, is a softer sensor with a harder name.
+
+
+
+2.2.7     Information, interfaces and the safety boundary
+
+The twin reads flows, pressures, stem positions, temperature and quality through the OPC
+UA model of the skid [67]. It writes a recommended (lh , lw , lf , ṁCO2 ) at 4 s intervals. The
+programmable controller remains the only device that energises a solenoid. It enforces the
+rate limit again, the lift limits again, and a set of interlocks the optimiser is not allowed
+to relax: a low bright-tank pressure, a high mixer pressure, a loss of the water-deaeration
+permissive, and a quality hold if dissolved oxygen or a water analysis crosses the alarm.
+ISA-88 names the brand change as a phase whose running state may be held by those
+permissives [66]. The predictive controller is a step inside the running state. It is not a
+replacement for the phase logic.
+
+   This boundary is the practical content of the warning in Fuller et al. [63] and Goffi et al.
+[68] that a twin which can move equipment has to be commissioned inside the interlocks,
+not beside them. The estimation problem is unaffected. The interlocks define a subset of
+u that the least-squares model never sees, because the campaign is run with the interlocks
+healthy. Extrapolating the twin into a tripped skid is not a use this thesis supports.
+
+
+
+
+                                              49
+2.2.8      A hand solution of the lager network
+
+The optimiser’s steady point can be checked with a calculator, and the check is worth
+writing down because it is the same arithmetic every shooting node repeats. Take the lifts
+of (2.9) and the mother-beer density 1011.9 kg m−3 . The equal-percentage factor at beer
+lift 0.704 is
+                       Φ(0.704) = 50−0.296 = e−0.296 ln 50 = e−1.158 = 0.314.           (2.28)
+
+The effective capacity is 32 × 0.314 = 10.05 cubic metres per hour. The mix pressure
+solved by the scalar residual is 2.855 bar, so the beer-valve drop is 4.80 − 2.855 = 1.945 bar.
+With specific gravity 1.012,
+
+                               q
+                 Qh = 10.05 1.945/1.012 = 10.05 × 1.386 = 13.93 m3 h−1 .                (2.29)
+
+
+The network solution is 13.962 m3 h−1 . The difference is the difference between this one-
+pass density and the density the scalar solver uses after the contraction and the blend
+have been updated. It is two tenths of a percent. The same arithmetic on the water valve,
+Φ(0.711) = 0.323, effective capacity 3.87, drop 5.30 − 2.855 = 2.445 bar, specific gravity
+essentially 1, gives
+                                         √
+                                Qw = 3.87 2.445 = 6.05 m3 h−1 ,                         (2.30)
+
+against the solved 6.055 m3 h−1 .
+
+    The blend-line velocity at 20 m3 h−1 in an 81 mm bore is
+
+                                         20/3600
+                                 vf =            2
+                                                   = 1.078 m s−1 ,                      (2.31)
+                                        π(0.0405)
+
+which is the value in Table 3.2. The Reynolds number with ρ ≈ 1009 kg m−3 and
+µ = 2.2 mPa s is 4.0 × 104 . Haaland’s formula at ε = 2 µm returns f = 0.0218. Then
+
+                    L             18
+                f     = 0.0218 ×       = 4.85,         CL = 4.85 + 14 = 18.85,          (2.32)
+                    D            0.081
+
+
+
+
+                                                 50
+and the line drop is
+
+                                        1009 × 1.0782
+                    ∆pline = 18.85 ×                  × 10−5 = 0.111 bar.               (2.33)
+                                              2
+
+The pressure immediately upstream of the final valve is therefore about 2.74 bar. The
+final-valve drop down to the tank at 2.40 bar is about 0.34 bar. With FL = 0.86,
+
+                                        0.34
+                       pvc,f = 2.74 −         = 2.74 − 0.46 = 2.28 bar,                 (2.34)
+                                        0.862
+
+which matches the solved vena contracta of 2.279 bar. Equilibrium at 5.20 g L−1 and
+ζ = 2.730 g L−1 bar−1 is 1.905 bar. The margin at the narrowest point in the final valve
+is 0.37 bar, and the margin at the mix node is 0.95 bar. A designer who stops at the
+mix-node margin and never computes (1.12) will believe the skid has a bar of room when
+the valve throat has a third of that.
+
+   The carbon-dioxide check was already done in Section 3.1 and closes to 7.51 g s−1 . The
+hand solution and the program are the same model. The program is used because a grade
+change evaluates the residual hundreds of times, not because the residual is obscure.
+
+
+
+2.2.9     The mixer as a discrete linear system
+
+Once the flows are known, each composition channel is a linear filter. Let α = Qf ∆t/V
+with ∆t = 2 s and V = 0.08 m3 at the design flow, so α = 2/14.4 = 0.139. The exact
+discretisation of a single well-mixed volume is
+
+                                                         
+                               xk+1 = e−α xk + 1 − e−α xin ,                            (2.35)
+
+
+and the Euler step used in the shooting code is the first-order form xk+1 = (1 − α)xk + αxin .
+At this α the two gains on the old state are e−α = 0.870 and 1 − α = 0.861. The relative
+difference is one percent. Over a six-step horizon the compounded difference in a step
+response is a few hundredths of the step, which is smaller than the analyser noise on original
+extract. Euler is kept because its derivative with respect to the flow, which changes α, is
+
+
+
+                                               51
+obvious to the shooting code. A production build can switch to (2.35) without touching
+the cost.
+
+   The four channels Aw , Er , c and cDO share α and do not share xin . Alcohol and extract
+see a mass-weighted inlet. Carbon dioxide and oxygen see a volume-weighted inlet plus,
+for carbon dioxide, the dose divided by Qf . The state transition is therefore diagonal. The
+output map is not. Original extract and alcohol are nonlinear functions of Aw , Er and ρ,
+and peq is a nonlinear function of those and of c. That is why a linear model predictive
+controller built on G in (2.10) can coordinate the valves and still miss the brand: G does
+not contain Balling’s denominator. The nonlinear shooting exists for the output map, not
+because the mixer is a difficult dynamic system.
+
+   A linear controller is still the right tool for the diagnosis in (2.11). It is the wrong
+tool for the setpoint. The numerical size of the mistake was computed in Section 1.3: a
+dilution proportional to original extract misses the true original extract by 0.19◦ P. Any
+linear gain from flow ratio to original extract that was identified at one brand will carry an
+offset of that order at the next brand. Integral action removes the offset after the analyser
+delay. The nonlinear map removes it in the prediction.
+
+
+
+2.2.10      What one tolerance costs, in the units of the stage cost
+
+The denominators in (1.27) are the tolerances, so the numerical weight of each channel is
+a statement about which miss the brewery will trade. It is worth evaluating the cost at a
+few concrete errors so the weights are not an unexamined vector.
+
+   One tolerance of original extract, with every other error zero, costs 1. One tolerance
+of alcohol costs 1. One tolerance of carbon dioxide costs 1. A flow error of 0.5 m3 h−1 ,
+which is 2.5 % of the design flow, costs 0.35. A valve move of 0.1 lift from the previous
+command costs 0.4 (0.1)2 /0.01 = 0.4. A mix pressure 0.1 bar inside the forbidden side of
+the margin costs 6 × 0.01 = 0.06, and 0.5 bar inside it costs 1.5. The pressure penalty
+therefore overtakes a quality tolerance only when the violation is several tenths of a bar.
+Small numerical noise in pm does not dominate the brand. A flashing valve does.
+
+   Apply the same arithmetic to the infeasible mother beer of Section 3.2.4. The extract-
+
+
+                                             52
+only point misses alcohol by 0.207 % by volume, which is 0.207/0.03 = 6.9 tolerances and
+a cost of about 48. The alcohol-only point misses original extract by 0.493◦ P, which is
+9.9 tolerances and a cost of about 97. The weighted point misses extract by 0.167◦ P and
+alcohol by 0.137 % by volume, a cost of (3.34)2 + (4.57)2 ≈ 32. The predictive controller is
+not applying a hidden preference for extract. It is applying the squares of the published
+tolerances. A brewery that considers a tenth of a percent of alcohol more serious than a
+tenth of a degree Plato changes two numbers in (1.27) and recommissions nothing else.
+
+   The flow weight is deliberately smaller than a quality tolerance. On this skid a shortfall
+of one cubic metre per hour is a scheduling inconvenience, and a shortfall of one degree
+Plato is a beer that cannot be released. If the skid were the filler and the shortfall were a
+missed production slot of a high-volume brand, the flow weight would rise. The formulation
+already has a place for that number.
+
+
+
+2.2.11      One shooting step, in order
+
+A single evaluation of the horizon at the warm start, which is “hold the lager command”,
+during the first sample of the light-brand grade change, does the following.
+
+   The mother-beer analysis is unchanged. The setpoint has become 9.687◦ P, 4.000 % by
+volume, 5.00 g L−1 and 20 m3 h−1 . The mixer state is still the lager composition, because
+the valves have not moved. Both blocks of z are (2.9). The network solve returns the lager
+flows. The mixer step moves the state by α toward an inlet that is still the lager blend,
+so the predicted original extract stays near 11.61◦ P. The stage cost on extract alone is
+((11.61 − 9.69)/0.05)2 ≈ 1.5 × 103 per step, and six steps cost about 104 . That number is
+the signal the solver follows. It is large because the beer in the vessel is still the previous
+brand, which is a fact, and because the command has not yet been asked to change, which
+is the degree of freedom.
+
+   The solver then shortens the beer lift and lengthens the water lift, subject to the rate
+limit of 0.16 lift per four-second sample and to the slower rate inside the prediction. The
+new flows change xin through (1.3). The predicted extract falls on the time constant (2.1).
+Carbon dioxide is recomputed with the new water fraction and the new dose; the dose rises
+
+
+                                              53
+slightly because more water has to be carbonated even though the target concentration
+has fallen. The pressure residual is re-solved at every node so that the final valve opens as
+the total flow and the mix density change, instead of letting the pressure loop discover
+the interaction one sample later. The first block of the improved z is applied. The next
+sample repeats the procedure from the new mixer state and the new previous command.
+
+   Nothing in that sequence requires the outlet analyser. The analyser arrives 12 s later
+and trims whatever the flow integration got wrong. On the commissioned model that
+trim is at the level of the sensor noise. On the nominal model the trim cannot remove
+a bias that the model interprets as a correct steady state, which is the tail of 0.19◦ P in
+Section 3.2.3.
+
+
+
+2.2.12     The production solver
+
+The case-study program is a single-shooting nonlinear program in eight variables with
+bound constraints and a smooth cost, apart from the hinges in the soft penalties. Those
+hinges are squared, so the cost is continuously differentiable and the second derivative
+jumps. A sequential quadratic solver handles that. The iteration limit of six is a real-time
+budget, not an optimality certificate. Warm-starting from the previous sample is what
+makes six iterations enough when the brand is not changing, and what makes the first
+sample of a grade change the expensive one.
+
+   The production form replaces those six iterations by one quadratic program per sample,
+which is the real-time iteration [55, 56]. Linearise the shooting map at the previous
+solution (z, x), build the quadratic model of (1.27), solve it, and apply the first block
+before the next preparation phase has finished. The preparation of the derivatives can
+overlap the sample. IPOPT is a reliable way to solve the quadratic model and also the
+full nonlinear program during commissioning, when there is no sample clock [53]. CasADi
+is a reliable way to obtain the derivatives of the network residual and of Balling’s map
+without hand-written Jacobians [54]. The thesis does not depend on either package being
+present in the case-study script. It depends on the shooting problem being the one those
+packages would be given.
+
+
+                                             54
+   Two implementation constraints follow. The scalar pressure solve has to be differentiated
+through, or replaced by a residual that the nonlinear program carries as an equality. Brent’s
+method on a scalar is easy to run and awkward to differentiate. A production code lifts
+pm into the decision vector and writes Qvalve
+                                        f     − Qmass
+                                                 f    = 0 as a constraint at each node.
+The local derivative of that residual with respect to pm is negative and bounded away
+from zero whenever both inlet valves have a positive drop, which they do inside the lift
+bounds of (1.21). The constraint qualification is then the ordinary one for a hydraulic
+network with a free internal pressure. The second constraint is that the rate limit and
+the interlocks are enforced in the programmable controller even if the quadratic program
+returns a point on the wrong side of them. Section 2.2 already assigned that duty to the
+PLC. The solver is not a safety system.
+
+
+
+2.2.13     Why roughness and minor loss share one column
+
+The line drop (1.9) depends on ε only through f (ε) and on K directly. At a fixed Reynolds
+number the map (ε, K) 7→ CL is the only map the flows can see, because CL is the only
+combination that enters ∆pline . Differentiating Haaland’s formula, f is a slowly increasing
+function of ε/D. A positive step in ε and a negative step in K can be chosen so that
+CL does not change. The two corresponding columns of the residual Jacobian are then
+scalar multiples of each other, the Gram matrix J T J is singular, and the formal standard
+error (2.23) diverges. That is what Table 3.4 records, in the decision to publish CL and to
+withhold a roughness.
+
+   The multiplicity is not removed by collecting more points at the same Reynolds number.
+It is weakly removed by collecting points at very different velocities, because f depends
+on Re and K does not, so the two parameters are not in a fixed ratio across the campaign.
+The commissioning lifts do change the flow, but not by the factor of ten that would
+separate a smooth-pipe friction factor from a minor loss. A campaign designed to identify
+roughness would include a near-shut final valve and a wide-open one, and would still be
+limited by the fact that a hygienic bore at these Reynolds numbers sits in a flat part of
+the Moody chart. The engineering quantity is CL . The thesis estimates that quantity to
+
+
+                                             55
+two and a half percent and treats the split as unidentified.
+
+   The capacities do not have this problem. Kv,h scales only Qh , and it scales it with the
+square root of a drop that the header bias also shifts. Varying the beer lift changes the
+drop and the flow in a combination a pure bias cannot imitate, because a bias shifts every
+beer-valve point by the same pressure and a capacity scales them. The standard error of
+0.08 m3 h−1 on a capacity of 32 is the numerical expression of that excitation. Twenty-eight
+points were more than the rank of the problem required. They were not more than the
+noise required.
+
+
+
+2.2.14      The residual network as a function
+
+Let ξ ∈ R6 be the standardised feature (lh , lw , lf , Aw , Er , pm ), with the mean and the scale
+taken from the training points only. The network is
+
+
+                         h = tanh(W1 ξ + b1 ),       ∆Q = W2 h + b2 ,                      (2.36)
+
+
+with W1 ∈ R8×6 and W2 ∈ R3×8 . The corrected flow is the physical prediction plus ∆Q.
+The training loss on a batch is the mean square of ∆Q against the measured residual,
+plus the weight decay, plus, every fifth step, a multiple of (2.26). The mass penalty is a
+function of ∆Q and therefore of W2 and, through h, of W1 . Its gradient is an ordinary
+back-propagation of a linear form in the three flows. No collocation point in the sense of a
+space-time residual of a partial differential equation is required [72]. The conservation law
+is the one the flow already lives under.
+
+   The hold-out is six points drawn as the last six of the campaign, not re-used in the
+standardisation or the training. Root-mean-square flow error rises from 0.030 m3 h−1 to
+0.037 m3 h−1 when ∆Q is added. The rise is the signature of a model whose physical part
+has already reached the sensor noise. Adding eight hidden units, forty-eight input weights
+and twenty-four output weights to a residual whose standard deviation is 0.03 m3 h−1 on
+twenty-two points is enough capacity to fit the particular noise of those twenty-two points.
+The gate compares the two errors and publishes the physical prediction. The weights are
+kept on disk with the campaign so that a later campaign can be scored against the same
+
+                                               56
+architecture. They are not written into the controller.
+
+   This is the opposite deployment decision from Wu et al. [76] and Zheng and Wu [75],
+and it is the same rule. They keep the network because the hold-out improves. This skid
+drops the network because the hold-out does not. A twin that kept the network anyway
+would be adding 0.007 m3 h−1 of invented flow, which is a third of a percent at the beer
+line and a pointless risk next to a capacity estimate that is already inside 0.1 m3 h−1 .
+
+
+
+2.2.15      Observer, delay and the information the analyser still
+
+            carries
+
+The fast observer is the discrete mixer (2.35) driven by measured flows. Its only unknown,
+between analyser updates, is the inlet composition, and that unknown is replaced by the
+last mother-beer analysis after eight seconds. The outlet analysis is a measurement of the
+state that existed 12 s, or six integration steps, earlier. A correction that simply overwrites
+the current state with the delayed analysis assigns today’s vessel the beer of one residence
+time ago, which is the lager during the first moments of the grade change, and pulls the
+prediction backwards. The correction used here is therefore applied to the innovation
+of the delayed prediction: the observer stores a short buffer of predicted outlet values,
+subtracts the analysis when it arrives, and distributes a fraction of that innovation onto
+the current state. With healthy flow meters the fraction can be small. The case study
+adds composition noise of about 0.01 percentage points by weight so that the controller
+does not receive the plant state as an oracle.
+
+   If the beer flow meter failed, this observer would integrate a lie and the outlet analysis
+would become the primary measurement. That is the situation in which the moving-horizon
+estimator of Rao et al. [79] earns its window, and in which an unscented filter [78] is
+a cheaper approximation. The thesis does not simulate a failed meter. It names the
+estimator that would replace the balance, and it keeps the balance for the campaign that
+was actually run. Kalman [77] is the linear special case of both, and it is the right filter
+for the pressure and flow channels, which are already linear in their noise and are used
+without a window.
+
+
+                                              57
+   Dissolved oxygen is observed on the same analyser and is not controlled. The observer
+reports it. The phase logic compares it with 30 ppb. The predictive controller includes it
+in ℓsoft so that a move which would add oxygen by flashing is expensive, and so that a
+move which cannot remove oxygen already present is not invented. Those are different
+uses of the same measurement. Conflating them is how a ratio station gets talked into
+chasing a disturbance it has no actuator for.
+
+
+
+2.2.16      Faults the cost already contains
+
+Four faults are inside the formulation rather than on a list of future work.
+
+   A biased beer-header transmitter is bh . It is estimated once and subtracted. Leaving it
+inside the nominal model produces the grade-change offset of Section 3.2.3.
+
+   A wrong capacity is an element of θ. It is the difference between the two predictive
+controllers in every scenario. The ratio station is less sensitive to it because the flow loops
+close on measured flow. The predictive controller is more sensitive to it because the flow it
+closes on is a prediction. That asymmetry is the reason the twin is not an optional display
+next to an otherwise finished controller.
+
+   An infeasible brand is a positive minimum of (1.27). The controller returns the
+minimiser. It does not return a feasibility flag unless the supervisory station computes
+the same one-dimensional search in w that Section 3.2.4 used and compares the two pure
+compromises with the weighted point. That search is cheap and should be part of the phase
+start, so that an operator sees “this mother beer cannot hit both numbers” before the
+valves move. The case study performs the search offline and confirms that the closed-loop
+tail matches it.
+
+   A sticky water valve is S in (2.27). Undetected, it turns a small flow correction into a
+delayed jump. Detected, it is a known lead on one command. The eight-second detection
+delay in the third scenario is a stand-in for a test that looks for a command change with
+no stem change [80, 81]. It is not a claim that eight seconds is the best detector.
+
+   Faults that are not inside the formulation are a plugged injector, a failed analyser, a
+bright-tank pressure below peq , and a dilution water whose calcium or oxygen certificate is
+
+                                              58
+already outside the release limit. The first three are interlocks. The fourth is a hold on
+the phase. The controller is not asked to blend its way around them.
+
+
+
+2.2.17     What each technology is for
+
+The first technology is a way to choose u when the model is believed. It coordinates the
+three valves, it uses the nonlinear quality map, and it prices a flashing vena contracta
+in the same sum as a missed extract. The second technology is a way to decide whether
+the model should be believed, and to correct the particular parameters that a blend skid
+gets wrong: capacities, a pressure bias, a solubility scale, a density contraction, a line
+resistance that must be estimated as a sum, and a deadband. A residual network is part
+of the second technology and is subject to a hold-out gate.
+
+   The next chapter builds the numerical skid on which both are estimated, and it reports
+what the beer does.
+
+
+
+
+                                           59
+Chapter 3
+
+System Build and Estimation
+
+The technologies of Chapter 2 are estimated on a numerical skid that is more detailed
+than the controller’s nominal model and is fully known, so that every estimate can be
+scored against a truth. This chapter first builds that skid—pipes, valves, sensors, software
+and the three upsets—and then reports the parameter estimates and the beer that each
+controller makes.
+
+
+
+3.1      System build
+
+3.1.1     Pipes, valves and the sizing that sets the design point
+
+The beer line is a 66 mm bore, the water line a 53 mm bore, and the blend line an 81 mm
+bore, 18 m from the mixer to the final valve. Those bores keep the design velocities near
+1 m s−1 , which is fast enough to stay turbulent and slow enough for a hygienic line. The
+static mixer and the adjacent pipe hold 80 L. Minor losses are lumped as K = 14, a
+plausible sum for a mixer, a handful of bends and two instrument tees [35, 84]. Roughness
+is 2 µm, a polished stainless bore [34]. Viscosity is 2.6 mPa s on the mother beer and
+1.67 mPa s on the cold water; the blend-line Reynolds number at the design point is
+4.0 × 104 , so FR in (1.7) is unity and the Haaland friction factor is 0.0218.
+
+   Valve capacities were chosen so that the solved lifts of (2.9) sit near seven tenths for
+the inlets and at 0.84 for the final valve, inside the equal-percentage region and off the
+
+
+                                             60
+seat. The sized coefficients are
+
+
+                         Kv,h = 32,       Kv,w = 12,       Kv,f = 64,                      (3.1)
+
+
+in cubic metres per hour. Recovery factors are 0.90, 0.93 and 0.86. The final valve is the
+least recovering of the three, which is why its vena contracta, and not the beer valve’s, is
+the binding carbon-dioxide constraint. A project that buys a high-recovery cage for the
+final valve buys margin. The controller still has to know FL , because (1.12) is linear in
+1/FL2 .
+
+    Headers are fixed boundary conditions of the cellar: 4.80 bar absolute on the beer
+(3.79 bar gauge), 5.30 bar absolute on the water, and 2.40 bar absolute on the bright tank
+(1.39 bar gauge). The tank pressure is the number that makes a non-flashing final valve
+possible. At 1.90 bar of equilibrium pressure, a tank at 2.00 bar would put the vena
+contracta below equilibrium for any useful drop across the final valve. Raising the tank to
+2.40 bar is a cellar setpoint, decided before the skid is tuned. The predictive controller can
+trim the mix pressure above that floor. It cannot invent downstream pressure the cellar
+has not provided.
+
+    The carbon-dioxide injector is sized for 15 g s−1 , twice the lager dose of 7.51 g s−1 . The
+dose calculation is the steady balance (1.19) at the solved flows:
+
+
+                        ch Qh = 5.50 × 13.962 × 1000 = 76 791 g h−1 ,
+
+                       cw Qw = 0.03 × 6.055 × 1000 = 182 g h−1 ,
+
+                        c⋆ Qf = 5.20 × 20.000 × 1000 = 104 000 g h−1 .
+
+
+The difference is 27 027 g h−1 , or 7.508 g s−1 , which matches the optimised dose to the last
+reported digit. The injector is a fourth manipulated variable. It is not one of the three
+liquid valves. Treating it as a separate flow controller, fed by (1.19), is what the baseline
+does. Putting it inside z is what the predictive controller does. Both are legitimate; they
+diverge when the flows are still moving and (1.19) is being evaluated on a transient.
+
+    Dilution water at the design point carries 0.03 g L−1 of carbon dioxide and 12 ppb
+
+
+                                              61
+of oxygen. The oxygen is inside the band corosys Prozesssysteme GmbH [14] quote for
+deaerated water and inside the concern Palmer and Kaminski [15] raise about oxygen
+picked up at packaging. The mother beer carries 8 ppb. Nothing in the build puts an
+oxygen-removal unit on the skid. The alarm threshold used in the soft cost is 30 ppb in
+the product.
+
+
+
+3.1.2    Sensors, delays and the numbers the estimator may see
+
+Each inlet and the product have a Coriolis measurement of flow and density [38]. Pressure
+is measured at both headers, at the mix node and at the tank. Temperature is measured
+and, in this study, is constant at 2 ◦ C. Stem position is measured by the positioner.
+Original extract, alcohol, carbon dioxide and dissolved oxygen are measured at the outlet
+with a 12 s delay and with noise of 0.008◦ P, 0.008 % by volume, 0.015 g L−1 and 1.5 ppb.
+The mother-beer analysis is delayed by 8 s. The beer-header transmitter reads 0.10 bar high
+until commissioning removes the bias. These are the only observations Algorithms 1 and 2
+receive. The true vena-contracta pressure, the true capacities and the true contraction are
+withheld and used only as the score.
+
+   The plant density uses γ = 1.2 × 10−4 . The plant solubility scale is 0.93. The plant
+capacities are the sized values above. The controller’s nominal model, until the twin is
+commissioned, uses the wrong capacities, the wrong roughness, no contraction, a unit
+solubility scale and the biased header. That split is the whole point of having two
+technologies rather than one.
+
+   Table 3.1 separates the three clocks, because they are easy to collapse into one “sample
+time” and the collapse hides which delay is physical. The plant is integrated every second
+with the held command. The supervisory station wakes every four seconds, which is the
+∆tc of (2.12) and of Algorithm 1. Inside a prediction the mixer advances in steps of two
+seconds, three of them in each move block. The outlet analyser contributes a delay of
+twelve plant steps, and the mother-beer analysis a delay of eight. A grade change that is
+“inside the band in sixteen seconds” has therefore been seen by four control samples and
+has not yet been seen by the outlet analyser at all. The sixteen seconds are a statement
+
+
+                                            62
+about the mixer state, which the flow integration observes, and not about a reading that
+arrives one residence time later and trims a bias. On the commissioned model that trim
+is at the noise level. On the nominal model the analyser cannot remove the 0.19◦ P tail,
+because the model treats the biased steady state as the right one.
+
+Table 3.1: Clocks on the numerical skid. The plant step is the integration of the mixer. The
+control step is when a new command may be published.
+
+                       Clock                        Period   Count in 16 s
+                       Plant integration               1s              16
+                       Control and ratio station       4s               4
+                       Shooting step                   2s               8
+                       Prediction horizon             12 s             —
+                       Outlet analysis delay          12 s             —
+                       Mother-beer analysis delay      8s              —
+
+
+   The noise that is added at each plant step is part of the build, not an afterthought of
+the plots. Flow noise is 0.02 m3 h−1 on the beer and the product and 0.015 m3 h−1 on the
+water. Mix-pressure noise is 0.006 bar. The observer that feeds the predictive controller
+is the mixer state plus 0.01 percentagepoints by weight on alcohol and real extract and
+0.02 g L−1 on carbon dioxide. Those magnitudes are smaller than a quality tolerance
+and larger than zero, so a controller cannot win by reading the plant state as an oracle
+and cannot be blamed for a sensor it was not given. The same seed is used for all three
+controllers inside one scenario. A difference in Table 3.5 is a difference of command, not a
+difference of noise.
+
+
+
+3.1.3     Software and the phase that runs a brand
+
+Figure 3.1 is the runtime. The programmable controller owns the interlocks and the
+valve solenoids. It publishes measurements and accepts a setpoint. The twin and the
+predictive controller run in a supervisory station on a 4 s clock. OPC UA carries the
+named values [67]. The brand change is an ISA-88 phase [66]: a start command loads
+(p⋆OE , ABV⋆ , c⋆ , Q⋆f ), a running state executes Algorithm 1, and a hold state freezes the
+last legal command if oxygen, a water analysis or a pressure interlock trips. The ratio
+station, when it is the selected controller, occupies the same phase with (2.12) in place of
+
+
+                                              63
+the nonlinear program. Switching controllers does not switch safety logic.
+
+                 Skid           measurements         PLC              OPC UA      3V-NMPC
+        valves, meters, injector solenoids interlocks, ISA-88 phase   setpoints   Algorithm 1
+
+
+                                                                                   PIP-Twin
+                                                                                  Algorithm 2
+Figure 3.1: Runtime of the two technologies. The programmable controller is the only writer of
+solenoid outputs. The twin publishes a model; the predictive controller publishes a setpoint.
+
+
+   The numerical campaign is the program src/simulate_blender.py. Commissioning
+uses a fixed random seed of 29. Each closed-loop scenario reseeds the sensor noise so
+that the three controllers see the same noise. The plant, the nominal model and the
+commissioned twin are the classes defined by the equations of Chapter 2. No gain, weight
+or capacity reported in this thesis was typed in after looking at a finished plot in order to
+reverse an inconvenient result. Gains that made the baseline oscillate at the rate limit
+were reduced, once, to the loop-gain rule of (2.12), and the scenario was rerun. The tables
+in this chapter are that rerun.
+
+
+
+3.1.4      The three upsets
+
+All three scenarios start at the lager steady point (2.9) and apply the upset at t = 20 s.
+Integral absolute error is accumulated from the upset to the end of the run. Settling time
+is the time after the upset at which the original-extract error enters and remains inside
+0.05◦ P. If that never happens, the table records a time near the length of the run.
+
+   The first upset is a grade change to the light brand: original extract 9.687◦ P, alcohol
+4.000 % by volume, carbon dioxide 5.00 g L−1 , flow unchanged. The run lasts 150 s. This
+is the feasible move. Both extract and alcohol are the w = 0.58 image of the same mother
+beer, so a correct model has a solution of zero quality cost.
+
+   The second upset keeps the lager brand and changes the supply. Beer-header pressure
+falls by 0.45 bar. Real extract of the mother beer rises by 0.45 percentage points and
+alcohol by weight falls by 0.25 percentage points, with carbon dioxide falling from 5.50 g L−1
+to 5.15 g L−1 . The run lasts 160 s. Section 3.2.4 shows that this mother beer cannot hit
+
+
+                                               64
+the lager extract and the lager alcohol together. The upset is a test of the compromise,
+not of tracking.
+
+   The third upset keeps the lager brand, raises the dilution-water oxygen from 12 ppb to
+85 ppb, and applies a deadband of 0.03 lift to the water valve. The twin-backed controller
+is told the deadband 8 s after it appears, which is a detection delay of the size discussed
+by Jelali and Huang [81]. The run lasts 140 s. The oxygen half of the upset is a test of
+what estimation must refuse to control.
+
+
+
+3.2      Estimation
+
+3.2.1     The steady point the estimates are taken about
+
+Table 3.2 is the lager point on the plant. Every quality figure meets the brand. Dissolved
+oxygen is the inlet blend. The Reynolds number confirms the turbulent valve law. Figure 3.2
+walks the absolute pressure from the beer header to the bright tank. The equilibrium
+pressure sits below the entire profile, including the final vena contracta. Figure 3.3
+compares the inherent equal-percentage curve, scaled to the installed flow at lift 0.85, with
+the beer flow that the network actually passes as the beer valve moves and the other two
+lifts stay at the steady point. The installed curve is flatter. A ratio station that was tuned
+on the inherent gain is mistuned on the skid. The predictive controller never uses the
+inherent curve as a gain; it re-solves the network.
+
+   The gain matrix and the relative-gain array are Table 3.3, already interpreted in (2.10)
+and (2.11). The estimation use of that table is practical. Decentralised loops are a fair
+baseline at this point, so a later improvement has to come from the transient, from the
+constraint, or from the model, not from a pathological pairing.
+
+
+
+3.2.2     Commissioning estimates
+
+Table 3.4 is the result of Algorithm 2. The three capacities are recovered to a tenth of a
+percent, with standard errors of 0.08, 0.01 and 0.12 cubic metres per hour. The header
+
+
+
+                                             65
+       Table 3.2: Steady operating point of the sales-gravity lager on the plant model.
+
+                        Quantity                                  Value
+                        Beer-valve lift                           0.704
+                        Water-valve lift                          0.711
+                        Final-valve lift                          0.840
+                        Carbon-dioxide dose (g/s)                 7.507
+                        Original extract (◦ P)                   11.613
+                        Alcohol (% v/v)                           4.833
+                        Dissolved CO2 (g/L)                       5.200
+                        Dissolved oxygen (ppb)                     9.22
+                        Beer flow (m3 /h)                        13.962
+                        Water flow (m3 /h)                        6.055
+                        Product flow (m3 /h)                     20.000
+                        Beer velocity (m/s)                       1.134
+                        Water velocity (m/s)                      0.762
+                        Product velocity (m/s)                    1.078
+                        Mix pressure (bar a)                      2.855
+                        CO2 equilibrium pressure (bar a)          1.905
+                        Pressure margin (bar)                     0.950
+                        Final-valve vena contracta (bar a)        2.279
+                        Blend-line Reynolds number                40058
+                        Darcy friction factor                    0.0218
+                        Mother-beer mass fraction                0.7000
+
+
+Table 3.3: Steady gain matrix and relative-gain array at the lager point. Outputs are beer flow
+(m3 /h), water flow (m3 /h) and mix pressure (bar). Inputs are the three valve lifts.
+
+                                        Beer lift   Water lift   Final lift
+                     Beer flow             48.05      -3.21        7.64
+                     Water flow            -2.59      23.09         2.64
+                     Mix pressure           2.09       0.89        -2.14
+                     Λ beer flow            0.87      -0.00         0.13
+                     Λ water flow          -0.00      0.95          0.05
+                     Λ mix pressure         0.13      0.05          0.82
+
+
+Table 3.4: Commissioning estimates. Standard errors are from the linearised least-squares
+covariance.
+
+                     Parameter              True    Estimate     Std. error
+                     Kv,h (m3 /h)           32.00      32.02          0.08
+                     Kv,w (m3 /h)           12.00      12.00          0.01
+                     Kv,f (m3 /h)           64.00      63.99          0.12
+                     Header bias (bar)      0.100      0.098         0.006
+                     Effective loss CL      18.85      18.37             –
+                     Solubility scale κζ    0.930      0.930             –
+
+
+                                               66
+Table 3.5: Closed-loop estimation of beer quality after each upset. IAE is integrated from the
+upset to the end of the run. Settling time is the time after the upset until original-extract error
+remains inside 0.05 ◦ P.
+ Case                                                       Controller                   IAE OE        IAE ABV IAE CO2         Settle (s)   Travel   Min. margin
+ S1 grade change        Ratio-PI                                                             31.30        13.48        11.81         129    7.091              0.87
+ S1 grade change        3V-NMPC                                                              32.29        13.90         8.10         129    1.612              0.78
+ S1 grade change        3V-NMPC + PIP-Twin                                                   10.75         4.63         2.06          16    1.675              0.95
+ S2 supply upset        Ratio-PI                                                             12.38        21.44         2.83         139    0.833              0.86
+ S2 supply upset        3V-NMPC                                                              39.34         9.96         5.06         139    0.454              0.91
+ S2 supply upset        3V-NMPC + PIP-Twin                                                   20.04        17.80         1.27         139    0.414              0.90
+ S3 oxygen and stiction Ratio-PI                                                              3.97         1.73         1.07         107    0.203              0.86
+ S3 oxygen and stiction 3V-NMPC                                                              19.28         8.41         6.06         116    0.349              0.96
+ S3 oxygen and stiction 3V-NMPC + PIP-Twin                                                    1.29         0.56         0.95         <1     0.634              0.91
+
+
+
+                                                                                                                                  CO2 equilibrium pressure
+                              4.5
+    Absolute pressure (bar)
+
+
+
+
+                              4.0
+
+                              3.5
+
+                              3.0
+
+                              2.5
+
+                              2.0
+                                             Beer                 Beer-valve               Mix               After           Final-valve         Bright-beer
+                                            header              vena contracta            node             line loss       vena contracta            tank
+
+Figure 3.2: Absolute pressure along the beer path at the lager steady point. The dashed line is
+the carbon-dioxide equilibrium pressure of the finished beer.
+
+
+                                                       25     Inherent equal-percentage, scaled
+                                                              Installed beer flow
+
+                                                       20
+                                    Beer flow (m3/h)
+
+
+
+
+                                                       15
+
+                                                       10
+
+                                                        5
+
+
+                                                                0.3           0.4         0.5           0.6        0.7            0.8          0.9
+                                                                                        Beer-valve lift (fraction)
+
+Figure 3.3: Inherent equal-percentage capacity, scaled to the installed beer flow at lift 0.85,
+and the beer flow the network passes with the water and final valves fixed.
+
+
+                                                                                                  67
+bias is recovered as 0.098 bar against 0.100 bar, with a standard error of 0.006 bar. The
+solubility scale is 0.930 against 0.930. The contraction estimated from (2.25) is 1.187×10−4
+against 1.20 × 10−4 . These are the parameters the grade change needs, and the campaign
+of twenty-eight noisy steady points is enough to get them.
+
+   Roughness and minor loss are the parameters the campaign cannot separate. The
+least-squares point drove roughness to several millimetres and the minor-loss coefficient
+to zero, with a standard error on the minor loss of order 102 . That point is not reported
+as a roughness of the pipe, because the standard error says it is not one. The effective
+resistance CL computed from the same point at Re = 4 × 104 is 18.37 against a true value
+of 18.85, an error of two and a half percent. The two bad parameters have traded off
+inside a sum that the pressure drop can see. The next campaign should estimate CL as a
+single positive parameter and should stop printing ε.
+
+   Figure 3.4 is the beer-flow parity of the nominal model and of the commissioned
+physical model. The nominal cloud is biased by the wrong capacity and the wrong
+header. The commissioned cloud lies on the diagonal, inside the 0.03 m3 h−1 noise that
+was added to the measurements. The held-out root-mean-square residual of the physical
+model is 0.030 m3 h−1 . After the residual network is trained, the same held-out residual is
+0.037 m3 h−1 . The network has learned noise. The gate of Algorithm 2 therefore publishes
+∆Q = 0, and every closed-loop trace in this chapter that is labelled with the twin is using
+the calibrated physical parameters only. This is the result anticipated in Section 2.2. A
+physics-informed residual is part of the design, and on this skid it is correctly left unused.
+Kadlec et al. [71] describe the same decision as the maintenance step of a soft sensor: a
+block that does not improve held-out data is taken out of service.
+
+
+
+3.2.3     Grade change
+
+Figure 3.5 is original extract, alcohol and carbon dioxide through the grade change.
+Figure 3.6 is the three lifts. Figure 3.7 collects the extract integrals of all three scenarios.
+The numbers are the first block of Table 3.5.
+
+   The ratio station and the predictive controller on the nominal model finish with almost
+
+
+                                              68
+                                           16       Beer flow, nominal model
+                                                    Beer flow, PIP-Twin
+
+                                           14
+
+                                           12
+              Predicted beer flow (m3/h)
+
+
+
+                                           10
+
+                                            8
+
+                                            6
+
+                                            4
+
+                                                4             6         8        10         12   14   16
+                                                                     Measured beer flow (m3/h)
+Figure 3.4: Beer flow predicted by the nominal model and by the commissioned twin, against
+the measured beer flow on the commissioning points.
+
+
+the same extract integral, 31.3◦ P·s and 32.3◦ P·s. The nominal predictive controller leaves
+a tail error of 0.19◦ P. Its model, given the wrong capacity and the biased header, believes
+a lift that is not the lift the plant needs, and re-optimisation from a measured state does
+not remove an error that the model explains away. The ratio station, integrating measured
+flow, brings the mean tail error down to 0.02◦ P, but it spends a valve travel of 7.1 lift-units
+getting there and its flow integral is 107 (m3 /h) · s, against 51 to 68 for the predictive
+controllers. The strict settling test, every sample inside 0.05◦ P for the rest of the run, is
+not met by either of those two controllers inside the 130 s that remain.
+
+   The predictive controller on the commissioned twin meets the strict test at 16 s. The
+first applied move sits on the rate limit of 0.16 lift on all three valves: beer flow falls to
+about 6.4 m3 h−1 and water flow rises to about 10.2 m3 h−1 , so the inlet is lighter than the
+light brand and the extract falls faster than e−t/τ . Four seconds after the upset the error
+is 0.87◦ P, against 1.46◦ P for a residence-time decay of the same step. The tail errors, once
+the flows have returned near 11.5 m3 h−1 and 8.5 m3 h−1 , are 0.012◦ P, 0.005 % by volume
+and 0.001 g L−1 . The extract integral falls from about 32◦ P·s to 10.7◦ P·s. Carbon dioxide
+
+                                                                               69
+falls from 11.8 and 8.1 to 2.1 g L−1 ·s. The minimum mix-pressure margin stays at 0.95 bar,
+and no vena contracta crosses equilibrium. Dissolved oxygen stays near 9.7 ppb. The
+maximum extract excursion is 1.92◦ P, which is the size of the setpoint step itself, recorded
+at the sample the step is applied. Section 2.1.14 gives the lifts.
+
+   Table 3.6 is that same trajectory at the control samples, taken from the commissioned
+run. The steady light-brand flows are about 11.6 m3 h−1 of beer and 8.4 m3 h−1 of water.
+The first applied command does not go there. It cuts the beer flow by more than half
+and raises the water flow above the new steady value, and every lift moves by the legal
+maximum of 0.16. The extract error drops from 1.92◦ P to 0.87◦ P in that one sample. The
+sample at 9 s is the clumsy one: product flow falls to 13.2 m3 h−1 while the ratio is being
+put back, and the extract almost stops moving. By 16 s the error is 0.04◦ P and the flows
+are within about 1 m3 h−1 of the light-brand steady state. The dose, which is 7.5 g s−1 on
+the lager, is above 9 g s−1 throughout, because the light brand contains more uncarbonated
+water even after the overshoot has been removed.
+Table 3.6: Commissioned grade change, at the control samples after the upset. Flows are cubic
+metres per hour and the dose is grams per second.
+
+                 Time (s)     Qh    Qw      Qf    Dose   Extract error (◦ P)
+                         0 13.8     6.1   19.9     7.7                +1.92
+                         1 6.4     10.2   16.6     9.4                +1.64
+                         5 9.0     10.7   19.7    11.6                +0.68
+                         9 7.7      5.6   13.2     9.3                +0.17
+                        13 11.7     9.2   20.9    10.7                +0.12
+                        16 11.7     9.2   20.9    10.0                +0.04
+                        21 11.6     8.4   20.0    10.1                −0.01
+
+
+   The product-flow integral on this path, accumulated in the same way as the extract
+integral, is 51 (m3 /h) · s. A move that had gone straight to the steady light-brand lifts
+would have charged much less flow error and left the vessel to forget the lager at τ = 14.4 s.
+At that rate the error at 16 s would still be about 0.63◦ P, and the strict band would be
+missed. The 51 is the price of not missing it. It is smaller than the ratio station’s flow
+integral of 107 (m3 /h) · s, and it is paid once, at the start, rather than as a reversal hunt
+across the rest of the run.
+
+   The grade-change estimate is therefore not that predictive control beats ratio control.
+
+                                             70
+On the nominal model it does not, for extract. The estimate is that predictive control on
+the commissioned twin brings a feasible brand change inside the extract tolerance in 16 s by
+spending the rate limit once, and that the same predictive control on the uncommissioned
+model does not. The first technology needs the second.
+
+                                                                                  Ratio-PI
+                            11.5                                                  3V-NMPC
+    Original extract (°P)
+
+
+
+
+                                                                                  3V-NMPC + PIP-Twin
+                            11.0                                                  Setpoint
+                            10.5
+                            10.0
+                             9.5
+
+                               4.8
+           Alcohol (% v/v)
+
+
+
+
+                               4.6
+                               4.4
+                               4.2
+                               4.0
+                               3.8
+
+                               5.2
+         Dissolved CO2 (g/L)
+
+
+
+
+                               5.0
+
+                               4.8
+
+                                     0   20    40    60          80   100   120         140
+                                                           Time (s)
+
+Figure 3.5: Grade change from the lager to the light brand at t = 20 s. The thin line is the
+setpoint.
+
+
+
+
+3.2.4                           A mother beer that makes the brand infeasible
+
+After the supply upset the mother beer is Aw = 5.15 % and Er = 6.55 %. Its original
+extract, by (1.1), is 16.297◦ P, almost unchanged. Its alcohol is 6.617 % by volume rather
+than 6.923 %. A one-dimensional search in w on the plant density gives the two pure
+compromises and the weighted one. The mass fraction that restores the lager extract
+is w = 0.702, and the alcohol there is 4.626 % by volume, short by 0.207 %. The mass
+
+
+                                                          71
+                                          0.8
+    Beer-valve lift
+
+
+                                          0.6
+                                          0.4       Ratio-PI
+                                                    3V-NMPC
+                                          0.2       3V-NMPC + PIP-Twin
+
+
+                                          0.8
+    Water-valve lift
+
+
+
+
+                                          0.6
+                                          0.4
+                                          0.2
+
+                                          0.8
+    Final-valve lift
+
+
+
+
+                                          0.6
+                                          0.4
+                                          0.2
+                                                0            20          40   60         80      100       120          140
+                                                                                   Time (s)
+
+Figure 3.6: Valve lifts during the grade change. The ratio station continues to move after the
+predictive controllers have stopped.
+
+
+
+
+                                          40                                                                     Ratio-PI
+                                                                                                                 3V-NMPC
+                                          35                                                                     3V-NMPC + PIP-Twin
+         IAE of original extract (°P·s)
+
+
+
+
+                                          30
+
+                                          25
+
+                                          20
+
+                                          15
+
+                                          10
+
+                                           5
+
+                                           0
+                                                    S1 grade change            S2 supply upset         S3 oxygen and stiction
+
+
+Figure 3.7: Integral absolute error of original extract from the upset to the end of each run.
+
+
+
+                                                                                   72
+fraction that restores the lager alcohol is w = 0.733, and the original extract there is
+12.106◦ P, high by 0.493◦ P. The mass fraction that minimises (1.27) without the flow and
+pressure terms is w = 0.712, at 11.780◦ P and 4.696 % by volume. In tolerance units that
+point costs about 32. The extract-only point costs about 48. The alcohol-only point costs
+about 97. The weighted optimum sits closer to the extract target because a half-degree
+extract miss is more tolerances than a fifth of a percent of alcohol, and it does not sit on
+the extract target, because giving up all of the alcohol is still expensive.
+
+   Figure 3.8 and the second block of Table 3.5 are what the three controllers do with that
+geometry. The ratio station’s tail is +0.091◦ P and −0.169 % by volume. Its integral on
+extract has pulled it toward the extract-only point. The nominal predictive controller’s tail
+is +0.303◦ P and −0.080 % by volume: the biased model has chased alcohol and missed the
+weighted point. The commissioned predictive controller’s tail is +0.164◦ P and −0.138 %
+by volume, which is 11.777◦ P and 4.695 % by volume, against the calculated optimum of
+11.780◦ P and 4.696 %. The match is inside the noise of the tail average.
+
+   No controller records a settling time inside 0.05◦ P, because the weighted optimum itself
+lies 0.17◦ P off the setpoint. A settling test written on a single setpoint is the wrong test
+for an infeasible brand. The right test is the distance to the weighted point, and on that
+test the commissioned controller has arrived. It also holds carbon dioxide to an integral
+of 1.27 g L−1 ·s against 2.83 and 5.06, and product flow to 10.2 (m3 /h) · s against 30.5 and
+45.2. The header step of 0.45 bar is absorbed without a vena-contracta violation. The
+minimum margins remain above 0.86 bar.
+
+   The estimate from this upset is that a calibrated predictive controller states the
+compromise the tolerances asked for, and that a ratio station with an extract integral
+states a different compromise without saying so. Neither technology creates a second ratio.
+The alcohol that the fermentation did not produce is not in the skid.
+
+
+
+
+                                             73
+                                       Ratio-PI
+                            11.9       3V-NMPC
+    Original extract (°P)
+
+
+
+
+                                       3V-NMPC + PIP-Twin
+                            11.8       Setpoint
+
+                            11.7
+                            11.6
+                            11.5
+                            4.90
+                            4.85
+    Alcohol (% v/v)
+
+
+
+
+                            4.80
+                            4.75
+                            4.70
+                            4.65
+                            5.25
+    Dissolved CO2 (g/L)
+
+
+
+
+                            5.20
+
+                            5.15
+
+                            5.10
+                                   0           20           40   60       80      100   120   140   160
+                                                                       Time (s)
+
+Figure 3.8: Supply upset at t = 20 s: beer-header pressure down by 0.45 bar, mother beer less
+attenuated. Setpoints are unchanged and are not jointly feasible.
+
+
+
+
+                                                                      74
+3.2.5     Oxygen and a sticky water valve
+
+The oxygen balance at w = 0.70 with 85 ppb in the water and 8 ppb in the beer is
+
+
+                         cDO ≈ 0.697 × 8 + 0.303 × 85 = 31.3 ppb,                          (3.2)
+
+
+using the volumetric water fraction 6.06/20. Table 3.5 reports a maximum dissolved
+oxygen between 31.2 ppb and 31.4 ppb for every controller. Figure 3.9 shows the quality
+channels; the oxygen itself is the number in the table rather than a fourth trace, because
+the three traces would overlap. No valve motion removed the oxygen, and no valve motion
+added a flashing pickup, because the margin stayed above 0.86 bar. The alarm at 30 ppb
+is the correct output of the estimator. A controller that moved the water valve to chase a
+lower oxygen would have left the brand. The phase logic of Section 3.1 holds the brand or
+switches the water source. It does not retune w.
+
+   The sticky valve is a different estimate. The ratio station’s extract integral is 4.0◦ P·s
+and its strict settling time is 107 s, with a tail error of 0.040◦ P. The nominal predictive
+controller, wrong gain plus an unknown deadband, is worse: an integral of 19.3◦ P·s and a
+tail of 0.144◦ P. The commissioned controller, with the inverse (2.27) after the eight-second
+detection delay, keeps the maximum extract error at 0.035◦ P and is therefore inside the
+settling band from the start of the upset. Its integral is 1.3◦ P·s. Valve travel is higher than
+the ratio station’s, 0.63 against 0.20, because the inverse takes a deliberate step through
+the deadband instead of waiting for an integral to creep across it. The beer moves less
+than the valve does.
+
+   The estimate from this upset has two sentences. Dissolved oxygen that arrives in the
+water is observed and is not a control degree of freedom. Stiction that is estimated and
+inverted stays inside the extract tolerance; the same predictive controller without that
+estimate, and with a biased capacity, is the worst of the three stations. Deploying the
+first technology without the second is not a conservative choice. On this upset it is the
+expensive one.
+
+
+
+
+                                              75
+                                              Ratio-PI
+                                              3V-NMPC
+           Original extract (°P)
+
+
+
+
+                                   11.8       3V-NMPC + PIP-Twin
+                                              Setpoint
+
+                                   11.7
+
+                                   11.6
+                           4.950
+                           4.925
+    Alcohol (% v/v)
+
+
+
+
+                           4.900
+                           4.875
+                           4.850
+                           4.825
+
+                           5.275
+    Dissolved CO2 (g/L)
+
+
+
+
+                           5.250
+                           5.225
+                           5.200
+                           5.175
+                                          0             20         40   60              80   100   120   140
+                                                                             Time (s)
+
+Figure 3.9: Dilution-water oxygen raised to 85 ppb and a water-valve deadband of 0.03 lift, from
+t = 20 s. Extract and alcohol stay near the lager setpoint only for the commissioned controller.
+
+
+
+
+                                                                        76
+3.2.6    Pressure drop, station by station
+
+The hand solution of Section 2.2.8 can be read as a commissioning sheet. At the lager
+point the beer header is 4.80 bar. The beer valve consumes 1.945 bar. The mix node is
+2.855 bar. The line, with CL = 18.85, consumes about 0.11 bar. The final valve consumes
+about 0.34 bar and delivers the beer to a tank at 2.40 bar. The throat of that valve is not
+at 2.40 bar. It is at 2.28 bar, because FL = 0.86 puts the vena contracta 0.46 bar below
+the upstream pressure of the valve and the recovery does not give all of that drop back
+before the throat. Equilibrium is 1.905 bar. The sheet therefore has two margins, 0.95 bar
+at the transmitter and 0.37 bar at the throat, and only the second one is the flash margin.
+
+   A pressure survey that records the transmitter and not the throat will accept a final
+valve with a poor recovery factor. The controller cannot see the throat either. It computes
+it from FL , which is a number from the valve data sheet [31, 33], and from the pressures it
+can measure. Commissioning checks the computation by confirming that the measured mix
+pressure, the measured tank pressure and the measured flow are consistent with the CL
+and the Kv,f in Table 3.4. They are, to the standard errors in that table. A discrepancy
+larger than those standard errors is a fouled mixer or a wrong recovery factor, and it is
+a reason to reopen the gate on the residual network rather than a reason to detune the
+brand.
+
+   The velocities that go with this sheet are 1.134 m s−1 on the beer, 0.762 m s−1 on the
+water and 1.078 m s−1 on the product. All three are in the turbulent hygienic range.
+The water line is the slowest, which is one reason a sticky water valve is the fault worth
+injecting: a valve that spends its life at a modest opening and a modest velocity is the
+valve whose stem is most likely to sit. The beer valve, at a higher opening and a higher
+gain, shows a stick as a flow error immediately. The water valve can hide a deadband of
+0.03 lift inside a flow change of less than one cubic metre per hour until the grade change
+asks it to move.
+
+
+
+
+                                            77
+3.2.7     What was estimated, and what a brewery still has to
+
+          measure
+
+The parameter estimation is Table 3.4: capacities and header bias to a small fraction of
+their values, solubility scale and contraction from their own one-point experiments, line
+resistance as a sum and not as a roughness. The quality estimation is Table 3.5 together
+with the weighted point of Section 3.2.4. On a feasible grade change the commissioned
+controller is inside 0.05◦ P in one residence time, and the uncommissioned predictive
+controller is not better than ratio control. On an infeasible mother beer the commissioned
+controller sits on the tolerance-weighted compromise to three decimal places of the steady
+calculation. On a sticky water valve it holds the brand, and on oxygenated dilution water
+it reports an alarm that every controller’s product confirms at 31 ppb.
+
+   Several limits are part of the estimate rather than footnotes under it. The plant and
+the twin share the same equation structure. A real trim that is not equal-percentage, or a
+mixer that is not a single volume, would open the residual-network gate and should be
+tested by repeating the hold-out on plant step tests before the gate is trusted. The pressure
+solver and the short sequential-quadratic program are not a certified real-time iteration;
+the timing result is that a 12 s horizon of this size solves in well under the 4 s sample on a
+desktop, which is necessary and not sufficient for an embedded controller. The terminal
+constraint that would support a stability argument was not imposed. Sensor faults were
+noise and one bias, not a failed meter. The bright-tank pressure was a boundary that had
+already been raised high enough to make the vena contracta feasible. A cellar that cannot
+provide that pressure has a different problem, and the controller will correctly spend flow
+to protect peq only inside the limits of the headers it is given.
+
+   Foam, yeast stress and the flavour match between a high-gravity beer and a sales-
+gravity beer remain the fermentation questions reviewed by Stewart [1], Gibson et al. [4]
+and Bamforth [10]. The skid does not answer them. What it can answer, and what this
+estimation measured, is whether the beer that dilution is capable of making is the beer
+that leaves the final valve. With the three lifts and the carbon-dioxide dose chosen by the
+predictive controller, and with the model of that controller commissioned by the twin,
+
+
+                                             78
+the feasible brand is inside the extract tolerance sixteen seconds after the change, the
+infeasible brand leaves at the compromise the tolerances define, and the oxygen that no
+valve can remove is reported rather than stirred.
+
+
+
+
+                                           79
+Bibliography
+
+[1] Graham G. Stewart. High-gravity brewing and distilling—past experiences and future
+   prospects. Journal of the American Society of Brewing Chemists, 68(1):1–9, 2010.
+   doi: 10.1094/ASBCJ-2009-1214-01.
+
+[2] Wolfgang Kunze. Technology Brewing and Malting. VLB Berlin, Berlin, 6 edition,
+   2019.
+
+[3] Pradeep Puligundla, Daniela Smogrovicova, Vijaya Sarathi Reddy Obulam, and
+   Sanghoon Ko. Very high gravity (VHG) ethanolic brewing and fermentation: A
+   research update. Journal of Industrial Microbiology and Biotechnology, 38(9):1133–
+   1144, 2011. doi: 10.1007/s10295-011-0999-3.
+
+[4] Brian R. Gibson, Stephen J. Lawrence, Jessica P. R. Leclaire, Chris D. Powell, and
+   Katherine A. Smart. Yeast responses to stresses associated with industrial brewery
+   handling. FEMS Microbiology Reviews, 31(5):535–569, 2007. doi: 10.1111/j.1574-6976.
+   2007.00076.x.
+
+[5] Gregory P. Casey, Carol A. Magnus, and W. M. Ingledew. High-gravity brewing:
+   Effects of nutrition on yeast composition, fermentative ability, and alcohol production.
+   Applied and Environmental Microbiology, 48(3):639–646, 1984. doi: 10.1128/aem.48.3.
+   639-646.1984.
+
+[6] Graham G. Stewart, Annie E. Hill, and Inge Russell. 125th anniversary review:
+   Developments in brewing and distilling yeast strains. Journal of the Institute of
+   Brewing, 119(4):202–220, 2013. doi: 10.1002/jib.104.
+
+
+
+                                           80
+ [7] Chris Boulton and David Quain. Brewing Yeast and Fermentation. Blackwell Science,
+    Oxford, 2001.
+
+ [8] Dennis E. Briggs, Chris A. Boulton, Peter A. Brookes, and Roger Stevens. Brewing:
+    Science and Practice. Woodhead Publishing, Cambridge, 2004.
+
+ [9] Fergus G. Priest and Graham G. Stewart, editors. Handbook of Brewing. CRC Press,
+    Boca Raton, 2 edition, 2006.
+
+[10] Charles W. Bamforth, editor. Beer: A Quality Perspective. Academic Press, Burling-
+    ton, 2009.
+
+[11] Bart Vanderhaegen, Hedwig Neven, Hubert Verachtert, and Guy Derdelinckx. The
+    chemistry of beer aging—a critical review. Food Chemistry, 95(3):357–381, 2006. doi:
+    10.1016/j.foodchem.2005.01.006.
+
+[12] Minoru Uchida and Masahiro Ono. Improvement for oxidative flavor stability of
+    beer—role of OH-radical in beer oxidation. Journal of the American Society of
+    Brewing Chemists, 54(4):198–204, 1996. doi: 10.1094/ASBCJ-54-0198.
+
+[13] Centec GmbH. High gravity blending. https://www.centec.de/process-systems/
+    brewery/blender/, 2024. Technical data sheet, accessed 29 October 2026.
+
+[14] corosys Prozesssysteme GmbH.          Blending and carbonisation systems for
+    breweries.      https://bbt.corosys.com/en/portrait/professional-articles/
+    blending-carbonisation-plants-breweries.php, 2024. Professional article, ac-
+    cessed 29 October 2026.
+
+[15] John Palmer and Colin Kaminski. Water: A Comprehensive Guide for Brewers.
+    Brewers Publications, Boulder, 2013.
+
+[16] Stephen R. Holle. A Handbook of Basic Brewing Calculations. Master Brewers
+    Association of the Americas, St. Paul, 2003.
+
+[17] MEBAK. Wort, Beer and Beer-based Beverages. Mitteleuropäische Brautechnische
+    Analysenkommission, Freising, 2013.
+
+                                           81
+[18] American Society of Brewing Chemists. Methods of Analysis. ASBC, St. Paul, 2014.
+    Beer-4, Alcohol; Beer-13, Dissolved carbon dioxide.
+
+[19] European Brewery Convention. Analytica-EBC. Fachverlag Hans Carl, Nürnberg,
+    2013.
+
+[20] Alexander Findlay and B. Shen. The solubility of carbon dioxide in beer. Journal of
+    the Chemical Society, Transactions, 99:1313–1320, 1911. doi: 10.1039/CT9119901313.
+
+[21] R. A. Speers and A. J. MacIntosh. Carbon dioxide solubility in beer. Journal
+    of the American Society of Brewing Chemists, 71(4):242–247, 2013. doi: 10.1094/
+    ASBCJ-2013-1008-01.
+
+[22] R. F. Weiss. Carbon dioxide in water and seawater: The solubility of a non-ideal gas.
+    Marine Chemistry, 2(3):203–215, 1974. doi: 10.1016/0304-4203(74)90015-2.
+
+[23] John J. Carroll, John D. Slupsky, and Alan E. Mather. The solubility of carbon
+    dioxide in water at low pressure. Journal of Physical and Chemical Reference Data,
+    20(6):1201–1209, 1991. doi: 10.1063/1.555900.
+
+[24] M. Rammert and M. H. Pahl. Die Löslichkeit von Kohlendioxid in Getränken.
+    Brauwelt, 132:488–499, 1991.
+
+[25] F. Greg Shinskey. Process Control Systems: Application, Design, and Tuning. McGraw-
+    Hill, New York, 4 edition, 1996.
+
+[26] Dale E. Seborg, Thomas F. Edgar, Duncan A. Mellichamp, and Francis J. Doyle III.
+    Process Dynamics and Control. Wiley, Hoboken, 4 edition, 2016.
+
+[27] Edgar H. Bristol. On a new measure of interaction for multivariable process control.
+    IEEE Transactions on Automatic Control, 11(1):133–134, 1966. doi: 10.1109/TAC.
+    1966.1098266.
+
+[28] Sigurd Skogestad. Control structure design for complete chemical plants. Computers
+    and Chemical Engineering, 28(1–2):219–234, 2004. doi: 10.1016/j.compchemeng.2003.
+    08.002.
+
+                                           82
+[29] James J. Downs and Sigurd Skogestad. An industrial and academic perspective on
+    plantwide control. Annual Reviews in Control, 35(1):99–110, 2011. doi: 10.1016/j.
+    arcontrol.2011.03.006.
+
+[30] Sigurd Skogestad. Simple analytic rules for model reduction and PID controller tuning.
+    Journal of Process Control, 13(4):291–309, 2003. doi: 10.1016/S0959-1524(02)00062-8.
+
+[31] IEC 60534-2-1: Industrial-Process Control Valves—Part 2-1: Flow Capacity—Sizing
+    Equations for Fluid Flow under Installed Conditions. International Electrotechnical
+    Commission, Geneva, 2011.
+
+[32] ANSI/ISA-75.01.01-2012: Flow Equations for Sizing Control Valves. International
+    Society of Automation, Research Triangle Park, 2012.
+
+[33] Control Valve Handbook. Fisher Controls International, Marshalltown, 4 edition, 2005.
+
+[34] Frank M. White. Fluid Mechanics. McGraw-Hill, New York, 7 edition, 2011.
+
+[35] Flow of Fluids Through Valves, Fittings, and Pipe. Crane Co., Stamford, 2009.
+    Technical Paper No. 410.
+
+[36] R. L. Rohner and J. R. Thompkins. Continuous automatic control of carbonation
+    in beer streams. In Proceedings of the American Society of Brewing Chemists, pages
+    111–117, 1970.
+
+[37] William L. Luyben. Process Modeling, Simulation, and Control for Chemical Engineers.
+    McGraw-Hill, New York, 2 edition, 1990.
+
+[38] Tao Wang and Roger Baker. Coriolis flowmeters: A review of developments over the
+    past 20 years, and an assessment of the state of the art and likely future directions.
+    Flow Measurement and Instrumentation, 40:99–123, 2014. doi: 10.1016/j.flowmeasinst.
+    2014.08.015.
+
+[39] Anton Paar GmbH. Inline beverage analyzer: Beer monitor 5501/5601. https://
+    www.anton-paar.com/corp-en/products/details/beer-monitor/, 2024. Product
+    specification, accessed 29 October 2026.
+
+                                            83
+[40] T. Schöck, M. Hussein, B. Hitzmann, and T. Becker. Influence of dissolved carbon
+    dioxide on the sound velocity and adiabatic compressibility in aqueous solutions
+    with saccharose and ethanol. Journal of Molecular Liquids, 175:111–120, 2012. doi:
+    10.1016/j.molliq.2012.08.002.
+
+[41] Heinz W. Siesler, Yukihiro Ozaki, Satoshi Kawata, and H. Michael Heise, editors. Near-
+    Infrared Spectroscopy: Principles, Instruments, Applications. Wiley-VCH, Weinheim,
+    2002.
+
+[42] Dirk W. Lachenmeier. Rapid quality control of spirit drinks and beer using multivariate
+    data analysis of Fourier transform infrared spectra. Food Chemistry, 101(2):825–832,
+    2007. doi: 10.1016/j.foodchem.2005.12.032.
+
+[43] Fernando A. Iñón, Salvador Garrigues, and Miguel de la Guardia. Combination of
+    mid- and near-infrared spectroscopy for the determination of the quality properties of
+    beers. Analytica Chimica Acta, 571(2):167–174, 2006. doi: 10.1016/j.aca.2006.04.070.
+
+[44] Silvia Grassi, José Manuel Amigo, Christian Bøge Lyndgaard, Roberto Foschino,
+    and Ernestina Casiraghi. Beer fermentation: Monitoring of process parameters by
+    FT-NIR and multivariate data analysis. Food Chemistry, 155:279–286, 2014. doi:
+    10.1016/j.foodchem.2014.01.060.
+
+[45] Carlos E. García, David M. Prett, and Manfred Morari. Model predictive control:
+    Theory and practice—a survey. Automatica, 25(3):335–348, 1989. doi: 10.1016/
+    0005-1098(89)90002-2.
+
+[46] S. Joe Qin and Thomas A. Badgwell. A survey of industrial model predictive
+    control technology. Control Engineering Practice, 11(7):733–764, 2003. doi: 10.1016/
+    S0967-0661(02)00186-7.
+
+[47] D. Q. Mayne, J. B. Rawlings, C. V. Rao, and P. O. M. Scokaert. Constrained model
+    predictive control: Stability and optimality. Automatica, 36(6):789–814, 2000. doi:
+    10.1016/S0005-1098(99)00214-9.
+
+
+
+
+                                            84
+[48] James B. Rawlings, David Q. Mayne, and Moritz Diehl. Model Predictive Control:
+    Theory, Computation, and Design. Nob Hill Publishing, Madison, 2 edition, 2017.
+
+[49] Eduardo F. Camacho and Carlos Bordons. Model Predictive Control. Springer,
+    London, 2 edition, 2007.
+
+[50] Jan M. Maciejowski. Predictive Control with Constraints. Prentice Hall, Harlow,
+    2002.
+
+[51] Lars Grüne and Jürgen Pannek. Nonlinear Model Predictive Control: Theory and
+    Algorithms. Springer, Cham, 2 edition, 2017.
+
+[52] Matthew Ellis, Helen Durand, and Panagiotis D. Christofides. A tutorial review
+    of economic model predictive control methods. Journal of Process Control, 24(8):
+    1156–1178, 2014. doi: 10.1016/j.jprocont.2014.03.010.
+
+[53] Andreas Wächter and Lorenz T. Biegler. On the implementation of an interior-point
+    filter line-search algorithm for large-scale nonlinear programming. Mathematical
+    Programming, 106(1):25–57, 2006. doi: 10.1007/s10107-004-0559-y.
+
+[54] Joel A. E. Andersson, Joris Gillis, Greg Horn, James B. Rawlings, and Moritz
+    Diehl. CasADi: A software framework for nonlinear optimization and optimal
+    control. Mathematical Programming Computation, 11(1):1–36, 2019. doi: 10.1007/
+    s12532-018-0139-4.
+
+[55] Moritz Diehl, Hans Georg Bock, and Johannes P. Schlöder. A real-time iteration
+    scheme for nonlinear optimization in optimal feedback control. SIAM Journal on
+    Control and Optimization, 43(5):1714–1736, 2005. doi: 10.1137/S0363012902400713.
+
+[56] Sébastien Gros, Mario Zanon, Rien Quirynen, Alberto Bemporad, and Moritz Diehl.
+    From linear to nonlinear MPC: Bridging the gap via the real-time iteration. Interna-
+    tional Journal of Control, 93(1):62–80, 2020. doi: 10.1080/00207179.2016.1222553.
+
+[57] Douglas A. Gee and W. Fred Ramirez. A flavour model for beer fermentation. Journal
+    of the Institute of Brewing, 100(5):321–329, 1994. doi: 10.1002/j.2050-0416.1994.
+    tb00830.x.
+
+                                          85
+[58] B. Andrés-Toro, J. M. Girón-Sierra, J. A. López-Orozco, C. Fernández-Conde, J. M.
+    Peinado, and F. García-Ochoa. A kinetic model for beer production under industrial
+    operational conditions. Mathematics and Computers in Simulation, 48(1):65–74, 1998.
+    doi: 10.1016/S0378-4754(98)00147-5.
+
+[59] G. E. Carrillo-Ureta, P. D. Roberts, and V. M. Becerra. Genetic algorithms for optimal
+    control of beer fermentation. In Proceedings of the 2001 IEEE International Symposium
+    on Intelligent Control, pages 391–396, 2001. doi: 10.1109/ISIC.2001.971541.
+
+[60] I. C. Trelea, M. Titica, and G. Corrieu. Dynamic optimisation of the aroma production
+    in brewing fermentation. Journal of Process Control, 14(1):1–16, 2004. doi: 10.1016/
+    S0959-1524(03)00007-6.
+
+[61] Alistair D. Rodman and Dimitrios I. Gerogiorgis. Multi-objective process optimisation
+    of beer fermentation via dynamic simulation. Food and Bioproducts Processing, 100:
+    255–274, 2016. doi: 10.1016/j.fbp.2016.05.002.
+
+[62] Fei Tao, He Zhang, Ang Liu, and A. Y. C. Nee. Digital twin in industry: State-of-
+    the-art. IEEE Transactions on Industrial Informatics, 15(4):2405–2415, 2019. doi:
+    10.1109/TII.2018.2873186.
+
+[63] Aidan Fuller, Zhong Fan, Charles Day, and Chris Barlow. Digital twin: Enabling
+    technologies, challenges and open research. IEEE Access, 8:108952–108976, 2020. doi:
+    10.1109/ACCESS.2020.2998358.
+
+[64] David Jones, Chris Snider, Aydin Nassehi, Jason Yon, and Ben Hicks. Characterising
+    the digital twin: A systematic literature review. CIRP Journal of Manufacturing
+    Science and Technology, 29:36–52, 2020. doi: 10.1016/j.cirpj.2020.02.002.
+
+[65] Werner Kritzinger, Matthias Karner, Georg Traar, Jan Henjes, and Wilfried Sihn.
+    Digital twin in manufacturing: A categorical literature review and classification.
+    IFAC-PapersOnLine, 51(11):1016–1022, 2018. doi: 10.1016/j.ifacol.2018.08.474.
+
+[66] ANSI/ISA-88.00.01-2010: Batch Control—Part 1: Models and Terminology. Interna-
+    tional Society of Automation, Research Triangle Park, 2010.
+
+                                            86
+[67] IEC 62541-1: OPC Unified Architecture—Part 1: Overview and Concepts. Interna-
+    tional Electrotechnical Commission, Geneva, 2020.
+
+[68] Pierre-Emmanuel Goffi, Raphaël Tremblay, and Bentley Oakes. Engineering a digital
+    twin for the monitoring and control of beer fermentation sampling. In IEEE Conference
+    on Engineering Digital Twins, 2025. Author preprint, arXiv:2508.18452.
+
+[69] Moritz von Stosch, Rui Oliveira, Joana Peres, and Sebastião Feyo de Azevedo. Hybrid
+    semi-parametric modeling in process systems engineering: Past, present and future.
+    Computers and Chemical Engineering, 60:86–101, 2014. doi: 10.1016/j.compchemeng.
+    2013.08.008.
+
+[70] Joel Sansana, Mark N. Joswiak, Ivan Castillo, Zhenyu Wang, Ricardo Rendall, Leo H.
+    Chiang, and Marco S. Reis. Recent trends on hybrid modeling for industry 4.0.
+    Computers and Chemical Engineering, 151:107365, 2021. doi: 10.1016/j.compchemeng.
+    2021.107365.
+
+[71] Petr Kadlec, Bogdan Gabrys, and Sibylle Strandt. Data-driven soft sensors in the
+    process industry. Computers and Chemical Engineering, 33(4):795–814, 2009. doi:
+    10.1016/j.compchemeng.2008.12.012.
+
+[72] Maziar Raissi, Paris Perdikaris, and George E. Karniadakis. Physics-informed neural
+    networks: A deep learning framework for solving forward and inverse problems
+    involving nonlinear partial differential equations. Journal of Computational Physics,
+    378:686–707, 2019. doi: 10.1016/j.jcp.2018.10.045.
+
+[73] George Em Karniadakis, Ioannis G. Kevrekidis, Lu Lu, Paris Perdikaris, Sifan Wang,
+    and Liu Yang. Physics-informed machine learning. Nature Reviews Physics, 3(6):
+    422–440, 2021. doi: 10.1038/s42254-021-00314-5.
+
+[74] Shengze Cai, Zhiping Mao, Zhicheng Wang, Minglang Yin, and George Em Karni-
+    adakis. Physics-informed neural networks (PINNs) for fluid mechanics: A review.
+    Acta Mechanica Sinica, 37(12):1727–1738, 2021. doi: 10.1007/s10409-021-01148-1.
+
+
+
+
+                                          87
+[75] Yingzhe Zheng and Zhe Wu. Physics-informed online machine learning and predictive
+    control of nonlinear processes with parameter uncertainty. Industrial and Engineering
+    Chemistry Research, 62(6):2804–2818, 2023. doi: 10.1021/acs.iecr.2c03691.
+
+[76] Guoquan Wu, Wallace Tan Gian Yion, Khoa Le Nguyen Quang Dang, and Zhe Wu.
+    Physics-informed machine learning for MPC: Application to a batch crystallization
+    process. Chemical Engineering Research and Design, 192:556–569, 2023. doi: 10.1016/
+    j.cherd.2023.02.046.
+
+[77] Rudolph E. Kalman. A new approach to linear filtering and prediction problems.
+    Journal of Basic Engineering, 82(1):35–45, 1960. doi: 10.1115/1.3662552.
+
+[78] Simon J. Julier and Jeffrey K. Uhlmann. Unscented filtering and nonlinear estimation.
+    Proceedings of the IEEE, 92(3):401–422, 2004. doi: 10.1109/JPROC.2003.823141.
+
+[79] Christopher V. Rao, James B. Rawlings, and David Q. Mayne. Constrained state
+    estimation for nonlinear discrete-time systems: Stability and moving horizon ap-
+    proximations. IEEE Transactions on Automatic Control, 48(2):246–258, 2003. doi:
+    10.1109/TAC.2002.808470.
+
+[80] M. A. A. Shoukat Choudhury, Nina F. Thornhill, and Sirish L. Shah. Modelling
+    valve stiction. Control Engineering Practice, 13(5):641–658, 2005. doi: 10.1016/j.
+    conengprac.2004.05.005.
+
+[81] Mohieddine Jelali and Biao Huang, editors. Detection and Diagnosis of Stiction in
+    Control Loops. Springer, London, 2010.
+
+[82] Manabu Kano and Morimasa Ogawa. The state of the art in chemical process control
+    in Japan: Good practice and questionnaire survey. Journal of Process Control, 20(9):
+    969–982, 2010. doi: 10.1016/j.jprocont.2010.06.013.
+
+[83] Karl J. Åström and Tore Hägglund. Advanced PID Control. ISA, Research Triangle
+    Park, 2006.
+
+[84] Edward L. Paul, Victor A. Atiemo-Obeng, and Suzanne M. Kresta, editors. Handbook
+    of Industrial Mixing: Science and Practice. Wiley, Hoboken, 2004.
+
+                                           88
+

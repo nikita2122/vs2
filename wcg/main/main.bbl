@@ -1,0 +1,386 @@
+\begin{thebibliography}{10}
+
+\bibitem{lof2019}
+Magnus L{\"o}f, Jorge Castro, Mattias Engman, Alexandro~B. Leverkus, Palle
+  Madsen, Jose~A. Reque, Adrian Villalobos, and Emile~S. Gardiner.
+\newblock Tamm review: Direct seeding to restore oak ({Quercus} spp.) forests
+  and woodlands.
+\newblock {\em Forest Ecology and Management}, 448:474--489, 2019.
+
+\bibitem{grossnickle2012}
+Steven~C. Grossnickle.
+\newblock Why seedlings survive: influence of plant attributes.
+\newblock {\em New Forests}, 43:711--738, 2012.
+
+\bibitem{stanturf2014}
+John~A. Stanturf, Brian~J. Palik, and R.~Kasten Dumroese.
+\newblock Contemporary forest restoration: A review emphasizing function.
+\newblock {\em Forest Ecology and Management}, 331:292--323, 2014.
+
+\bibitem{fao2020}
+{Food and Agriculture Organization of the United Nations}.
+\newblock Global forest resources assessment 2020.
+\newblock Technical report, FAO, Rome, 2020.
+
+\bibitem{aces2024}
+{Alabama Cooperative Extension System}.
+\newblock Electric drives for seed metering on row-crop planters.
+\newblock
+  \url{https://www.aces.edu/blog/topics/farming/electric-drives-for-seed-metering-on-row-crop-planters/},
+  2024.
+\newblock Accessed 29 October 2026.
+
+\bibitem{he2017}
+Xiantao He, Youqiang Ding, Dongxing Zhang, Li~Yang, Tao Cui, Jiantao Wei,
+  Quanwei Liu, Bingxin Yan, and Dongyue Zhao.
+\newblock Design and evaluation of a {PID} electronic control system for seed
+  meters for maize precision planting.
+\newblock {\em Transactions of the Chinese Society of Agricultural
+  Engineering}, 33(17):28--33, 2017.
+
+\bibitem{zhao2024}
+Xiaoshun Zhao, Hongpeng Zhao, Zehe Wang, Jincai Li, Huali Yu, and Qing Yan.
+\newblock Electronic control seed-metering system for precision seeding maize
+  based on fuzzy {PID}.
+\newblock {\em International Journal of Agricultural and Biological
+  Engineering}, 17(4), 2024.
+
+\bibitem{yazgi2007}
+Arzu Yazgi and Adnan Degirmencioglu.
+\newblock Optimisation of the seed spacing uniformity performance of a
+  vacuum-type precision seeder using response surface methodology.
+\newblock {\em Biosystems Engineering}, 97(3):347--356, 2007.
+
+\bibitem{karayel2004}
+D.~Karayel, Z.~B. Barut, and A.~Ozmerzi.
+\newblock Mathematical modelling of vacuum pressure on a precision seeder.
+\newblock {\em Biosystems Engineering}, 87(4):437--444, 2004.
+
+\bibitem{singh2005}
+R.~C. Singh, G.~Singh, and D.~C. Saraswat.
+\newblock Optimisation of design and operational parameters of a pneumatic seed
+  metering device for planting cottonseeds.
+\newblock {\em Biosystems Engineering}, 92(4):429--438, 2005.
+
+\bibitem{onal2012}
+Ismet Onal, Adnan Degirmencioglu, and Arzu Yazgi.
+\newblock An evaluation of seed spacing accuracy of a vacuum type precision
+  metering unit based on theoretical considerations and experiments.
+\newblock {\em Turkish Journal of Agriculture and Forestry}, 36(2):133--144,
+  2012.
+
+\bibitem{borja2021}
+Adrian~A. Borja, Rossana~Marie Amongo, Jaderick~P. Pabico, and Delfin~C.
+  Suministrado.
+\newblock Design and evaluation of a machine vision system and mechatronic
+  drive for a pneumatic seed meter for corn.
+\newblock {\em Philippine Journal of Agricultural and Biosystems Engineering},
+  17(1), 2021.
+
+\bibitem{wu2022}
+Wencheng Wu, Cheng Chang, Tao Li, Hongji Hu, Zhonglin Zhou, Wenhao Yang, Jinyue
+  Guo, Peixu Zhu, Ju~Li, Jianfeng Hu, Hong Cheng, Y.~Tao, W.~Zhou, Fei Deng,
+  Y.~Chen, W.~Ren, and X.~Lei.
+\newblock Seed-filling characteristics of a centralized seed-metering device
+  for rapeseed caused by vibration.
+\newblock {\em Agriculture}, 12(7):965, 2022.
+
+\bibitem{zhang2024vib}
+Le~Zhang, Yafu Liu, Mingliang Wu, and Zhili Wu.
+\newblock Sowing performance of the seeder drill for the {2BYG-220} type
+  combined rapeseed planter under vibration conditions.
+\newblock {\em Applied Sciences}, 14(12):5091, 2024.
+
+\bibitem{liu2025review}
+Wei Liu, Jinhao Zhou, Tengfei Zhang, Pengcheng Zhang, M.~Yao, J.~Li, Z.~Sun,
+  G.~Ma, X.~Chen, and J.~Hu.
+\newblock Key technologies in intelligent seeding machinery for cereals: Recent
+  advances and future perspectives.
+\newblock {\em Agriculture}, 15(1):8, 2025.
+
+\bibitem{wells1990}
+L.~G. Wells, T.~W. Richards, T.~D. Smith, and G.~B. Day.
+\newblock Pneumatic metering of hardwood tree seeds.
+\newblock {\em Applied Engineering in Agriculture}, 6(2):239--243, 1990.
+
+\bibitem{dinkel1991}
+Gary Dinkel and Roy Kangas.
+\newblock New style acorn seeder.
+\newblock {\em Tree Planters' Notes}, 42(3):16--17, 1991.
+
+\bibitem{newforest}
+{NewForest Oy}.
+\newblock Seedgun sowing method.
+\newblock \url{https://www.newforest.fi/en/seedgun-sowing-method/}, 2024.
+\newblock Accessed 29 October 2026.
+
+\bibitem{ziegler1942}
+J.~G. Ziegler and N.~B. Nichols.
+\newblock Optimum settings for automatic controllers.
+\newblock {\em Transactions of the ASME}, 64:759--768, 1942.
+
+\bibitem{astrom2006}
+Karl~Johan Astr{\"o}m and Tore H{\"a}gglund.
+\newblock {\em Advanced {PID} Control}.
+\newblock ISA---The Instrumentation, Systems, and Automation Society, Research
+  Triangle Park, 2006.
+
+\bibitem{ogata2010}
+Katsuhiko Ogata.
+\newblock {\em Modern Control Engineering}.
+\newblock Prentice Hall, 5 edition, 2010.
+
+\bibitem{jb10293}
+Ministry of Industry and Information Technology of the People's Republic of
+  China.
+\newblock {\em {JB/T} 10293-2013. Single seed planter (precision
+  planter)---Specifications}, 2013.
+
+\bibitem{dambroz2025}
+Giovani Prates~Bisso Dambroz, Francisco de Assis de~Carvalho Pinto, Andr{\'e}
+  Luiz de~Freitas Coelho, Daniel~Mar{\c{c}}al de~Queiroz, Ner{\'i}lson~Terra
+  Santos, and Renato Adriane~Alves Ruas.
+\newblock Development of a low-cost multi-hybrid variable rate system for a
+  horizontal disk planter.
+\newblock {\em Revista Brasileira de Engenharia Agr{\'i}cola e Ambiental},
+  29(9), 2025.
+
+\bibitem{kocher1998}
+M.~F. Kocher, Y.~Lan, C.~Chen, and J.~A. Smith.
+\newblock Opto-electronic sensor system for rapid evaluation of planter seed
+  spacing uniformity.
+\newblock {\em Transactions of the ASAE}, 41(1):237--245, 1998.
+
+\bibitem{lan1999}
+Y.~Lan, M.~F. Kocher, and J.~A. Smith.
+\newblock Opto-electronic sensor system for laboratory measurement of planter
+  seed spacing with small seeds.
+\newblock {\em Journal of Agricultural Engineering Research}, 72(2):119--127,
+  1999.
+
+\bibitem{onal2009}
+O.~Onal and I.~Onal.
+\newblock Development of a computerized measurement system for in-row seed
+  spacing accuracy.
+\newblock {\em Turkish Journal of Agriculture and Forestry}, 33:99--109, 2009.
+
+\bibitem{otsu1979}
+Nobuyuki Otsu.
+\newblock A threshold selection method from gray-level histograms.
+\newblock {\em IEEE Transactions on Systems, Man, and Cybernetics},
+  9(1):62--66, 1979.
+
+\bibitem{gonzalez2018}
+Rafael~C. Gonzalez and Richard~E. Woods.
+\newblock {\em Digital Image Processing}.
+\newblock Pearson, 4 edition, 2018.
+
+\bibitem{canny1986}
+John Canny.
+\newblock A computational approach to edge detection.
+\newblock {\em IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  8(6):679--698, 1986.
+
+\bibitem{bradski2000}
+Gary Bradski.
+\newblock The {OpenCV} library.
+\newblock {\em Dr. Dobb's Journal of Software Tools}, 25(11):120--125, 2000.
+
+\bibitem{panning2000}
+J.~W. Panning, M.~F. Kocher, J.~A. Smith, and S.~D. Kachman.
+\newblock Laboratory and field testing of seed spacing uniformity for sugarbeet
+  planters.
+\newblock {\em Applied Engineering in Agriculture}, 16(1):7--13, 2000.
+
+\bibitem{liu2017speed}
+Quanwei Liu, Xiantao He, Li~Yang, Dongxing Zhang, Tao Cui, Z.~Qu, et~al.
+\newblock Effect of travel speed on seed spacing uniformity of corn seed meter.
+\newblock {\em International Journal of Agricultural and Biological
+  Engineering}, 10(4):98--106, 2017.
+
+\bibitem{yazgi2015}
+Arzu Yazgi and Adnan Degirmencioglu.
+\newblock Optimization of the seed spacing uniformity of a vacuum type
+  precision seeder using spherical materials.
+\newblock {\em Journal of Agriculture Faculty of Ege University}, 52(3), 2015.
+
+\bibitem{cundall1979}
+P.~A. Cundall and O.~D.~L. Strack.
+\newblock A discrete numerical model for granular assemblies.
+\newblock {\em G{\'e}otechnique}, 29(1):47--65, 1979.
+
+\bibitem{li2025drum}
+Yanjun Li, Yunqiang Liu, Yichao Ning, Hongxin Wu, and Yaqian Zhao.
+\newblock Design and experiment of an air-suction drum-type seedling seeder for
+  irregular-shaped vegetable seeds.
+\newblock {\em Scientific Reports}, 15, 2025.
+
+\bibitem{lei2022}
+Xiaolong Lei, Wencheng Wu, Cheng Chang, Tao Li, Zhonglin Zhou, Jinyue Guo,
+  Peixu Zhu, Jianfeng Hu, Hong Cheng, W.~Zhou, et~al.
+\newblock Seeding performance caused by inclination angle in a centralized
+  seed-metering device for rapeseed.
+\newblock {\em Agriculture}, 12(4):590, 2022.
+
+\bibitem{lei2021}
+Xiaolong Lei, Hongji Hu, Wencheng Wu, H.~N. Liu, L.~Y. Liu, Wenhao Yang,
+  Zhonglin Zhou, and Wanjun Ren.
+\newblock Seed motion characteristics and seeding performance of a centralised
+  seed-metering system for rapeseed investigated by {DEM} simulation and bench
+  testing.
+\newblock {\em Biosystems Engineering}, 203:22--33, 2021.
+
+\bibitem{hu2021}
+Hongji Hu, Zhonglin Zhou, Wencheng Wu, Wenhao Yang, Tao Li, Cheng Chang, Wanjun
+  Ren, and Xiaolong Lei.
+\newblock Distribution characteristics and parameter optimisation of an
+  air-assisted centralized seed-metering device for rapeseed using a {CFD--DEM}
+  coupled simulation.
+\newblock {\em Biosystems Engineering}, 208:246--259, 2021.
+
+\bibitem{maleki2006}
+M.~R. Maleki, J.~F. Jafari, M.~H. Raufat, A.~M. Mouazen, and J.~{De
+  Baerdemaeker}.
+\newblock Evaluation of seed distribution uniformity of a multi-flight auger as
+  a grain drill metering device.
+\newblock {\em Biosystems Engineering}, 94(4):535--543, 2006.
+
+\bibitem{garcia1989}
+Carlos~E. Garc{\'i}a, David~M. Prett, and Manfred Morari.
+\newblock Model predictive control: Theory and practice---a survey.
+\newblock {\em Automatica}, 25(3):335--348, 1989.
+
+\bibitem{clarke1987}
+D.~W. Clarke, C.~Mohtadi, and P.~S. Tuffs.
+\newblock Generalized predictive control---{Part I}. {The} basic algorithm.
+\newblock {\em Automatica}, 23(2):137--148, 1987.
+
+\bibitem{camacho2007}
+Eduardo~F. Camacho and Carlos Bordons.
+\newblock {\em Model Predictive Control}.
+\newblock Springer, London, 2 edition, 2007.
+
+\bibitem{maciejowski2002}
+Jan~M. Maciejowski.
+\newblock {\em Predictive Control with Constraints}.
+\newblock Prentice Hall, 2002.
+
+\bibitem{rawlings2017}
+James~B. Rawlings, David~Q. Mayne, and Moritz Diehl.
+\newblock {\em Model Predictive Control: Theory, Computation, and Design}.
+\newblock Nob Hill Publishing, 2 edition, 2017.
+
+\bibitem{qin2003}
+S.~Joe Qin and Thomas~A. Badgwell.
+\newblock A survey of industrial model predictive control technology.
+\newblock {\em Control Engineering Practice}, 11(7):733--764, 2003.
+
+\bibitem{mayne2000}
+D.~Q. Mayne, J.~B. Rawlings, C.~V. Rao, and P.~O.~M. Scokaert.
+\newblock Constrained model predictive control: Stability and optimality.
+\newblock {\em Automatica}, 36(6):789--814, 2000.
+
+\bibitem{bemporad2002}
+Alberto Bemporad, Manfred Morari, Vivek Dua, and Efstratios~N. Pistikopoulos.
+\newblock The explicit linear quadratic regulator for constrained systems.
+\newblock {\em Automatica}, 38(1):3--20, 2002.
+
+\bibitem{boyd2004}
+Stephen Boyd and Lieven Vandenberghe.
+\newblock {\em Convex Optimization}.
+\newblock Cambridge University Press, 2004.
+
+\bibitem{ljung1999}
+Lennart Ljung.
+\newblock {\em System Identification: Theory for the User}.
+\newblock Prentice Hall, 2 edition, 1999.
+
+\bibitem{kalman1960}
+R.~E. Kalman.
+\newblock A new approach to linear filtering and prediction problems.
+\newblock {\em Journal of Basic Engineering}, 82(1):35--45, 1960.
+
+\bibitem{welch1995}
+Greg Welch and Gary Bishop.
+\newblock An introduction to the {Kalman} filter.
+\newblock Technical Report TR 95-041, University of North Carolina at Chapel
+  Hill, 1995.
+
+\bibitem{kachman1995}
+Stephen~D. Kachman and J.~A. Smith.
+\newblock Alternative measures of accuracy in plant spacing for planters using
+  single seed metering.
+\newblock {\em Transactions of the ASAE}, 38(2):379--387, 1995.
+
+\bibitem{iso7256}
+International Organization for Standardization, Geneva.
+\newblock {\em {ISO} 7256-1:1984. Sowing equipment---Test methods---Part 1:
+  Single seed drills (precision drills)}, 1984.
+
+\bibitem{gb6973}
+Standardization Administration of China.
+\newblock {\em {GB/T} 6973-2005. Testing methods of single seed drills
+  (precision drills)}, 2005.
+
+\bibitem{skogestad2005}
+Sigurd Skogestad and Ian Postlethwaite.
+\newblock {\em Multivariable Feedback Control: Analysis and Design}.
+\newblock Wiley, 2 edition, 2005.
+
+\bibitem{astrom2008}
+Karl~Johan Astr{\"o}m and Richard~M. Murray.
+\newblock {\em Feedback Systems: An Introduction for Scientists and Engineers}.
+\newblock Princeton University Press, Princeton, 2008.
+
+\bibitem{franklin2019}
+Gene~F. Franklin, J.~David Powell, and Abbas Emami-Naeini.
+\newblock {\em Feedback Control of Dynamic Systems}.
+\newblock Pearson, 8 edition, 2019.
+
+\bibitem{stafford2000}
+John~V. Stafford.
+\newblock Implementing precision agriculture in the 21st century.
+\newblock {\em Journal of Agricultural Engineering Research}, 76(3):267--275,
+  2000.
+
+\bibitem{gebbers2010}
+Robin Gebbers and Viacheslav~I. Adamchuk.
+\newblock Precision agriculture and food security.
+\newblock {\em Science}, 327(5967):828--831, 2010.
+
+\bibitem{iso11783}
+International Organization for Standardization, Geneva.
+\newblock {\em {ISO} 11783-1:2017. Tractors and machinery for agriculture and
+  forestry---Serial control and communications data network---Part 1: General
+  standard for mobile data communication}, 2017.
+
+\bibitem{zadeh1965}
+L.~A. Zadeh.
+\newblock Fuzzy sets.
+\newblock {\em Information and Control}, 8(3):338--353, 1965.
+
+\bibitem{mamdani1974}
+E.~H. Mamdani.
+\newblock Application of fuzzy algorithms for control of a simple dynamic
+  plant.
+\newblock {\em Proceedings of the Institution of Electrical Engineers},
+  121(12):1585--1588, 1974.
+
+\bibitem{takagi1985}
+Tomohiro Takagi and Michio Sugeno.
+\newblock Fuzzy identification of systems and its applications to modelling and
+  control.
+\newblock {\em IEEE Transactions on Systems, Man, and Cybernetics},
+  15(1):116--132, 1985.
+
+\bibitem{khalil2002}
+Hassan~K. Khalil.
+\newblock {\em Nonlinear Systems}.
+\newblock Prentice Hall, 3 edition, 2002.
+
+\bibitem{nocedal2006}
+Jorge Nocedal and Stephen~J. Wright.
+\newblock {\em Numerical Optimization}.
+\newblock Springer, 2 edition, 2006.
+
+\end{thebibliography}

@@ -1,0 +1,13 @@
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Ground drive copies slip into every spacing. An electronic rate law uses a speed measurement that is not taken from the driven wheel.}}{5}{figure.caption.6}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces The two research lines stop short of a single online design for irregular wooden seeds. The gap is the problem set of Section~\ref {sec:problem}.}}{13}{figure.caption.7}%
+\contentsline {figure}{\numberline {1.3}{\ignorespaces The problem is one plant with two decision rates. Seed-lot statistics and terrain disturbances enter both decisions. The indices are defined on the spacings that leave the plant.}}{16}{figure.caption.8}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Vision features constrain the speed command. The motor loop closes on the encoder and does not wait for the camera.}}{24}{figure.caption.9}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Membership of the scaled speed error. The same partition is used for the error increment. Output increments use the centroid of the fired labels.}}{28}{figure.caption.10}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces The factor search predicts the meter with vision off. The feed loop then applies the bridge constraint on top of the chosen factors. Neither loop waits for the other.}}{36}{figure.caption.12}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Worst-case phasing used for the 70~ms response bound. Vision (top) preempts the factor search (bottom). The search still finishes inside the 200~ms deadline.}}{44}{figure.caption.14}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Seed path assumed by the controllers. Only frequency, vacuum, wheel speed, and depth are commands. The light gate counts seeds after release.}}{55}{figure.caption.17}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Red oak on level ground at 1.10~m/s. Vision trades a lower multiple index against a slightly higher miss index. The stacked system lowers both.}}{62}{figure.caption.21}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Planting efficiency of ground drive against both loops. Pin oak and red oak are the mild electronic cases at 1.10~m/s. Bur oak and the mixed lot include slope and a terrain frequency of 12~Hz. The bur-oak bar remains the lowest of the stacked results, which is the large-seed limit of a 24~mm cell.}}{65}{figure.caption.23}%

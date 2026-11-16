@@ -1,0 +1,272 @@
+\chapter{Application of Deep Neural Networks to Enhance Threshing Efficiency}
+\label{ch:method}
+
+The problems in Chapter~\ref{ch:back} ask for a placement, a feature map, a status model, and a command model. This chapter defines them and scores them offline. The plant comes first, because every label and every teacher command is a function of it. The plant is a reduced-order simulator. It is not a derivation from a new experiment, and it is not a sizing of hardware. Its only duty is to land a fixed command in the loss and specific-energy band already published for axial machines, and to contain the feed--moisture product that a linear card cannot represent \cite{miu2008a,harrison1991}.
+
+\section{Positioning Sensors to Identify Operating Status}
+\label{sec:place}
+
+\subsection{Indicators, and the ones that were refused}
+
+Operating status is a label of the running machine, not a name for the crop. Five labels are used, and they are assigned from the true plant output in this priority, so the first match wins:
+
+\begin{enumerate}
+\item blockage-risk, if the peak station load is at least \(0.84\times 1680\,\mathrm{N}\);
+\item high-loss, if grain loss is at least \(2.8\%\);
+\item front-loaded, if the inlet station exceeds the discharge station by at least \(0.38\) of the mean load and the peak is at least \(760\,\mathrm{N}\);
+\item under-filled, if the mean station load is at most \(430\,\mathrm{N}\);
+\item stable, otherwise.
+\end{enumerate}
+
+The priority is the model of ``what an operator would say first.'' A machine that is both front-loaded and past the blockage line is blockage-risk. A machine that is merely light is under-filled only if no sharper failure is present.
+
+The indicators that can see these labels are not a catalog of every transducer on a combine. They are the smallest set whose absences are informative.
+
+\begin{itemize}
+\item Axial station loads see the level, the peak, and the contrast. Without at least two stations that are far apart, front-loaded is not a measurement.
+\item Shaft torque and shaft power see the level a second time. They do not see which station produced it. They stay in the feature vector as scalars that are always installed.
+\item Housing vibration sees intensity, moisture, and throughput. In the simulator it does not depend on the peak station. Putting the peak into the vibration channel would have made the placement study circular.
+\item A sieve-loss proxy sees the cleaner term that high-loss partly reflects. It does not see the axial shape.
+\item Return flow is kept because it moves with sieve loss and is cheap. It is not a separate label.
+\item Moisture and offered feed are measured directly. They are disturbances, and they are also legitimate features, because the onboard program is allowed to read the sensors the machine already has for them.
+\end{itemize}
+
+A camera is not in the set. Problem~1 is about whether a short physical window, after a placement decision, is enough for the five labels. Adding an image channel would answer a different question, the one the perception surveys have already framed \cite{kamilaris2018,patricio2018}.
+
+\subsection{The load shape the placement is designed for}
+
+Index the eight stations by \(\xi_i=i/7\) for \(i=0,\ldots,7\), so the inlet is \(0\) and the discharge is \(1\). The design model treats the load along the axis as a quadratic plus noise,
+\begin{equation}
+F(\xi) = \theta_0 + \theta_1 \xi + \theta_2 \xi^2 + \varepsilon,
+\qquad
+\phi(\xi) = (1,\ \xi,\ \xi^2)^\top .
+\label{eq:shape}
+\end{equation}
+For a placement \(p\), the Fisher information of an independent, equal-variance sample is
+\begin{equation}
+M(p) = \sum_{i\in p} \phi(\xi_i)\,\phi(\xi_i)^\top .
+\label{eq:fisher}
+\end{equation}
+The \(D\)-optimal placement of size \(K\) maximizes \(\det M(p)\) \cite{atkinson2007}. With fewer than three stations the quadratic is singular, so the two-station design is computed on the line \(\phi(\xi)=(1,\xi)^\top\) instead. The criterion then puts the two sensors at the ends of the interval, which is the classical answer for a slope, and it is also the pair a contrast feature needs.
+
+The designs that win are:
+
+\begin{table}[ht]
+\centering
+\caption{\(D\)-optimal station sets. Station \(1\) is the inlet and station \(8\) is the discharge. The determinant column is \(\det(M)^{1/3}\) for the quadratic model. The two-station row is a different model and is not numerically comparable to the others.}
+\label{tab:dopt}
+\begin{tabular}{@{}cll@{}}
+\toprule
+\(K\) & Stations & Quadratic \(\det(M)^{1/3}\) \\
+\midrule
+2 & 1, 8 & (line model) \\
+3 & 1, 4, 8 & 0.391 \\
+4 & 1, 4, 5, 8 & 0.497 \\
+5 & 1, 2, 4, 5, 8 & 0.568 \\
+6 & 1, 2, 4, 5, 7, 8 & 0.651 \\
+8 & all & 0.783 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The pattern is the one the polynomial asks for. The ends identify level and slope. A station near the middle identifies curvature. Extra stations cluster beside those three rather than filling the cage uniformly. The installed design is the four-station set \(\{1,4,5,8\}\). It is the smallest quadratic design that has both a middle pair and the two ends. Section~\ref{sec:simoff} checks whether a classifier wants a very different set. It does not, once the score is accuracy on these five labels: two well-separated stations already carry the contrast, and further stations do not create a sixth label.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth]
+  \draw[thick] (0,0) -- (10.5,0);
+  \foreach \i/\x in {1/0, 2/1.5, 3/3.0, 4/4.5, 5/6.0, 6/7.5, 7/9.0, 8/10.5} {
+    \draw (\x,0.12) -- (\x,-0.12);
+    \node[below] at (\x,-0.15) {\scriptsize \i};
+  }
+  \foreach \x in {0, 4.5, 6.0, 10.5} {
+    \fill[red] (\x,0) circle (2.4pt);
+  }
+  \node[above] at (5.25,0.35) {\small installed stations \(1,4,5,8\)};
+  \draw[->] (-0.4,0) -- (-0.4,0.7) node[above,font=\scriptsize]{inlet};
+\end{tikzpicture}
+\caption{The eight candidate stations and the four that the \(D\)-criterion installs. The inlet is station \(1\).}
+\label{fig:stations}
+\end{figure}
+
+\subsection{The feature map}
+
+A window is eight samples. At the \(20\,\mathrm{Hz}\) rate used by the program in Chapter~\ref{ch:est}, the window is \(0.4\,\mathrm{s}\). For each installed station the features are the window mean and the window standard deviation. From the vector of means the map adds the coefficient of variation, the contrast between the first and the last installed station divided by the mean, and the maximum mean. Torque, vibration, the loss proxy, return flow, and power each contribute a mean and a standard deviation. Moisture and feed contribute one noisy reading each. Loads are divided by \(1000\), load standard deviations by \(100\), the loss proxy is multiplied by \(100\), power's mean is divided by \(10\), and feed is divided by \(10\), so that a standardized network does not have to spend its first epochs on units. With four stations the raw feature dimension is \(23\).
+
+The noise used when the windows are drawn is part of the method, not a hidden robustness trick. Station loads are perturbed by independent Gaussian noise of standard deviation \(22\,\mathrm{N}\). Torque, vibration, loss proxy, return, and power use standard deviations \(0.015\), \(0.03\), \(0.0015\), \(0.012\), and \(0.15\) in the units of those channels. Moisture noise is \(0.004\) and the scaled-feed noise is \(0.012\). A stuck channel is not this noise. It is the fault case in Chapter~\ref{ch:est}.
+
+Standardization is affine and is fit on the training windows only:
+\begin{equation}
+\tilde{\mathbf{x}} = (\mathbf{x}-\boldsymbol{\mu}_{\mathrm{tr}})\oslash \boldsymbol{\sigma}_{\mathrm{tr}},
+\label{eq:std}
+\end{equation}
+with any coordinate whose training standard deviation is below \(10^{-6}\) left unscaled. The same \(\boldsymbol{\mu}_{\mathrm{tr}}\) and \(\boldsymbol{\sigma}_{\mathrm{tr}}\) are applied to validation, test, and the closed-loop program. Refitting them on the test mixture would leak the evaluation into the preprocessor.
+
+\subsection{The status network}
+
+The status model is a feedforward net with sizes \(23\)--\(48\)--\(32\)--\(5\). Hidden layers are ReLU. The output is a softmax. Initialization is Gaussian with variance \(2/n_{\mathrm{in}}\) on each layer, the scale that keeps ReLU layers from starting saturated \cite{he2015}. Training minimizes the multinomial cross-entropy with Adam at learning rate \(8\times 10^{-4}\), batches of \(64\), for \(100\) epochs \cite{kingma2015,rumelhart1986}. The epoch with the best validation accuracy is the one that is kept. On the run reported here that epoch is \(99\). The network has \(2885\) parameters.
+
+The linear baseline is a softmax with the same standardized input, no hidden layer, trained by minibatch gradient descent with \(\ell_2\) weight \(10^{-3}\). It is the correct baseline. A gain of the deep model over a different feature set would not answer Problem~1.
+
+Labels for training are computed from the noise-free plant at the command that produced the window. The command is not always the teacher's command. Each disturbance is observed three times: under the fixed setting, under the moisture card, and under a command drawn uniformly from \([0.15,0.95]^4\). A classifier trained only at the fixed setting would not be entitled to a score on the other two, and the program in Chapter~\ref{ch:est} has to recognize status while it is in the middle of changing the command.
+
+\section{A Deep Network for Efficiency and Mechanical Stability}
+\label{sec:net}
+
+\subsection{The simulator the teacher optimizes}
+
+The command \(\mathbf{u}=(u_I,u_R,u_C,u_F)\) and the disturbance \((q,m)\) enter a static map. Admitted biomass is the trim
+\begin{equation}
+q_e = q\,(0.82 + 0.18\,u_F),
+\label{eq:qe}
+\end{equation}
+so a fully closed trim still passes \(82\%\) of the offer. Define \(q_n=\mathrm{clip}(q_e/6,\ 0.35,\ 1.8)\) and the packing interaction
+\begin{equation}
+\pi = \frac{1}{0.08}\,\max(q_n-0.75,\ 0)\,\max(m-0.16,\ 0).
+\label{eq:pack}
+\end{equation}
+Packing is zero when the feed is light or the crop is dry. It is large only when both are high, and several loss and load terms below are multiplied by a factor that falls as residence rises. A model that is linear in \(q\) and linear in \(m\) does not contain \(\pi\).
+
+Unthreshed loss, free-grain loss, and sieve loss, as fractions of admitted grain, are
+\begin{align}
+L_u &= 0.058\, d_c\, e^{-3.40 u_I}\, e^{-0.85 u_R}\, e^{6.4(m-0.15)}\, q_n^{0.58}\,
+        e^{0.70\pi \max(0.80-u_R,\ 0)}, \label{eq:lu}\\
+L_g &= 0.026\, d_c\, e^{-2.05 u_R}\, e^{-0.30 u_I}\, e^{4.0(m-0.15)}\, q_n^{0.46}\,
+        e^{0.50\pi \max(0.78-u_R,\ 0)}, \label{eq:lg}\\
+L_s &= 0.0125\, e^{-2.05(u_C-0.18)}\, e^{2.8\max(m-0.18,\ 0)}\, q_n^{0.58}\,
+        \big(1.08+0.28(1-u_I)\big). \label{eq:ls}
+\end{align}
+Impurity and breakage are
+\begin{align}
+\iota &= 0.0108\, e^{1.70(u_C-0.40)}\, e^{-0.45(u_I-0.50)}\, (0.80+1.05\,m), \label{eq:iota}\\
+b &= 0.0034\, d_c\, e^{1.90 u_R}\, e^{0.38 u_I}\, e^{2.7\max(m-0.18,\ 0)}. \label{eq:b}
+\end{align}
+Grain loss is \(L=L_u+L_g+L_s\). Recovery charges the trim,
+\begin{equation}
+\eta = (q_e/q)\,(1-L).
+\label{eq:eta}
+\end{equation}
+Specific energy, in \(\mathrm{kWh\,t^{-1}}\) of admitted grain, is
+\begin{equation}
+e = (0.58 + 0.72\,u_I + 0.62\,u_R)\,
+    \big(1+2.15(m-0.14)\big)\,
+    (0.90+0.16\,d_c)\,
+    (0.94+0.08\,q_n).
+\label{eq:energy}
+\end{equation}
+Shaft power in kilowatts is \(P = 3.6\, e\, q_e\, \phi\), with \(\phi\) the grain fraction. The factor \(3.6\) is the unit change from kilograms per second and kilowatt-hours per tonne into kilowatts. Crop coefficients are \(\phi\), difficulty \(d_c\), and a load scale \(s_F\): wheat \((0.46,\ 1.00,\ 1.00)\), rice \((0.41,\ 1.28,\ 1.12)\), soybean \((0.55,\ 0.86,\ 0.92)\).
+
+Station loads use the same packing term. With inlet and discharge shape factors
+\begin{equation}
+s_{\mathrm{in}} = 1.55 - 0.58\,u_R + 0.42\,\pi\max(1-u_R,\ 0),
+\qquad
+s_{\mathrm{out}} = 0.70 + 0.34\,u_R,
+\label{eq:shapeends}
+\end{equation}
+the load at \(\xi\) is proportional to
+\(s_{\mathrm{in}}+(s_{\mathrm{out}}-s_{\mathrm{in}})\xi\), to a small curvature that packing adds, to \(q_e\), to moisture, to a weak intensity factor \((0.86+0.28\,u_I)\), and to \(s_F\). The constant of proportionality is \(720\,\mathrm{N}\) at the reference point \(q_e=6\), \(m=0.14\), \(u_I=0\), and a flat unit shape. Residence is what moves the shape. Intensity is what moves unthreshed loss. The two commands are not substitutes, which is the reason both exist.
+
+Housing vibration is
+\begin{equation}
+v = \big(0.20 + 0.88\,u_I^{1.30}\big)\,
+    \big(1+3.4\max(m-0.20,\ 0)\big)\,
+    (0.85+0.20\,q_n).
+\label{eq:vib}
+\end{equation}
+The stability index clips each of three normalized terms and then clips the sum:
+\begin{equation}
+\begin{aligned}
+S = \mathrm{clip}\big(&1 - 0.40\,\mathrm{clip}(\mathrm{CV}/0.42,\ 0,\ 1.35)
+ - 0.32\,\mathrm{clip}(v/1.55,\ 0,\ 1.35) \\
+&- 0.28\,\mathrm{clip}\big((F_{\max}/1680-0.48)/0.62,\ 0,\ 1.35\big),\ 0,\ 1\big).
+\end{aligned}
+\label{eq:stab}
+\end{equation}
+\(\mathrm{CV}\) is the coefficient of variation of the eight station loads, whether or not all eight are instrumented. The index is a property of the plant. The features see only the installed stations.
+
+\subsection{The objective the teacher maximizes}
+
+The teacher solves, for known \((q,m,\text{crop})\),
+\begin{equation}
+\begin{aligned}
+\max_{\mathbf{u}\in[0,1]^4}\ 
+J = \eta &- 0.012\,e - 0.48\,\iota - 1.15\,b - 0.025\,\mathrm{CV} \\
+&- 0.26\,\max(0,\ 0.70-S)
+- 0.40\,\max\!\big(0,\ F_{\max}/1680-0.82\big)^2 .
+\end{aligned}
+\label{eq:J}
+\end{equation}
+Recovery is the thing to raise. Energy, impurity, and breakage are prices per unit, so a longer, harder, cleaner pass has to pay. The coefficient of variation has a small linear price. The stability term is a hinge at \(0.70\): once the index is above the floor it contributes nothing further, and the teacher is free to spend margin that a timid setting had left unused. The blockage term is a squared hinge at \(82\%\) of \(1680\,\mathrm{N}\). The weights are not fitted to a preference study. They are the cost for which every table in Chapter~\ref{ch:est} was generated. Assumption A5 of Chapter~\ref{ch:back} is this sentence.
+
+The solve is a four-level grid on \([0.15,0.90]^4\), then a bound-constrained quasi-Newton polish from the best grid point \cite{nocedal2006}. The grid makes the start cheap and keeps a bad local basin from being the only basin that is tried. The teacher is still local. Problem~2 imitates this teacher, not an unseen global solver.
+
+The fixed command, used as one baseline, is \((0.50,\ 0.44,\ 0.46,\ 1)\). The moisture card, used as the other, is
+\begin{equation}
+\begin{aligned}
+u_I &= \mathrm{clip}\big(0.50+1.25(m-0.15),\ 0.38,\ 0.82\big),\\
+u_R &= \mathrm{clip}\big(0.46+1.15(m-0.15),\ 0.32,\ 0.80\big),\\
+u_C &= \mathrm{clip}\big(0.47+0.85(m-0.16),\ 0.36,\ 0.70\big),\\
+u_F &= 1,
+\end{aligned}
+\label{eq:card}
+\end{equation}
+and it does not read \(q\) or any load. On a wet crop it raises intensity, residence, and cleaning together. On a dry, heavy crop it does the wrong thing for the feed, because the moisture is low and the feed is invisible. That row is kept in the seasonal mix for that reason.
+
+\subsection{The command network}
+
+The command model is a second feedforward net, sizes \(23\)--\(64\)--\(64\)--\(32\)--\(4\), ReLU hidden units, linear output, clipped to \([0,1]\) when it is applied. It has \(7908\) parameters and \(7744\) multiply-adds. The same He-style initialization and the same Adam settings are used, with learning rate \(10^{-3}\) for \(140\) epochs \cite{he2015,kingma2015}. The kept epoch is the one with the lowest validation mean squared error, epoch \(122\) in the reported run, where that error is \(1.03\times 10^{-3}\).
+
+The target is \(\mathbf{u}^\star\). The input is not the feature window at \(\mathbf{u}^\star\). Each training disturbance contributes three windows, generated under the moisture card, under a random command, and under the fixed command, all labeled with the same \(\mathbf{u}^\star\). A network trained only at the teacher's own operating point would be asked, at deployment, to act from the card's operating point, which is a different distribution of features. One mixture of the three conditions is the whole of the correction used here. It is in the spirit of dataset aggregation and it is not an iterated online reduction \cite{ross2011}. Calling it a no-regret imitation loop would overstate a single static sample.
+
+The linear ablation is least squares from the standardized features, plus a bias, onto \(\mathbf{u}^\star\), with the prediction clipped to \([0,1]\). Same inputs, same targets, no hidden layer. If this map matches the network on the plant, depth is not what moves the grain, and the thesis has to say that.
+
+The loss that is trained is squared error on the four commands. It is not \(J\), and it is not a reinforcement signal. The teacher has already folded \(J\) into \(\mathbf{u}^\star\). Training on \(J\) directly would be a different algorithm and would need the plant inside the training loop. Imitation is the algorithm that matches requirement R6: the onboard program evaluates a function and does not call the teacher.
+
+\subsection{What the command network is not}
+
+It does not take the status label as an input. A correct label would be a strong feature and would glue Problem~1 to Problem~2 so tightly that a failure of the classifier would be invisible in the loss table. The two networks share the feature definition and nothing else.
+
+It does not output a rotor speed in revolutions per minute. The four components stay normalized. Chapter~\ref{ch:est} rate-limits each component by \(0.08\) per \(0.2\,\mathrm{s}\) at the write. That limit is a property of the program, not of the loss surface. The offline scores in the next section are unclipped by the rate limit. The transient in Chapter~\ref{ch:est} is where the limit is on.
+
+\section{Numerical Simulation of the Two Methods}
+\label{sec:simoff}
+
+\subsection{Samples}
+
+Disturbances are drawn with seed \(7\). Feed is uniform on \([3.3,\ 8.3]\,\mathrm{kg\,s^{-1}}\) and moisture on \([0.115,\ 0.255]\), with one fifth of each split forced into a wet, heavy corner and one fifth into a light corner so that blockage-risk and under-filled are not rounding errors. Crop is uniform on the three names. The placement split has \(900\) disturbances, the training split \(1600\), validation \(350\), and test \(500\). Each is observed under three commands, so the status and command nets see \(4800\) training rows, \(1050\) validation rows, and \(1500\) test rows. The eight seasonal points of Chapter~\ref{ch:est} are not in these splits.
+
+On the test mixture the label counts are \(614\) stable, \(397\) high-loss, \(221\) blockage-risk, \(212\) front-loaded, and \(56\) under-filled. Under-filled is \(3.7\%\) of the rows. Its recall is the noisiest number in the status table, and it is reported anyway because dropping the class would hide the thin cell.
+
+\subsection{Status}
+
+Table~\ref{tab:status} is Problem~1 on the installed placement \(\{1,4,5,8\}\).
+
+\begin{table}[ht]
+\centering
+\caption{Status on the \(1500\) test windows, installed four-station design. Recall is per class, in the order stable, front-loaded, under-filled, blockage-risk, high-loss.}
+\label{tab:status}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Model & Acc. & Macro-F1 & \multicolumn{4}{c}{Recall, the two decisive classes} \\
+\cmidrule(lr){4-7}
+& & & Front-loaded & Under-filled & Blockage & High-loss \\
+\midrule
+Linear softmax & 0.826 & 0.734 & 0.557 & 0.268 & 0.955 & 0.814 \\
+Deep network   & 0.898 & 0.846 & 0.788 & 0.607 & 0.977 & 0.904 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Stable recall is \(0.93\) for both models and is omitted from the table because it does not decide anything. Blockage-risk is already visible to the linear model, because the peak and the torque move together and the threshold is gross. Front-loaded and under-filled are where the hidden layers earn the parameters: the linear recall of \(0.56\) and \(0.27\) against \(0.79\) and \(0.61\). Macro-F1 moves by \(0.11\). Accuracy moves by seven points, which understates the same fact, because the majority class was never the failure.
+
+A confidence gate at maximum softmax probability \(0.55\) rejects \(2.5\%\) of the test windows. Mean confidence on the windows the network gets right is high enough that the gate is a tail, not a second classifier. Chapter~\ref{ch:est} uses the gate as a switch back to the moisture card. The accuracy in Table~\ref{tab:status} does not take that credit. It scores every window.
+
+Varying \(K\) does not produce a second result of the same size. On placements chosen by a linear probe's macro-F1, the deep network's test accuracy is \(0.897\), \(0.885\), \(0.886\), \(0.888\), \(0.893\), and \(0.898\) at \(K=2,3,4,5,6,8\). Macro-F1 on that curve stays between \(0.82\) and \(0.87\), and the two-station score is the highest of them. A front-prefix placement, stations \(1\) through \(K\) with no regard to the discharge, is worse for the linear probe: accuracy \(0.810\) at \(K=2\) against a separated pair. The installed four-station net, which is the \(D\)-optimal set and not the probe's favorite set, matches the top of the curve at \(0.898\) accuracy and \(0.846\) macro-F1. The honest reading is that Problem~1 is solved by the ends of the axis plus a nonlinear classifier, and that the middle stations are installed for the quadratic shape the control features also read, not because a fifth class appears at \(K=4\).
+
+\subsection{Commands}
+
+On the same test rows, mean absolute error against \(\mathbf{u}^\star\) is \(0.0217\) for the network and \(0.0225\) for the linear map. By component the network errors are \(0.038\), \(0.029\), \(0.011\), and \(0.009\) on intensity, residence, cleaning, and feed admission. The linear errors are \(0.040\), \(0.033\), \(0.010\), and \(0.006\). Feed admission is the easy component because the teacher leaves it open on almost every seasonal point and on most of the random set; both models learn a value near one. Intensity and residence are the components that move, and they are where the network is slightly closer. On the wet, heavy slice of the test set, feed at least \(6.5\,\mathrm{kg\,s^{-1}}\) and moisture at least \(0.19\), the linear map is slightly closer (\(0.029\) against \(0.031\)). Command error alone does not crown the deeper model.
+
+The plant-level test means are the right next line, still without the seasonal weights and still without the rate limit. Grain loss is \(3.10\%\) at the fixed command, \(2.56\%\) on the card, \(1.95\%\) for the linear map, \(1.95\%\) for the network, and \(1.98\%\) for the teacher. The teacher is not the minimum-loss policy. It maximizes \(J\), and a tenth of a point of loss can be the price of a lower breakage. Specific energy is \(1.46\), \(1.56\), \(1.69\), \(1.69\), and \(1.68\,\mathrm{kWh\,t^{-1}}\) in the same order. The tenth percentile of \(S\) is \(0.511\), \(0.534\), \(0.686\), \(0.693\), and \(0.700\). Both learned maps pull the bad tail up to the floor. The network's tail is a little higher. Neither learned map reproduces the teacher's property that almost no test case sits under \(0.70\); the fraction under \(0.699\) is \(0.39\) for the linear map, \(0.30\) for the network, and \(0.004\) for the teacher. Imitation from a noisy window recovers the mean and does not recover the hinge exactly.
+
+These test means are i.i.d.\ draws. They are not the operating mix a season would weight, and they are not a transient. Chapter~\ref{ch:est} is where the same networks are placed in the cyclic program and scored on that mix and on one slug. The offline chapter's conclusion is narrower, and it is the one the numbers support. The status task needs the depth: macro-F1 \(0.85\) against \(0.73\), on the labels that are spatial or rare. The command task, once the features exist, is nearly affine, and a deep net is a faithful imitator of the teacher rather than a large improvement on a linear imitator. Both statements are results of the study. Using only the first would hide the ablation. Using only the second would hide why the status model is a network at all.

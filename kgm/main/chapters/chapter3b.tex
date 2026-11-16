@@ -1,0 +1,113 @@
+\section{Regime account, boundary dips, and commissioning}
+\label{sec:account}
+
+The week totals in Table~\ref{tab:week} are the right summary and a poor diagnosis. A saving that is entirely in one regime is a different design decision from a saving that is spread across the quiet hours. This section writes the four loops regime by regime, using the same integrator, and then states the checks a site would run before the edge computer is allowed to start a fan.
+
+\subsection{All four loops on every regime}
+
+Table~\ref{tab:allreg} extends Table~\ref{tab:regenergy} and Table~\ref{tab:do-cip} to every loop. Energies are blower kilowatt-hours inside the regime. Dissolved oxygen and effluent chemical oxygen demand are time averages inside the regime. The minima are the lowest sample of the $0.02\,\mathrm{h}$ grid, so a one-sample spike is visible and is not averaged away.
+
+\begin{table}[ht]
+\centering
+\caption{Regime account for all four loops. COD is mean effluent chemical oxygen demand in milligrams per litre. DO is in milligrams per litre.}
+\label{tab:allreg}
+\scriptsize
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Regime & Loop & kWh & mean DO & min DO & mean COD \\
+\midrule
+Base & Proposed & 3469 & 1.81 & 1.72 & 56 \\
+ & Fixed $\alpha$ & 3630 & 2.01 & 1.78 & 56 \\
+ & PI & 4102 & 2.48 & 1.48 & 55 \\
+ & Constant & 17798 & 5.54 & 2.02 & 52 \\
+Brewhouse & Proposed & 2438 & 2.02 & 1.39 & 91 \\
+ & Fixed $\alpha$ & 2398 & 1.97 & 1.35 & 91 \\
+ & PI & 2737 & 2.35 & 2.04 & 89 \\
+ & Constant & 5565 & 3.97 & 3.87 & 84 \\
+Ferm.\ CIP & Proposed & 2441 & 2.18 & 1.63 & 94 \\
+ & Fixed $\alpha$ & 2186 & 1.88 & 0.90 & 96 \\
+ & PI & 2460 & 2.21 & 1.87 & 93 \\
+ & Constant & 3339 & 2.92 & 2.90 & 90 \\
+Pack.\ CIP & Proposed & 1061 & 2.00 & 1.71 & 83 \\
+ & Fixed $\alpha$ & 1113 & 2.11 & 2.00 & 83 \\
+ & PI & 1318 & 2.61 & 2.33 & 81 \\
+ & Constant & 2222 & 3.78 & 2.99 & 78 \\
+Weekend & Proposed & 247 & 4.46 & 0.86 & 39 \\
+ & Fixed $\alpha$ & 294 & 4.95 & 2.21 & 39 \\
+ & PI & 304 & 5.17 & 2.78 & 38 \\
+ & Constant & 2226 & 7.03 & 4.13 & 38 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Reading down the energy column, constant speed is the outlier in every regime, including the fermentation window it was sized for. In that window it still uses $3339/2441-1=37\%$ more blower energy than the proposed loop, because a fixed flow sized with a fifteen-percent margin and a slightly different uptake does not land on the inversion the proposed loop recomputes every minute. The quiet base regime is where constant speed is most wrong: $17798$ against $3469\,\mathrm{kWh}$, a factor of about five, for a mean dissolved oxygen of $5.54\,\mathrm{mg/L}$ that the biomass does not use. The weekend is the same pattern on a shorter clock, $2226$ against $247\,\mathrm{kWh}$.
+
+Reading across the minima, two dips belong to the proposed loop and should not be smoothed in a summary. At the entry to the brewhouse peak the proposed minimum is \SI{1.39}{\milli\gram\per\litre}, just under the production floor of \SI{1.5}{\milli\gram\per\litre}. The fixed-$\alpha$ loop dips to \SI{1.35}{\milli\gram\per\litre} at the same boundary. The proportional-integral loop does not, because it is already holding a higher set-point and therefore has air in hand when the load rises. The dip is a preview that is a little late relative to the size of the step from base to brewhouse, not a failure of $\alpha$, which only moves from $0.60$ to $0.52$ at that boundary. Lengthening the lead from $0.75\,\mathrm{h}$ to about $1.5\,\mathrm{h}$ on large upward load steps, while keeping $0.75\,\mathrm{h}$ on detergent steps whose timing is sharper, is the correction consistent with this row. It was not re-integrated. The table is the evidence that the correction is worth doing, and also that the dip does not push mean effluent chemical oxygen demand over the study limit: the brewhouse mean remains \SI{91}{\milli\gram\per\litre}.
+
+The second dip is the weekend entry already noted, \SI{0.86}{\milli\gram\per\litre}, while the weekend mean is \SI{4.46}{\milli\gram\per\litre} because the mixing floor then over-aerates. The fixed-$\alpha$ loop and the proportional-integral loop do not show that particular dip. Their set-points do not fall at the weekend, so they do not have to unload a bias that was supporting a clean-in-place. The proposed loop's lower weekend set-point is still the correct energy decision on the mean. The transient says the unload should be scheduled, by allowing the load scale to drop below one when the previewed mass load falls, rather than discovered by the bias after dissolved oxygen has already risen and then, at the moment of the step, before the blower has slowed. Both dips are properties of the deployed inversion. A horizon formulation of \eqref{eq:p1} that penalizes $\phi_{C}$ inside the horizon would see the weekend unload and the brewhouse rise as future constraints and would move earlier. That is the concrete reason to keep the full economic problem as the specification even though the tables were produced by Algorithm~\ref{alg:deployed}.
+
+The fermentation window remains the row that separates the soft sensor from a good set-point. Mean energies of the proposed loop and the proportional-integral loop are almost equal. Mean chemical oxygen demand values are all legal and within a few milligrams per litre of each other. The minimum dissolved oxygen is not: $1.63$ with the live factor, $0.90$ with $\alpha$ locked at $0.55$, $1.87$ with the high set-point, $2.90$ with constant speed. A report that quoted only kilowatt-hours would rank the fixed-$\alpha$ inversion first in this window, at $2186\,\mathrm{kWh}$, and would be ranking a loop that crossed the operational floor. The separate columns are the reason that ranking is rejected.
+
+\subsection{Mass and energy identities}
+
+The identities below are checks on the tables, not new results. Anyone recomputing the week should recover them before comparing a new controller.
+
+Regime energies of the proposed loop sum as
+\begin{equation}
+3469+2438+2441+1061+247
+=
+9656\,\mathrm{kWh},
+\end{equation}
+which matches Table~\ref{tab:week}. The proportional-integral sum is $4102+2737+2460+1318+304=10921\,\mathrm{kWh}$, against $10920$ in the week table. The one kilowatt-hour is rounding of the regime means. Constant speed sums to $17798+5565+3339+2222+2226=31150\,\mathrm{kWh}$, against $31151$. Specific energy at $9330\,\mathrm{m^{3}}$ is $9656/9330=1.035\,\mathrm{kWh/m^{3}}$ for the proposed blowers. Adding the exhaust account of $1300\,\mathrm{kWh}$ gives $(9656+1300)/9330=1.17\,\mathrm{kWh/m^{3}}$ for every fan on the cleaning plant under the proposed blower law. The proportional-integral plant, with the same exhaust, is $(10920+1300)/9330=1.31\,\mathrm{kWh/m^{3}}$. The constant-speed plant is $(31151+1300)/9330=3.48\,\mathrm{kWh/m^{3}}$. The exhaust addition does not change which loop is cheaper. It stops a later summary from quoting blower-only figures as if the exhaust fans were free.
+
+Effluent chemical oxygen demand under the proposed loop, weighted by hours, is
+\begin{equation}
+\frac{
+56.3\times 96
++
+90.9\times 30
++
+93.8\times 18
++
+83.1\times 12
++
+39.3\times 12
+}{168}
+\approx
+67\,\mathrm{mg/L}.
+\end{equation}
+The influent flow-weighted mean is $3747\,\mathrm{kg}$ over $9330\,\mathrm{m^{3}}$, or \SI{402}{\milli\gram\per\litre}. Removal of total chemical oxygen demand is $1-67/402=0.83$. The inert fraction is $0.08$, so the biodegradable removal is larger than $0.83$ and is not a separate claim. The study limit is \SI{125}{\milli\gram\per\litre}. The margin on the week-average is large. The margin on the fermentation mean, $125-94=31\,\mathrm{mg/L}$, is the one that would disappear first if $\alpha$ were lower or the tank smaller. Design attention belongs on that margin, not on the week-average.
+
+\subsection{Commissioning sequence tied to the tables}
+
+Commissioning follows the implementation order already given, with a measurement at each step so that Table~\ref{tab:allreg} can be rejected or kept.
+
+The first measurement is the header. With one machine online, a technician records airflow, power, and header pressure at three speeds that the drive will actually use, for example speed fractions near $0.55$, $0.75$, and $0.95$. Those three points are compared with Table~\ref{tab:powermap}. A site whose middle point is far from the table replaces $\eta$ and the friction coefficient in \eqref{eq:dp-num} before any controller is judged. Comparing controllers on a wrong power map produces a precise ranking of the wrong plant. The fan test standard is the right experimental frame for this measurement \cite{amca210,dixon2014turbo,iec60034}. The thesis table is only the model those measurements have to beat.
+
+The second measurement is a clean-water or off-gas transfer test at one airflow near \SI{2500}{\nmcph}, which identifies $k_{\mathrm{ref}}$ in \eqref{eq:kla-est} \cite{asce2007oxygen,gillot2005,redmon1983}. If the identified $k_{\mathrm{ref}}$ is not near $6.5\,\mathrm{h^{-1}}$, the inversion \eqref{eq:invert} is wrong by that ratio to the power $1/0.82$, and every airflow command scales. This is a one-day test. It is not optional, because the rest of the estimate is a ratio of controllers that share the same $k_{\mathrm{ref}}$. The ratio can survive a biased $k_{\mathrm{ref}}$. The absolute kilowatt-hours cannot.
+
+The third measurement is a detergent day with the proportional-integral fallback still in charge and the edge computer logging only. The log must show the calendar flag, the dissolved-oxygen minimum, and a portable check of the probe. That day sets the sensor threshold $\epsilon$ and the regime-table value of $\alpha$ for the recipe. If the portable probe and the installed probe disagree by more than a few tenths of a milligram per litre, the bias clamp in \eqref{eq:bias} is reviewed before the edge computer is allowed to write a set-point. The literature on sensor properties is the reason this day exists \cite{rieger2003sensors,olsson2012ica,haimi2013soft}.
+
+The fourth measurement is the first week in which Algorithm~\ref{alg:deployed} writes commands, with Level~1 still able to fall back on a single switch. The week is accepted if three statements hold. Blower energy is below the proportional-integral week on the same production calendar, not below a week of different batches. Hours above the site permit are not higher than the fallback week. The dissolved-oxygen minimum during each detergent recipe stays above the operational floor the site has written down, which in this study is \SI{1.5}{\milli\gram\per\litre}. A site that copies the numbers $11.6\%$ and $69\%$ without those three statements has copied the wrong result. The percentages are the output of one integrator on Table~\ref{tab:regimes}. The three statements are the result that travels.
+
+\subsection{What would falsify the estimate}
+
+The estimate is falsified, for this train, by any of the following observations, and each one points at a specific equation rather than at a vague model error.
+
+If, at the recorded airflows, the power meter disagrees with Table~\ref{tab:powermap} by more than the efficiency uncertainty, then \eqref{eq:polytropic} or \eqref{eq:dp-num} is the wrong header and the kilowatt-hours move. The ranking against constant speed will usually survive, because constant speed is the same wrong map evaluated at one flow. The ranking against the proportional-integral loop is more fragile, because that gap is only twelve percent.
+
+If a detergent day drives $\alpha$ well below the $0.40$ of Table~\ref{tab:regimes} and the third machine at $q_{\max}$ cannot hold the dissolved-oxygen floor, then the plant is oxygen-infeasible and no supervisory law inside this thesis repairs it. The remedy is a diffuser change, a lower load, or a fourth machine \cite{rosso2006alpha,mueller2002aeration,rosso2008state}. Reporting a controller saving on an infeasible plant is not a result.
+
+If the production clock is routinely wrong by more than the preview, the proposed loop collapses toward the fixed-$\alpha$ row of Table~\ref{tab:allreg} whenever the recipe flag is also wrong, and toward a set-point-tracking inversion when only the time is wrong. The dissolved-oxygen minimum in the fermentation window is the first place that collapse would show.
+
+If the clarifier, which this estimate does not model dynamically, loses solids and the permit that actually binds is suspended solids rather than chemical oxygen demand, then the indices in Section~\ref{sec:problem} are the wrong indices \cite{takacs1991,tchobanoglous2014}. The fan law can still be the right fan law. The claim about discharge compliance cannot be carried across that change of permit.
+
+Within the observations the integrator did produce, none of those falsifiers is triggered. Power at the constant-speed flow matches Table~\ref{tab:powermap}. The fermentation window is feasible at a mean near \SI{136}{\kilo\watt}, inside a three-machine header whose constant-speed point is \SI{186}{\kilo\watt}. The calendar in the integrator is the calendar the controller sees. The permit in the integrator is chemical oxygen demand, and the hours above \SI{125}{\milli\gram\per\litre} are zero for every loop. The remaining engineering fact is the one the two technologies were built for. Constant-speed fans sized for the worst hour of a brewery week waste most of their electricity on the other hours. A dissolved-oxygen loop removes most of that waste and leaves a smaller waste that comes from a high, fixed set-point. A schedule-aware inversion removes that smaller waste. A live oxygen-transfer factor does not stack another large energy cut on top of a good set-point. It is what keeps the dissolved-oxygen floor intact when the cleaning chemicals that the brewery must use arrive in the tank the fans are trying to aerate.
+
+\subsection{Open-loop step against the closed-loop week}
+
+Table~\ref{tab:openloop} holds uptake fixed and holds airflow fixed, and it is not a row of Table~\ref{tab:allreg}. The comparison is still the right last check on the estimation, because a reader can otherwise think that a minimum of \SI{0.90}{\milli\gram\per\litre} in the fixed-$\alpha$ loop contradicts an open-loop end point of \SI{0.53}{\milli\gram\per\litre}. It does not. The open-loop step assumes the biomass keeps consuming \SI{30}{\milli\gram\per\litre\per\hour} after dissolved oxygen has collapsed. The week model multiplies the rate by $\mu_{C}=C/(K_{\mathrm{DO}}+C)$. At $C=0.9$ and $K_{\mathrm{DO}}=0.35$ that factor is $0.9/1.25=0.72$, so uptake has already fallen by more than a quarter, the driving force $C^{*}-C$ has widened, and the bias has started to add air. All three effects slow the fall. The open-loop table is the unmitigated error. The week minimum is the error after mitigation by physics the controller does not deserve credit for, plus mitigation by the bias, which it does.
+
+What the controller does deserve credit for is the gap between \SI{0.90}{\milli\gram\per\litre} and \SI{1.63}{\milli\gram\per\litre} in the same window, at nearly the same energy as a predictive law that was handed a sensible set-point and a wrong factor. The proportional-integral minimum of \SI{1.87}{\milli\gram\per\litre} shows that feedback with a high set-point can also clear the floor. It pays for that clearance in the base regime, $4102$ against $3469\,\mathrm{kWh}$. The schedule-aware law clears the floor in the detergent window without paying the quiet-hour price of a permanent \SI{2.5}{\milli\gram\per\litre} set-point. That sentence is the estimate. The open-loop column at \SI{3570}{\nmcph} is why the sentence is about $\alpha$ and not only about set-points. A set-point of \SI{2.0}{\milli\gram\per\litre}, computed with the wrong factor, does not become a tank concentration of \SI{2.0}{\milli\gram\per\litre} until the bias has finished a correction of the size Table~\ref{tab:openloop} measures.
+
+The constant-speed column does not need this distinction. At \SI{6552}{\nmcph} the header is above the corrected detergent airflow of about \SI{5250}{\nmcph} for the whole week, which is why its fermentation minimum is \SI{2.90}{\milli\gram\per\litre} and why its base-regime dissolved oxygen sits near \SI{5.5}{\milli\gram\per\litre}. Safety by excess air is real. It is also the \SI{21495}{\kilo\watt\hour} the modulating loops are measured against. A design review that stops at ``the constant-speed plant met the permit'' has stopped before the only question the fans pose, which is how much air the permit actually required in each hour the calendar had already named.

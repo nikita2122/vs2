@@ -1,0 +1,133 @@
+\section{Worked fan map, staging, and sensor cycle}
+\label{sec:worked}
+
+The specification in Section~\ref{sec:saempc} and Section~\ref{sec:piots} is executable only if a reader can reproduce a power, a staging, and a health decision from the formulae without opening the integrator. This section does those three calculations at the points the estimation later occupies, and it records the cycle time the edge computer must finish inside.
+
+\subsection{Header power at the flows the week actually uses}
+
+Equation~\eqref{eq:polytropic} with the numerical header \eqref{eq:dp-num} is evaluated here at six airflows. Inlet pressure is \SI{101.3}{\kilo\pascal}, inlet temperature is \SI{293.15}{\kelvin}, the specific gas constant of air is \SI{287}{\joule\per\kilogram\per\kelvin}, and the efficiency product is $0.70\times 0.95\times 0.97=0.645$. Mass flow uses \SI{1.293}{\kilogram\per\cubic\metre} at normal conditions, so $\dot{m}=1.293\,q/3600$ with $q$ in normal cubic metres per hour. The polytropic factor is
+\begin{equation}
+\label{eq:factor}
+\Phi
+=
+\frac{\gamma}{\gamma-1}
+\left[
+\left(\frac{p_{\mathrm{in}}+\Delta p}{p_{\mathrm{in}}}\right)^{(\gamma-1)/\gamma}
+-
+1
+\right]
+=
+3.5
+\left[
+r_{p}^{\,0.2857}
+-
+1
+\right].
+\end{equation}
+Table~\ref{tab:powermap} is the result. The constant-speed flow of the estimation, \SI{6552}{\nmcph}, lands at \SI{185.5}{\kilo\watt}, which is why that loop averages \SI{185.4}{\kilo\watt} over a week that never changes speed. The hand inversion of the base regime, about \SI{1550}{\nmcph}, lands at \SI{32.6}{\kilo\watt}. One sentence in Section~\ref{sec:saempc} called that ``a few tens of kilowatts.'' The table is the sentence made numeric.
+
+\begin{table}[ht]
+\centering
+\caption{Header pressure rise and electrical power from \eqref{eq:dp-num} and \eqref{eq:polytropic}. These rows are the fan model. They are not a catalogue curve.}
+\label{tab:powermap}
+\small
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+$q$ (\si{\nmcph}) & $\Delta p$ (kPa) & pressure ratio & adiabatic kW & electrical kW \\
+\midrule
+900  & 52.4 & 1.518 & 12.1 & 18.7 \\
+1550 & 53.3 & 1.526 & 21.1 & 32.6 \\
+2500 & 55.4 & 1.547 & 35.1 & 54.4 \\
+3500 & 58.7 & 1.580 & 51.7 & 80.1 \\
+5200 & 66.9 & 1.660 & 85.7 & 132.9 \\
+6552 & 75.6 & 1.746 & 119.7 & 185.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two features of the table are the reason the cube law was rejected for the blowers. From \SI{1550}{\nmcph} to \SI{3100}{\nmcph} a pure cube law, anchored at \SI{32.6}{\kilo\watt}, would predict $32.6\times 2^{3}=261\,\mathrm{kW}$. The header model at \SI{3500}{\nmcph} is only \SI{80}{\kilo\watt}, because most of the pressure is the static submergence, which does not grow with the square of speed. A controller tuned on the cube law would refuse legitimate airflow in the clean-in-place window, believing the power to be three times what the header actually draws. The exhaust fans are the opposite case, and they keep the cube law, because their pressure is duct pressure.
+
+The surge arithmetic that goes with the table is short. Rated flow of one machine is \SI{2800}{\nmcph}. Surge at rated speed is $0.22\times 2800=616\,\mathrm{Nm^{3}/h}$. The margin of $1.15$ raises the floor to $708\,\mathrm{Nm^{3}/h}$. The plant mixing floor is \SI{900}{\nmcph} on one machine, which clears $708$. Two machines sharing \SI{900}{\nmcph} would each see \SI{450}{\nmcph}, which does not clear $708$. Equation~\eqref{eq:stage-rule} therefore keeps one machine online below \SI{2600}{\nmcph}. The boundary \SI{2600}{\nmcph} is not the surge number. It is a hysteresis choice: one machine at \SI{2600}{\nmcph} is below rated \SI{2800}{\nmcph}, and two machines at \SI{2600}{\nmcph} would each see \SI{1300}{\nmcph}, which clears surge at full speed and also at the reduced speed the fan law assigns to that flow. The rule is conservative on the low side and does not need an integer solver while the three machines are the same size.
+
+\subsection{Staging at the three loads that matter}
+
+Table~\ref{tab:stage} applies the rule to three header flows taken from the power map and from the shape of the week: quiet base, a mid load, and the constant-speed design point. Speed fraction is header flow divided by $n$ times rated flow, which is the right fraction only when the machines run at the flow the oxygen balance asked for and the header pressure is whatever \eqref{eq:dp-num} says. It is a check, not a second controller.
+
+\begin{table}[ht]
+\centering
+\caption{Staging rule \eqref{eq:stage-rule} at three header flows. Per-machine flow is compared with the \SI{708}{\nmcph} surge margin at rated speed. At reduced speed the surge flow itself falls with \eqref{eq:fanlaws}, so the rated-speed comparison is the stricter one.}
+\label{tab:stage}
+\small
+\begin{tabular}{@{}rrrrl@{}}
+\toprule
+Header $q$ & $n$ & $q$ each & speed fraction & surge check \\
+\midrule
+1550 & 1 & 1550 & 0.55 & clear of 708 \\
+3500 & 2 & 1750 & 0.63 & clear of 708 \\
+6552 & 3 & 2184 & 0.78 & clear of 708 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The constant-speed point uses all three machines at a speed fraction of about $0.78$. That is a legal point. It is also an expensive point in every hour whose oxygen balance does not ask for it, which is most of the week. The proposed loop's base flow near \SI{1550}{\nmcph} uses one machine. The start of a second machine is then a real event, counted by $\lambda_{z}$ in \eqref{eq:p1}, and it happens when the calendar, not a noisy dissolved-oxygen error, says the load is coming. That is the operational content of hybrid control on this header \cite{bemporad1999hybrid,cristea2011}. A proportional-integral loop can start the second machine too, through a pressure or flow sequencer in the drive panel. It starts the machine after the error exists. The calendar starts it before the error exists. The estimation's dissolved-oxygen minima are the measurement of that difference.
+
+\subsection{Clean-in-place inversion, continued}
+
+The base inversion in Section~\ref{sec:saempc} is repeated here for the fermentation window so the two ends of the fan map are both hand-checked. Take an uptake of \SI{30}{\milli\gram\per\litre\per\hour}, which is the order of the feasible equilibrium discussed in Section~\ref{sec:problem}, a set-point of \SI{2.2}{\milli\gram\per\litre}, $T=\SI{33}{\celsius}$, and $\alpha=0.40$. Saturation at \SI{33}{\celsius} is \SI{7.16}{\milli\gram\per\litre}, so $\beta C^{*}=6.80$ and the driving force is $6.80-2.2=4.60$. Then
+\begin{equation}
+K_La^{\star}
+=
+30/4.60
+=
+6.52\,\mathrm{h^{-1}}.
+\end{equation}
+The temperature factor is $1.024^{13}$. Since $1.024^{10}\approx 1.268$ and $1.024^{3}\approx 1.074$, the product is about $1.36$. The denominator of the airflow ratio is
+\begin{equation}
+\alpha\,k_{\mathrm{ref}}\,\theta^{\,T-20}
+=
+0.40\times 6.5\times 1.36
+=
+3.54\,\mathrm{h^{-1}}.
+\end{equation}
+Hence $(q/2500)^{0.82}=6.52/3.54=1.84$, and
+\begin{equation}
+\frac{q}{2500}
+=
+1.84^{\,1/0.82}
+=
+1.84^{\,1.220}.
+\end{equation}
+Now $1.84^{1}=1.84$ and $1.84^{0.22}\approx 1.14$, so the product is about $2.10$ and $q\approx\SI{5250}{\nmcph}$. Table~\ref{tab:powermap} places \SI{5200}{\nmcph} at \SI{133}{\kilo\watt}. The staging rule turns on two machines below \SI{5200}{\nmcph} and the third at \SI{5200}{\nmcph} and above, so this point sits on the boundary and the implementation must apply the inequality in one direction only. Algorithm~\ref{alg:deployed} uses $n=3$ when $q\ge 5200$, which is the safe side of the boundary: three machines at \SI{1750}{\nmcph} each remain above the surge margin. The weekly integrator's fermentation-window mean power, about \SI{136}{\kilo\watt} for the proposed loop, is the same neighbourhood as this hand value. Agreement at that level is the implementation test. Agreement to the kilowatt would require the integrator's uptake to equal the \SI{30}{\milli\gram\per\litre\per\hour} assumed here, which it will not, because uptake moves with substrate.
+
+If the same inversion is repeated with the quiet-week factor $\alpha=0.55$ instead of $0.40$, the denominator grows by $0.55/0.40=1.375$ and the airflow falls by $1.375^{1.220}\approx 1.47$. The controller that has not seen the detergent asks for about \SI{3570}{\nmcph} when the tank needs about \SI{5250}{\nmcph}. The bias \eqref{eq:bias} has to make up a factor of roughly $1.47$ by integrating a dissolved-oxygen error. With $K_{b}=0.55\,\mathrm{h^{-1}}$ that correction is a large fraction of an hour, which is the origin of the deeper dissolved-oxygen sag of the fixed-$\alpha$ loop. The arithmetic does not depend on the neural network. It depends on $\alpha$ being wrong by the amount Table~\ref{tab:regimes} states.
+
+\subsection{Sensor cycle and health rule}
+
+The soft sensor's training loss was specified in \eqref{eq:lphys}. The deployed cycle is a smaller object and should be written as its own procedure so it can be reviewed without the training code. Normalization is fixed from the commissioning week, not recomputed online, because an online mean would move when a detergent arrives and would hide the very shift the sensor is for. The scales used with this plant's units are: airflow divided by \SI{2500}{\nmcph}, power divided by \SI{80}{\kilo\watt}, header pressure minus \SI{52}{\kilo\pascal} then divided by \SI{20}{\kilo\pascal}, temperature minus \SI{30}{\celsius} then divided by $5$, dissolved oxygen divided by $3$, and the detergent flag left as $0$ or $1$. A window of thirty samples at one minute is concatenated and passed through the two hidden layers. The health decision does not trust the sigmoid. It trusts the residual.
+
+\begin{algorithm}[ht]
+\caption{One-minute sensor publish}
+\label{alg:sensor}
+\KwIn{window $w$, frozen weights $\phi$, curve \eqref{eq:kla-est}}
+\KwOut{$\alpha$, $K_La$, $\mathrm{OUR}$, health bit}
+Evaluate the four heads on $w$\;
+Compute $\mathcal{L}_{\mathrm{phys}}$ on $w$ with \eqref{eq:lphys}\;
+\eIf{uptake head changed faster than $q_{\mathrm{COD}}X$ over the window}{
+  health $\leftarrow 0$\;
+}{
+  \eIf{emitted $\alpha\notin[0.15,0.90]$ or $\mathcal{L}_{\mathrm{phys}}>\epsilon$}{
+    health $\leftarrow 0$\;
+  }{
+    health $\leftarrow 1$\;
+  }
+}
+Publish the lagged $\alpha$ from \eqref{eq:alpha-lag} together with $K_La$ and $\mathrm{OUR}$\;
+\end{algorithm}
+
+The threshold $\epsilon$ is set during commissioning as a high quantile of $\mathcal{L}_{\mathrm{phys}}$ on a week that includes one real detergent day and that has been checked with a portable dissolved-oxygen probe or an off-gas hood \cite{leu2009,redmon1983,asce2007oxygen}. Setting $\epsilon$ on a quiet week only would mark every detergent day as a fault, and the controller would then ignore the sensor exactly when Table~\ref{tab:degrade} says the sensor is the point. Setting $\epsilon$ so large that the bit never clears removes the fallback. The quantile is the compromise, and it is a logged parameter, not a weight inside $\phi$.
+
+Inference cost is small next to the minute. Two layers of $32$ units on a window of a few hundred inputs is well under a million floating-point operations. The edge computer's minute also contains the inversion \eqref{eq:invert}, which is a few dozen operations, and the log write. The minute is not tight. What is tight is the rule that a late publish is a missed publish. If Algorithm~\ref{alg:sensor} has not finished when Algorithm~\ref{alg:deployed} runs, the controller keeps the previous $\alpha$ and does not block the fan command on a network timeout. A fan command that waits for a learning model is a fan command that Level~1 should ignore.
+
+\subsection{What the two algorithms guarantee together}
+
+Taken as a pair, Algorithm~\ref{alg:deployed} and Algorithm~\ref{alg:sensor} guarantee the following on the model of Chapter~\ref{ch:previous}, and only on that model. The airflow command is always inside $[q_{\min},q_{\max}]$. The staging always puts each online machine at or above the surge margin used to write \eqref{eq:stage-rule}, because the rule's breakpoints were checked in Table~\ref{tab:stage} and the algorithm increases $n$ if the check fails. The bias cannot wind past $25\%$ of the inverted flow. If the sensor is unhealthy, $\alpha$ comes from the regime table, which for the fermentation recipe is $0.40$ and not the quiet-week $0.55$. If the probe is stuck, the airflow freezes. None of these guarantees is a statement about a different tank volume. They are the acceptance tests of this design, and Chapter~\ref{ch:estimate} is where the nominal week is asked whether the tests hold.

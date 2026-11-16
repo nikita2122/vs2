@@ -1,0 +1,127 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[margin=2.45cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{setspace}
+\setstretch{1.42}
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{1.15em}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,tabularx,array,longtable}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\setlength{\headheight}{14.5pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\numberwithin{equation}{chapter}
+\numberwithin{figure}{chapter}
+\numberwithin{table}{chapter}
+
+\setlist[itemize]{topsep=0.3em,itemsep=0.2em}
+\setlist[enumerate]{topsep=0.3em,itemsep=0.2em}
+
+\captionsetup{font=small,skip=6pt}
+
+\title{Research for Improving the Planting Efficiency of a Wooden Seed Sowing Machine by Using Vision-Guided Feed-Speed Control and Multi-Factor Model Predictive Optimization}
+\author{}
+\date{October 2026}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{1.6cm}
+{\Large Computer Science Manuscript}\\[0.4cm]
+{\large System Design and Optimization}\\[2.2cm]
+{\LARGE\bfseries Research for Improving the Planting Efficiency of a Wooden Seed Sowing Machine by Using Vision-Guided Feed-Speed Control and Multi-Factor Model Predictive Optimization\par}
+\vspace{1.6cm}
+{\large Three chapters on sensing, control, and numerical estimation}\\[2.4cm]
+\begin{minipage}{0.86\textwidth}
+\small
+This manuscript proposes two control innovations for a planter that meters irregular wooden seeds, principally hardwood seeds such as acorns. Chapter~3 reports a numerical estimation of the models derived in Chapter~2. It is not a field trial and it does not claim measured plantation results.
+\end{minipage}
+\vfill
+{\large October 2026}
+\vspace{1.2cm}
+\end{titlepage}
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+Direct seeding of hardwoods is attractive because a machine can place wooden seeds, especially acorns, at a fraction of the cost of planting nursery seedlings. The same seeds defeat the assumptions built into cereal planters. An acorn is heavy, elongated, and variable in diameter. A cell that suits red oak doubles on pin oak and misses on bur oak or black walnut. A ground wheel slips on a slope, a seed box vibrates, and a vacuum level copied from a maize meter either does nothing for a large nut or pulls two small seeds into one cell. Previous electronic meters close a speed loop. Previous laboratory studies optimize vacuum, hole size, or vibration one factor at a time, usually offline. Neither line of work coordinates the input speed of the seeds with the factors of the machine while the lot of seeds is changing.
+
+This manuscript studies that gap as a computer-science problem in system design. Two innovations are proposed and then estimated together.
+
+The first innovation is a vision-guided feed-speed controller. A camera over the throat of the hopper measures occupancy, equivalent diameter, and a bridge index. An outer kinematic law converts ground speed and the target spacing into a seed rate. An inner fuzzy proportional--integral--derivative loop drives the cell-wheel motor. A constraint layer slows the wheel when the bridge index crosses a threshold, which is the action that fixed-gain speed control does not take. The vision computer is separate from the motor computer, because earlier vision meters lost the spacing target when image processing and motor control shared one slow microcontroller.
+
+The second innovation is a multi-factor model-predictive coordinator. At a slower period it chooses vibrator frequency, assist vacuum, and opener depth. Its prediction is a logistic map from seed size, vibration, slip, and depth error onto miss probability, double probability, and spacing scatter. The map is minimized on a small grid subject to actuator limits and a penalty on shaker and vacuum effort. The factor loop is deliberately blind to the vision constraint, so it cannot hide a bad vibration setting behind a slower feed. A passive isolator, enabled with this loop, attenuates terrain vibration in the model.
+
+The two loops are stacked. The factor coordinator sets the mechanical regime. The vision loop trims the input speed inside that regime. Chapter~3 integrates the discrete models over 4{,}000 metering events per case, with a fixed random seed, for pin oak, red oak, bur oak, and a mixed lot, at two ground speeds, with slope and with harsh vibration. On a mild red-oak run the quality-of-feed index moves from 58.6\% under ground drive to 88.2\% with both innovations, and the planting-efficiency index moves from 52.4\% to 87.0\%. On bur oak with slope and a 12~Hz terrain disturbance, quality of feed moves from 20.7\% to 75.4\%. On the disturbed mixed lot the efficiency index rises by about 51 percentage points across repeated draws. The shaker uses more energy when it is actually helping. Under a 16~Hz disturbance the optimizer drops the shaker command from 9~Hz to 3~Hz and relies on isolation, which is a result of the cost, not a hand-written rule. These figures are solutions of the stated models. They rank the designs. They are not a substitute for a bench or field test.
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter*{Nomenclature}
+\addcontentsline{toc}{chapter}{Nomenclature}
+
+\begin{longtable}{@{}lp{0.72\textwidth}@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+\endhead
+$X_t$ & Target in-row spacing (m). Nominal value 0.25~m. \\
+$v$ & Ground speed of the machine (m/s). \\
+$\lambda^{\star}$ & Target seed input rate, $v/X_t$ (seeds/s). \\
+$N_c$ & Number of cells on the singulating wheel. Nominal value 12. \\
+$\omega$ & Angular speed of the cell wheel (rad/s). \\
+$\eta$ & Cell fill ratio, seeds released per cell passage. \\
+$s$ & Longitudinal slip of a ground wheel, dimensionless. \\
+$d$ & Equivalent seed diameter (mm). \\
+$d_c$ & Cell mouth diameter (mm). Nominal value 24~mm. \\
+$f$ & Vibrator frequency command (Hz). \\
+$f_{\mathrm{dist}}$ & Terrain disturbance frequency reaching the frame (Hz). \\
+$f_{\mathrm{eff}}$ & Frequency experienced by the seed mass (Hz). \\
+$f^{\star}$ & Size-dependent agitation frequency that the cost prefers (Hz). \\
+$P$ & Assist vacuum at the cell (kPa). \\
+$h$ & Opener depth (mm). Target $h^{\star}=30$~mm. \\
+$\rho$ & Image occupancy of the hopper throat, in $[0,1]$. \\
+$B$ & Bridge index computed from occupancy and diameter spread. \\
+$p_m,p_d,p_s$ & Probabilities of a miss, a double, and a single at one cell event. \\
+$Q_{\mathrm{f}}$ & Quality-of-feed index (\%): spacings in $(0.5X_t,1.5X_t]$. \\
+$I_{\mathrm{mult}}$ & Multiple index (\%): spacings at most $0.5X_t$. \\
+$I_{\mathrm{miss}}$ & Miss index (\%): spacings greater than $1.5X_t$. \\
+$C_{\mathrm{v}}$ & Precision (\%): coefficient of variation inside the qualified band. \\
+$\eta_{\mathrm{E}}$ & Planting-efficiency index (\%): qualified seeds per minute divided by the kinematic target. \\
+$T_s$ & Sample period of a loop. Motor 10~ms, vision 50~ms, factors 200~ms. \\
+\bottomrule
+\end{longtable}
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{ch1}
+\input{ch2}
+\input{ch3}
+
+\bibliographystyle{unsrt}
+\bibliography{refs}
+
+\end{document}

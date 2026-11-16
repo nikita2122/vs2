@@ -1,0 +1,16 @@
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Inherent and installed flow curves of a linear valve. The preferred operating window is the middle of the stroke, where the installed gain is finite and a small stick band is a small fraction of the flow.}}{5}{figure.caption.5}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Blending line. LV-1 is the high-gravity beer valve, LV-2 the dilution-water valve and LV-3 the outlet valve. Speeds and pressures are the fast measurements. Original extract is measured after the transport delay.}}{15}{figure.caption.6}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Pressure-manifold decoupled linear active disturbance rejection control for the high-gravity beer valve. The water valve has the same structure with $G_{ww}$.}}{31}{figure.caption.8}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Valve-authority coordination. The header setpoint is the pressure that keeps the inlet stems near their design values. The outlet observer bandwidth rises only when a stem leaves the linear window.}}{35}{figure.caption.9}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Timing of the soft sensor. The extract controller uses $P_c$ at the mix point. The analyser, one transport delay and one instrument lag later, updates only the bias.}}{36}{figure.caption.10}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Integrated absolute error of original extract on each disturbance window.}}{58}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces True original extract over the campaign. Vertical lines mark the events of Table~\ref {tab:clock}.}}{59}{figure.caption.17}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Original extract during the beer-supply step and during the brand change.}}{59}{figure.caption.18}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Stem fractions. The shaded band is the linear window $[0.30,0.74]$ in which the header bandwidth stays at its base value.}}{60}{figure.caption.19}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Supply pressures and blend-header pressure. The proposed header setpoint is lowered after the beer-supply step so that the inlet valves keep their pressure drop.}}{61}{figure.caption.20}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Volumetric flows. After \SI {320}{s} the beer-flow setpoint is \SI {9}{\cubic \metre \per \hour }. Only the proposed controller reaches it, because the header pressure has been lowered to keep the beer valve inside its travel.}}{64}{figure.caption.21}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Proposed extract signals. The analyser lags the mix-point extract. The bias is the analyser correction applied to the mass-balance soft sensor.}}{66}{figure.caption.22}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Scheduled bandwidth of the outlet-valve controller. The base value is held while the inlet stems remain in the linear window.}}{68}{figure.caption.23}%

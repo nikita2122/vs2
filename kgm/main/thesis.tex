@@ -1,0 +1,135 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{microtype}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2.45cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.70}
+\setlength{\parskip}{0.35em}
+\setlength{\parindent}{1.15em}
+
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{algorithm2e}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit,backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{siunitx}
+\sisetup{detect-all,per-mode=symbol}
+\DeclareSIUnit{\nmcph}{Nm^{3}/h}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf,skip=6pt}
+\usepackage[hidelinks]{hyperref}
+\usepackage[backend=biber,style=numeric,sorting=none,maxbibnames=8,giveninits=true,doi=true,isbn=false,url=false]{biblatex}
+\addbibresource{references.bib}
+
+\hypersetup{
+  pdftitle={Research for Improving Energy Efficiency and Discharge Compliance of Automated Brewery Wastewater Cleaning by Using Schedule-Aware Fan Model Predictive Control and Physics-Informed Oxygen-Transfer Sensing},
+  pdfauthor={Computer Science Thesis Manuscript}
+}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\diag}{diag}
+
+\SetAlgoNlRelativeSize{-1}
+\SetAlCapFnt{\small}
+\DontPrintSemicolon
+
+\title{%
+Research for Improving Energy Efficiency and Discharge Compliance\\
+of Automated Brewery Wastewater Cleaning by Using\\
+Schedule-Aware Fan Model Predictive Control and\\
+Physics-Informed Oxygen-Transfer Sensing}
+\author{Computer Science Thesis Manuscript\\[0.4em]
+\large System Design and Optimization}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+A brewery uses large volumes of water for brewing, fermentation, and packaging, and then has to clean that water before it is discharged. The cleaning plant is an industrial automation problem. Screens, equalization, pH correction, anaerobic pretreatment, aerobic polishing, and clarification must all run while the brewery itself changes batches. The actuators that dominate the electricity bill are fans: centrifugal blowers that push air into the aerobic tanks, and smaller exhaust fans that keep the equalization and flotation rooms from going septic and odorous. In municipal plants the influent drifts with a daily pattern. In a brewery the dangerous disturbances are scheduled. A clean-in-place cycle dumps hot, surfactant-rich, high-load water at a time the production program already knows.
+
+This thesis formulates two technological responses to that fact. The first is a schedule-aware hybrid economic model predictive controller for the fan cluster. It treats the brewhouse and clean-in-place calendar as a measured future disturbance, chooses how many blowers are online, and chooses their speeds under surge, motor, and discharge constraints. The second is a physics-informed oxygen-transfer soft sensor. Cleaning surfactants lower the oxygen-transfer factor that municipal controllers usually freeze at a constant. The soft sensor estimates that factor, together with the oxygen uptake of the sludge, from fan power, airflow, temperature, and a sparse dissolved-oxygen measurement, and it writes the estimate into the controller model.
+
+The two ideas are developed against the published record on aeration control, blower thermodynamics, soft sensing, and physics-informed learning, and they are then specified as an automation architecture: a programmable controller for safety and inner loops, an edge computer for the optimizer and the soft sensor, and a historian fed by the brewery schedule. A reduced aerobic polishing model, integrated over a representative production week, is used to estimate performance against constant-speed fans, a dissolved-oxygen proportional-integral loop, and a tracking predictive law that does not see the schedule or the surfactant factor. On that week the schedule-aware law uses about twelve percent less blower electricity than the proportional-integral loop and about sixty-nine percent less than constant-speed operation, while the weekly hours above the study discharge limit for chemical oxygen demand stay at zero. The same run shows why the soft sensor is not redundant: without it, the predictive law lets dissolved oxygen sag further when the surfactant arrives. The study is a design and simulation argument for a representative train. It is not a claim about a named factory.
+\end{abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter*{Nomenclature}
+\addcontentsline{toc}{chapter}{Nomenclature}
+\markboth{Nomenclature}{Nomenclature}
+
+{\footnotesize
+\setstretch{1.05}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.5cm}p{11.4cm}@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$\alpha$ & Wastewater oxygen-transfer correction relative to clean water. \\
+$\beta$ & Salinity and dissolved-solids correction on saturation concentration. \\
+$\gamma$ & Ratio of specific heats of air, taken as $1.4$. \\
+$\eta$ & Combined polytropic, motor, and drive efficiency. \\
+$\theta$ & Temperature correction base for the transfer coefficient, $1.024$. \\
+$\rho$ & Mass of oxygen per normal cubic metre of air, $0.299\,\mathrm{kg\,O_2/Nm^3}$. \\
+$\tau$ & Time constant of a lag, in hours. \\
+$\omega$ & Rotational speed of a fan. \\
+$C$ & Dissolved oxygen concentration. \\
+$C^{*}$ & Clean-water saturation concentration at the stated temperature. \\
+$C_{s,20}$ & Standard saturation at \SI{20}{\celsius}, $9.09\,\mathrm{mg/L}$. \\
+$\mathrm{COD}$ & Chemical oxygen demand. \\
+$D$ & Preview disturbance built from the production calendar. \\
+$\mathrm{DO}$ & Dissolved oxygen. \\
+$E$ & Electrical energy. \\
+$f$ & Inert fraction of aerobic influent $\mathrm{COD}$. \\
+$J$ & Economic stage cost of the fan problem. \\
+$K_La$ & Oxygen mass-transfer coefficient. \\
+$K_S,K_{\mathrm{DO}}$ & Half-saturation constants for substrate and oxygen. \\
+$n$ & Number of blowers commanded online. \\
+$\mathrm{OUR}$ & Oxygen uptake rate of the mixed liquor. \\
+$\mathrm{OTR}$ & Oxygen transfer rate from the diffused air. \\
+$P$ & Electrical power drawn by the fan train. \\
+$p$ & Absolute pressure. \\
+$Q$ & Liquid flow, or airflow when the subscript says air. \\
+$q$ & Airflow in normal cubic metres per hour. \\
+$r$ & Volumetric reaction rate. \\
+$S$ & Substrate or biodegradable $\mathrm{COD}$ concentration. \\
+$\mathrm{SOTE}$ & Standard oxygen transfer efficiency in clean water. \\
+$T$ & Temperature. \\
+$u$ & Vector of continuous decisions, principally fan speed and zone airflow. \\
+$V$ & Aerated volume. \\
+$X$ & Mixed-liquor volatile suspended solids. \\
+$z$ & Binary staging decision for each blower. \\
+\bottomrule
+\end{tabular}
+}
+
+\input{chapters/chapter1}
+\input{chapters/chapter2}
+\input{chapters/chapter2b}
+\input{chapters/chapter2c}
+\input{chapters/chapter3}
+\input{chapters/chapter3b}
+
+\nocite{*}
+\printbibliography[heading=bibintoc,title={References}]
+
+\end{document}

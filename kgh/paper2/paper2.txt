@@ -1,0 +1,272 @@
+
+
+===== PAGE 1 =====
+A Modified Shuffled Frog-Leaping Search
+for an SVM Fault Classifier
+Short paper on the second innovation of the expanded study
+based on You, Fan, Li, Liang, Fang, and Wang,
+Shock and Vibration, 2019, Article ID 1908485
+Abstract
+A radial-basis support vector machine separates the 22-dimensional vibration features of a four-
+state pump only after two numbers are chosen: the soft-margin penalty C and the kernel param-
+eter g. Cross-validated accuracy, the natural score of a candidate pair, is a step function, so the
+outer search has to be derivative-free. Shuffled frog-leaping already mixes a local leap toward
+the best frog in a memeplex with a later leap toward the best frog in the population, and it
+replaces a failed frog by a uniform draw. That cascade wastes a training whenever both leaders
+would have helped at once, and the uniform draw abandons a position the search has already
+paid for. The modification makes one leap, with weights set by distance to the global best, and
+replaces a failure by a Gaussian perturbation of the current frog in logarithmic coordinates. On
+the published split, 180 training vectors and 60 test vectors, the modified search labels 56 test
+vectors correctly. The unmodified frog-leaping search and a chemical-reaction search each label
+55. A backpropagation network labels 51. The gain over the other global searches is one test
+vector, and it is reported as a count.
+1
+The classifier the search is wrapped around
+The feature vector is fixed before this innovation begins. Each record has already been reduced to
+x ∈R22 and scaled to the unit interval on training ranges. The label set has four states: healthy,
+eccentric axle, bearing pedestal, and sealing-ring wear. Binary soft-margin machines are the decision
+rule [2, 3]. With labels yi ∈{+1, −1} the dual used here is
+min
+α
+1
+2
+X
+i,j
+yiyjαiαj
+(
+K(xi, xj) + 1
+C δij
+)
+−
+X
+j
+αj
+s.t.
+X
+i
+yiαi = 0,
+αi ≥0,
+(1)
+and the decision value is P
+i αiyiK(x, xi) + b. The radial kernel
+K(x, x′) = exp
+(−g ∥x −x′∥2)
+,
+g = 1/(2σ2),
+(2)
+is positive definite for every g > 0 [8]. A large C punishes slacks and can memorize 180 rows. A
+large g makes K local and can do the same. The pair (C, g) is the whole continuous freedom of the
+classifier [6, 7].
+Four states are reduced by one-versus-one voting: six binary machines, each trained on the 90
+rows of one pair of states. One shared pair (C, g) is used for all six. The search works in logarithmic
+coordinates u = (log10 C, log10 g) inside the box log10 C ∈[−1, 3] and log10 g ∈[−3, 1]. The 2019
+paper does not print the box; the rectangle is the specification that makes a leap a multiplicative
+
+
+===== PAGE 2 =====
+step. Fitness is stratified five-fold accuracy of the voted label on the 180 training rows. The 60 test
+rows are used once, after the best frog is retrained on all 180.
+2
+The unmodified leap and its two defects
+A frog is a candidate u. The population is sorted by fitness and dealt round-robin into memeplexes,
+so each memeplex receives a high-fitness frog [4, 5]. Inside a memeplex the worst frog Fw first steps
+toward the local best Fb,
+D = rand(0, 1) (Fb −Fw),
+Fnew
+w
+= clip(Fw + D).
+(3)
+Only if that step fails to raise fitness does the same formula replace Fb by the global best Fg. If that
+also fails, Fw is replaced by a uniform draw in the box. The clip enforces the box and a maximum
+step. Two defects follow from the formulae. The two leaders are never used in the same step, so
+a frog that needs a mixture of them spends a full cross-validated training to discover that the first
+leader was not enough. And a failed frog is thrown away. Late in the run, when frogs already agree,
+both defects shrink the diversity the shuffle was meant to protect [1].
+3
+The modified leap
+Let Uz,c be the mean position of memeplex z. Distance between frogs i and j adds the distance of
+those centers to the Euclidean distance of the frogs, so two memeplexes that have drifted apart are
+not treated as neighbors merely because two members happen to lie close. Write Dg
+max and Dg
+min for
+the greatest and least such distances from any other frog to the global best. The weights on the two
+leaders are
+q = dist(i, Fg) −Dg
+min
+Dg
+max −Dg
+min
+,
+h = 1 −q,
+(4)
+and h = q = 1
+2 if every distance is equal. A frog near the global best gets a large h and mostly follows
+its memeplex. A frog far from the global best gets a large q and is pulled inward without waiting for
+a failed local try. The step is the single update
+D = h rand(0, 1) (Fb −Fw) + q rand(0, 1) (Fg −Fw),
+Fnew
+w
+= clip(Fw + D).
+(5)
+The two random factors are independent and have mean one half, so the expected step is
+E[D] = h
+2(Fb −Fw) + q
+2(Fg −Fw).
+(6)
+Distance selects the mixture before fitness is spent. If the new fitness is not strictly better, the frog
+is mutated in place,
+Fmut
+w
+= clip
+(Fw + Fw ⊙ε
+)
+,
+ε ∼N(0, I),
+(7)
+instead of being redrawn uniformly. Because the coordinates are logarithms, adding a multiple of
+the coordinate is a multiplicative jitter of C and of g. A unit normal draw of size 0.2 changes C by
+a factor of about 100.36 ≈2.3. That is large enough to leave a flat step of the accuracy surface and
+small enough to remain a neighbor. The mutant is accepted even if it is worse, which is what restores
+diversity, and the clip is what stops a wild Gaussian draw from becoming the old uniform restart.
+The outer loop is then: draw a population in the box; score it; deal memeplexes; repeat the
+leap-or-mutate step; shuffle; stop at a fixed budget or at a fitness target; retrain the six machines
+2
+
+
+===== PAGE 3 =====
+Fg
+Fb
+Fw
+new
+h
+q
+Figure 1: One leap uses the local best and the global best together. The weights h and q depend on
+distance to the global best. A failed leap is a Gaussian mutation of Fw, not a uniform restart.
+on all 180 rows at the returned pair; label the test rows by vote. Population size and shuffle count
+are not printed in the source study and are not reconstructed here. A software starting point is five
+memeplexes of ten frogs, ten local steps, and thirty shuffles, which is about 1550 fitness evaluations
+and 30 binary trainings per evaluation. That schedule is a suggestion, not a claim about the 2019
+run.
+4
+The published count
+All four methods in the comparison read the same VWC vectors [1]. They differ in the map from
+vector to label. The backpropagation network has no (C, g) [9]. ACROA-SVM wraps a chemical-
+reaction search around the same dual [10, 11]. SFLA-SVM uses the cascade (3). MSFLA-SVM uses
+(5) and (7). Table 1 gives error counts. Training errors are out of 180. Test errors are out of 60, and
+the class columns are out of 15.
+Table 1: Error counts on the published split. The BPNN sealing-ring test count is the count consistent
+with the printed percentage and the printed 85% pooled accuracy.
+Method
+Train
+Test
+Normal
+EAF
+BPF
+SRWF
+BPNN
+15
+9
+2
+2
+3
+2
+ACROA-SVM
+5
+5
+0
+2
+2
+1
+SFLA-SVM
+6
+5
+0
+1
+2
+2
+MSFLA-SVM
+3
+4
+0
+1
+2
+1
+BPNN
+ACROA-SVM
+SFLA-SVM
+MSFLA-SVM
+75
+80
+85
+90
+95
+100
+105
+Pooled accuracy (%)
+91.7
+85.0
+97.2
+91.7
+96.7
+91.7
+98.3
+93.3
+Pooled accuracy of the four classifiers
+Training (180 samples)
+Testing (60 samples)
+Figure 2: Pooled accuracy. The modified search is highest on both the training rows and the test
+rows. The test margin over each other SVM search is one vector.
+3
+
+
+===== PAGE 4 =====
+MSFLA-SVM is never behind SFLA-SVM on a test class.
+The entire pooled test gain is one
+sealing-ring vector: 14/15 against 13/15. On the pedestal class every SVM method misses two of
+fifteen. The modification collects, in one rule, the eccentric count of the unmodified leap and the
+seal-wear count of the chemical-reaction search. It does not buy a pedestal test vector. The train-to-
+test drop is 5.0 points for both frog-leaping machines and 6.7 points for the neural baseline, so the
+higher training accuracy of the modified search is not paid for by a larger drop. A one-vector gap on
+a sixty-vector test set is the smallest nonzero gap the experiment can print. It supports the claim
+that the modified leap is not worse than the two other global searches. It is thin evidence that the
+leap is largely better. Five test vectors against the neural baseline, nine errors against four, is the
+larger and more stable difference, and it belongs to the margin machine as a class, not only to the
+modification.
+5
+Conclusion
+The second innovation leaves the support vector machine and its radial kernel unchanged and changes
+the proposal of (C, g). Every leap learns from the local best and the global best with weights set by
+distance, and every failed leap mutates the current frog instead of restarting. On the published pump
+split the resulting classifier makes four test errors. The unmodified leap and the chemical-reaction
+search make five each. The pedestal class remains at two test errors for every SVM method, which
+locates the open problem in the feature and in the interference, not in a further tweak of the same
+two parameters.
+References
+[1] L. You, W. Fan, Z. Li, Y. Liang, M. Fang, and J. Wang, (A fault diagnosis model for rotating ma-
+chinery using VWC and MSFLA-SVM based on vibration signal analysis,) Shock and Vibration,
+vol. 2019, Article ID 1908485, 2019.
+[2] C. Cortes and V. Vapnik, (Support-vector networks,) Machine Learning, vol. 20, no. 3, pp. 273--
+297, 1995.
+[3] V. N. Vapnik, The Nature of Statistical Learning Theory. New York: Springer, 1995.
+[4] M. M. Eusuff and K. E. Lansey, (Optimization of water distribution network design using the
+shuffled frog leaping algorithm,) J. Water Resources Planning and Management, vol. 129, no. 3,
+pp. 210--225, 2003.
+[5] M. Eusuff, K. Lansey, and F. Pasha, (Shuffled frog-leaping algorithm: a memetic meta-heuristic
+for discrete optimization,) Engineering Optimization, vol. 38, no. 2, pp. 129--154, 2006.
+[6] C.-W. Hsu, C.-C. Chang, and C.-J. Lin, (A practical guide to support vector classification,)
+Technical report, National Taiwan University, 2003.
+[7] A. Widodo and B.-S. Yang, (Support vector machine in machine condition monitoring and fault
+diagnosis,) Mechanical Systems and Signal Processing, vol. 21, no. 6, pp. 2560--2574, 2007.
+[8] B. Schölkopf and A. J. Smola, Learning with Kernels. Cambridge, MA: MIT Press, 2002.
+[9] Z. G. Huang and Y. Xie, (Fault diagnosis method of rolling bearing based on BP neural network,)
+in Proc. ICMTMA, pp. 647--649, 2009.
+4
+
+
+===== PAGE 5 =====
+[10] H. L. Ao, J. S. Cheng, K. L. Li, and T. K. Truong, (A roller bearing fault diagnosis method
+based on LCD energy entropy and ACROA-SVM,) Shock and Vibration, vol. 2014, Article ID
+825825, 2014.
+[11] B. Alatas, (ACROA: Artificial chemical reaction optimization algorithm for global optimization,)
+Expert Systems with Applications, vol. 38, no. 10, pp. 13170--13180, 2011.
+5

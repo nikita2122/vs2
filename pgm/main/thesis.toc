@@ -1,0 +1,87 @@
+\contentsline {chapter}{Principal notation}{vii}{chapter*.4}%
+\contentsline {chapter}{\numberline {1}Related Work and the Problem This Thesis Addresses}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Principles of segmentation, counting, and color}{1}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}What the camera records}{1}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Detection, semantic segmentation, and instance segmentation}{2}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}The one-stage mask and the YOLO line}{3}{subsection.1.1.3}%
+\contentsline {subsection}{\numberline {1.1.4}Counting what is visible and what is hidden}{5}{subsection.1.1.4}%
+\contentsline {subsection}{\numberline {1.1.5}Color constancy, and why a uniform face breaks it}{7}{subsection.1.1.5}%
+\contentsline {subsection}{\numberline {1.1.6}Occlusion boundaries}{8}{subsection.1.1.6}%
+\contentsline {section}{\numberline {1.2}Previous systems for cartons, warehouses, and stacked goods}{9}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}A dataset of stacked cartons}{9}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Instance segmentation of a warehouse scene}{9}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Area ratios and three-dimensional occupancy}{10}{subsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.2.4}Rotated, lightweight detection of logistics boxes}{11}{subsection.1.2.4}%
+\contentsline {subsection}{\numberline {1.2.5}What crowd counting and global white balance do not give the aisle}{11}{subsection.1.2.5}%
+\contentsline {subsection}{\numberline {1.2.6}Where the published systems stop}{12}{subsection.1.2.6}%
+\contentsline {subsection}{\numberline {1.2.7}Measures this thesis inherits, and measures it refuses}{12}{subsection.1.2.7}%
+\contentsline {section}{\numberline {1.3}The problem this thesis addresses}{14}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}The passage into the warehouse}{14}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Formal task}{15}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}Requirements}{16}{subsection.1.3.3}%
+\contentsline {subsection}{\numberline {1.3.4}Where an unmodified segmenter fails}{17}{subsection.1.3.4}%
+\contentsline {subsection}{\numberline {1.3.5}YOLO-vf-seg, and the two updates}{18}{subsection.1.3.5}%
+\contentsline {subsection}{\numberline {1.3.6}What is in scope, and how the thesis is organized}{19}{subsection.1.3.6}%
+\contentsline {chapter}{\numberline {2}Two Updates of YOLO-vf-seg}{21}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Illumination-invariant chromatic prototype head}{21}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Where the two modules sit on the forward pass}{21}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}The decision the head is asked to make}{23}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}A per-mask illuminant that must not be trusted alone}{24}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}The eight-dimensional feature}{25}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Scores against prototypes}{27}{subsection.2.1.5}%
+\contentsline {subsection}{\numberline {2.1.6}The neck path that the full segmenter adds}{28}{subsection.2.1.6}%
+\contentsline {subsection}{\numberline {2.1.7}How the training distribution is built}{29}{subsection.2.1.7}%
+\contentsline {subsection}{\numberline {2.1.8}Calibration of the margin}{30}{subsection.2.1.8}%
+\contentsline {subsection}{\numberline {2.1.9}Cost, interfaces, and the failures that remain}{30}{subsection.2.1.9}%
+\contentsline {subsection}{\numberline {2.1.10}Worked feature on two prototypes}{31}{subsection.2.1.10}%
+\contentsline {subsection}{\numberline {2.1.11}What each block of the feature is worth}{32}{subsection.2.1.11}%
+\contentsline {subsection}{\numberline {2.1.12}Severity as an angle, and the gradient the head follows}{33}{subsection.2.1.12}%
+\contentsline {subsection}{\numberline {2.1.13}A numerical margin on the amber--yellow pair}{34}{subsection.2.1.13}%
+\contentsline {section}{\numberline {2.2}Perspective lattice completion}{35}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}An error budget in crates, before the tables}{35}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}The worked stack in the same letters}{36}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}The count is a property of the pallet, not of the mask set}{37}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Rectification onto the front plane}{37}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Origin and integer cells}{38}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}One pass of gap completion}{39}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}Depth}{40}{subsection.2.2.7}%
+\contentsline {subsection}{\numberline {2.2.8}Why a union across the passage over-fills}{41}{subsection.2.2.8}%
+\contentsline {subsection}{\numberline {2.2.9}Relation to the mask tally, the area ratio, and the span}{41}{subsection.2.2.9}%
+\contentsline {subsection}{\numberline {2.2.10}Uncertainty}{42}{subsection.2.2.10}%
+\contentsline {subsection}{\numberline {2.2.11}A grid that over-fills by one cell}{43}{subsection.2.2.11}%
+\contentsline {subsection}{\numberline {2.2.12}Complexity}{43}{subsection.2.2.12}%
+\contentsline {subsection}{\numberline {2.2.13}What PLC does not claim}{44}{subsection.2.2.13}%
+\contentsline {subsection}{\numberline {2.2.14}The homography, written as a linear system}{44}{subsection.2.2.14}%
+\contentsline {subsection}{\numberline {2.2.15}Where the detection probability spends the misses}{45}{subsection.2.2.15}%
+\contentsline {subsection}{\numberline {2.2.16}The worked grid, drawn}{46}{subsection.2.2.16}%
+\contentsline {subsection}{\numberline {2.2.17}A bound on a single false center}{47}{subsection.2.2.17}%
+\contentsline {subsection}{\numberline {2.2.18}Why the span is the serious baseline}{48}{subsection.2.2.18}%
+\contentsline {subsection}{\numberline {2.2.19}How the two updates meet}{49}{subsection.2.2.19}%
+\contentsline {chapter}{\numberline {3}System Construction and Estimation}{51}{chapter.3}%
+\contentsline {section}{\numberline {3.1}System construction}{51}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}The gate}{51}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}What is computed, and where}{52}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}The segmenter as a component}{53}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.4}Calibration}{54}{subsection.3.1.4}%
+\contentsline {subsection}{\numberline {3.1.5}Timing inside one passage}{54}{subsection.3.1.5}%
+\contentsline {subsection}{\numberline {3.1.6}The record the operator sees}{55}{subsection.3.1.6}%
+\contentsline {subsection}{\numberline {3.1.7}What the construction deliberately leaves out}{56}{subsection.3.1.7}%
+\contentsline {section}{\numberline {3.2}Estimation}{56}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Status of the numbers}{56}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Observation model for color}{56}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Observation model for counting}{57}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Metrics}{57}{subsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.2.5}Color results}{58}{subsection.3.2.5}%
+\contentsline {subsection}{\numberline {3.2.6}Counting results}{59}{subsection.3.2.6}%
+\contentsline {subsection}{\numberline {3.2.7}One passage, computed by hand and by the instrument}{61}{subsection.3.2.7}%
+\contentsline {subsection}{\numberline {3.2.8}Parameter cost of the head}{62}{subsection.3.2.8}%
+\contentsline {subsection}{\numberline {3.2.9}How to read the estimate}{62}{subsection.3.2.9}%
+\contentsline {subsection}{\numberline {3.2.10}What a field trial would have to add}{63}{subsection.3.2.10}%
+\contentsline {subsection}{\numberline {3.2.11}Footprint of a pixel on the crate face}{63}{subsection.3.2.11}%
+\contentsline {subsection}{\numberline {3.2.12}From pixels to a booked line}{65}{subsection.3.2.12}%
+\contentsline {subsection}{\numberline {3.2.13}Sensitivity to the depth reading}{65}{subsection.3.2.13}%
+\contentsline {subsection}{\numberline {3.2.14}What the estimate constrains in the build}{66}{subsection.3.2.14}%
+\contentsline {subsection}{\numberline {3.2.15}Trace from requirement to row of the table}{67}{subsection.3.2.15}%
+\contentsline {subsection}{\numberline {3.2.16}What a passage stores}{68}{subsection.3.2.16}%
+\contentsline {subsection}{\numberline {3.2.17}What the mean error is, in a shift}{69}{subsection.3.2.17}%
+\contentsline {subsection}{\numberline {3.2.18}Summary of the thesis}{70}{subsection.3.2.18}%

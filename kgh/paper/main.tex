@@ -1,0 +1,85 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs,array,tabularx,multirow}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit,backgrounds}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{figs/}}
+\setlist{itemsep=0.35em,topsep=0.4em}
+\captionsetup{font=small,labelfont=bf,skip=6pt}
+\allowdisplaybreaks
+
+\newcommand{\vect}[1]{\mathbf{#1}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+
+\title{%
+A Fault Diagnosis Study of Rotating Machinery\\[0.4em]
+\large Based on Vibration--Wavelet--Coefficient Features\\
+and a Modified Shuffled Frog-Leaping Support Vector Machine}
+\author{Expanded technical paper developed from the open study of\\
+You, Fan, Li, Liang, Fang, and Wang\\
+\textit{Shock and Vibration}, 2019, Article ID 1908485}
+\date{}
+
+\begin{document}
+\maketitle
+\setcounter{page}{2}
+\thispagestyle{empty}
+
+\begin{center}
+\begin{minipage}{0.92\textwidth}
+\setlength{\parskip}{0.6em}
+\small
+\textbf{How to read the numbers and the figures.}
+The vibration severities, rig parameters, sample counts, and classification rates in Chapter~3 are the values reported by You, Fan, Li, Liang, Fang, and Wang (2019).
+One cell of their printed training-count table is arithmetically inconsistent with the percentage beside it and with the published average; this paper uses the percentage and the average, and states the count that agrees with both.
+Time-domain traces, baseband spectra, and dyadic energy bars are illustrative signals synthesized so that the root-mean-square velocity matches those published severities and so that each operating state emphasizes the harmonics the source study describes.
+They are not the laboratory recordings, and they are not offered as a new experiment.
+Block diagrams, filter-bank drawings, and geometric sketches are explanatory figures for the method.
+\end{minipage}
+\end{center}
+
+\vspace{1.2em}
+\begin{abstract}
+\noindent
+Fault diagnosis of rotating machinery separates into two coupled tasks: extracting a description of the vibration that still carries the fault, and assigning that description to an operating state.
+This paper develops both tasks for a vertical axial-flow pump that is observed in four states: normal running, eccentric-axle fault, bearing-pedestal fault, and sealing-ring wear.
+The feature stage, called VWC, joins three descriptions of the same record.
+Vibration severity compresses the record to a single intensity.
+A dyadic wavelet energy time-spectrum shows how that intensity is distributed across scales.
+The coefficient power spectrum of the maximum-energy scale then reads the shaft harmonics \(\tfrac12 f_0, f_0, 2f_0, \ldots, 6f_0\) on which the mechanical faults write their signatures.
+Three orthogonal directions and one severity scalar produce a vector of dimension 22.
+The decision stage is a radial-basis support vector machine whose penalty and kernel width are chosen by a modified shuffled frog-leaping algorithm.
+The modification replaces the usual two-step leap of the worst frog by a distance-weighted leap that learns from both the local and the global leader, and it replaces a failed random restart by a Gaussian perturbation of the current frog.
+On the published pump data---180 training vectors and 60 test vectors---the resulting classifier reaches a pooled test accuracy of 93.3\%, above the backpropagation network (85.0\%), the chemically inspired SVM (91.7\%), and the unmodified frog-leaping SVM (91.7\%).
+The bearing-pedestal state remains the hardest of the four, which is consistent with resonance and site interference in that record.
+The paper sets out the mechanical and statistical principles, the prior art those principles have produced, the precise problem left open, the two algorithms in full, the construction of the acquisition system, and a quantitative reading of the published estimate.
+\end{abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\input{ch1}
+\input{ch2}
+\input{ch3}
+\input{refs}
+
+\end{document}

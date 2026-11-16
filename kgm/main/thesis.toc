@@ -1,0 +1,74 @@
+\babel@toc {english}{}\relax 
+\contentsline {chapter}{Nomenclature}{9}{chapter*.4}%
+\contentsline {chapter}{\numberline {1}Previous Work and the Problem Set}{10}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Research on predictive control of aeration fans}{10}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}Where the electricity goes}{10}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}The fan as a constrained machine}{12}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}From on--off dissolved-oxygen control to predictive laws}{13}{subsection.1.1.3}%
+\contentsline {subsection}{\numberline {1.1.4}What the fan-control literature does not give a brewery}{16}{subsection.1.1.4}%
+\contentsline {section}{\numberline {1.2}Research on physics-informed sensing of oxygen transfer}{17}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Why a dissolved-oxygen probe is not an oxygen-transfer measurement}{17}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}The surfactant factor}{18}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Soft sensors and what they have been asked to estimate}{19}{subsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.2.4}Physics-informed models}{20}{subsection.1.2.4}%
+\contentsline {subsection}{\numberline {1.2.5}What the sensing literature does not give the fan controller}{21}{subsection.1.2.5}%
+\contentsline {section}{\numberline {1.3}Problem set}{22}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}The plant the controller is responsible for}{22}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Biological and oxygen balances that define feasibility}{24}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}The two decision problems}{26}{subsection.1.3.3}%
+\contentsline {subsection}{\numberline {1.3.4}Questions the rest of the thesis has to answer}{27}{subsection.1.3.4}%
+\contentsline {subsection}{\numberline {1.3.5}Assumptions that bound the problem}{27}{subsection.1.3.5}%
+\contentsline {subsection}{\numberline {1.3.6}How this problem sits against the published controllers}{28}{subsection.1.3.6}%
+\contentsline {subsection}{\numberline {1.3.7}A numerical transfer example before any controller is chosen}{30}{subsection.1.3.7}%
+\contentsline {chapter}{\numberline {2}Schedule-Aware Fan Control and Physics-Informed Oxygen-Transfer Sensing}{32}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Schedule-aware hybrid economic control of the fan cluster}{32}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Role in the automation}{32}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Schedule encoder}{33}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Prediction model inside the horizon}{34}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Economic stage cost}{36}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Deployed real-time law}{37}{subsection.2.1.5}%
+\contentsline {subsection}{\numberline {2.1.6}A worked inversion}{39}{subsection.2.1.6}%
+\contentsline {subsection}{\numberline {2.1.7}Exhaust fans}{40}{subsection.2.1.7}%
+\contentsline {subsection}{\numberline {2.1.8}What is proved and what is only specified}{40}{subsection.2.1.8}%
+\contentsline {section}{\numberline {2.2}Physics-informed oxygen-transfer soft sensor}{41}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}What the sensor emits}{41}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Network and residual}{42}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Identifiability}{44}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Handshake with the fan law}{45}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Numerical illustration of the residual}{46}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}Failure modes the sensor must declare}{46}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}Relation to the estimation that follows}{47}{subsection.2.2.7}%
+\contentsline {section}{\numberline {2.3}Worked fan map, staging, and sensor cycle}{47}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Header power at the flows the week actually uses}{48}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Staging at the three loads that matter}{49}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Clean-in-place inversion, continued}{50}{subsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.3.4}Sensor cycle and health rule}{51}{subsection.2.3.4}%
+\contentsline {subsection}{\numberline {2.3.5}What the two algorithms guarantee together}{52}{subsection.2.3.5}%
+\contentsline {section}{\numberline {2.4}Open-loop detergent step and the linearized fan problem}{53}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Frozen airflow after the detergent arrives}{53}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Linear model used when staging is held}{54}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Slack form of the economic problem at fixed staging}{56}{subsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.4.4}Where the soft sensor enters the linear problem}{57}{subsection.2.4.4}%
+\contentsline {subsection}{\numberline {2.4.5}One blocked hour, written out}{58}{subsection.2.4.5}%
+\contentsline {subsection}{\numberline {2.4.6}What the edge computer must log in that hour}{60}{subsection.2.4.6}%
+\contentsline {chapter}{\numberline {3}System Build and Estimation}{62}{chapter.3}%
+\contentsline {section}{\numberline {3.1}System build}{62}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}What is being built}{62}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Signals}{63}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Interlocks that override the optimizer}{64}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.4}Software cycle}{65}{subsection.3.1.4}%
+\contentsline {subsection}{\numberline {3.1.5}Model used for the estimate}{66}{subsection.3.1.5}%
+\contentsline {section}{\numberline {3.2}Estimation}{67}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Week totals}{67}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Where the energy is spent}{68}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Exhaust fans and the combined fan account}{71}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Sensitivity the week already contains}{72}{subsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.2.5}What the estimate does not show}{73}{subsection.3.2.5}%
+\contentsline {subsection}{\numberline {3.2.6}Implementation order}{74}{subsection.3.2.6}%
+\contentsline {section}{\numberline {3.3}Regime account, boundary dips, and commissioning}{74}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}All four loops on every regime}{75}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Mass and energy identities}{77}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Commissioning sequence tied to the tables}{78}{subsection.3.3.3}%
+\contentsline {subsection}{\numberline {3.3.4}What would falsify the estimate}{79}{subsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.3.5}Open-loop step against the closed-loop week}{80}{subsection.3.3.5}%
+\contentsline {chapter}{References}{82}{chapter*.28}%

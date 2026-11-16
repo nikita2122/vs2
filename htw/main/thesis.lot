@@ -1,0 +1,12 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces Results inherited from previous work, and the decision each result leaves open.}}{17}{table.caption.11}%
+\contentsline {table}{\numberline {1.2}{\ignorespaces Specification quantities fixed by the problem set and used without retuning in later chapters.}}{23}{table.caption.12}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Calibration outcomes the first pass may publish. Offsets use \(k=\SI {8200}{N/m}\). The resonant speed uses the measured wavelength in \(v \approx \lambda f_n\).}}{52}{table.caption.18}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Timing budget allocated to one row and to the vehicle tracker.}}{57}{table.caption.20}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Quantities that cross the interface between the two technologies.}}{59}{table.caption.22}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Metering model at zero acceleration. Displacements are amplitudes or root-mean-square errors in millimetres. \(c\) is the repair fraction.}}{61}{table.caption.23}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Field model with the closed-loop meter. Work is non-conservative mechanical work. The accelerated fraction \(\phi _{\mathrm {acc}}\) is the share of row length run at turn acceleration.}}{63}{table.caption.25}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Plans compared on the estimation field. B3 is the proposed pair at the heading and speed Algorithm~\ref {alg:outer} returns.}}{63}{table.caption.26}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Points the field stage should record beside the model. Model columns repeat Chapter~2 and this chapter. The empty columns are the measurement.}}{69}{table.caption.27}%

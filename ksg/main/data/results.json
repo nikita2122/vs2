@@ -1,0 +1,3202 @@
+{
+  "train": [
+    {
+      "gen": 0,
+      "best": 0.4499427190407192,
+      "mean": 0.5916904537794354
+    },
+    {
+      "gen": 1,
+      "best": 0.41499861177582564,
+      "mean": 0.4949875914094778
+    },
+    {
+      "gen": 2,
+      "best": 0.4245792636271495,
+      "mean": 0.46846903028455233
+    },
+    {
+      "gen": 3,
+      "best": 0.40015121126295033,
+      "mean": 0.4556429826873906
+    },
+    {
+      "gen": 4,
+      "best": 0.40317926761702905,
+      "mean": 0.4528722054568414
+    },
+    {
+      "gen": 5,
+      "best": 0.40472905690283867,
+      "mean": 0.4422240409923842
+    },
+    {
+      "gen": 6,
+      "best": 0.399694052762034,
+      "mean": 0.42924553005315413
+    },
+    {
+      "gen": 7,
+      "best": 0.39802395485557973,
+      "mean": 0.4200575890516896
+    },
+    {
+      "gen": 8,
+      "best": 0.39702108123284413,
+      "mean": 0.4224820791434979
+    },
+    {
+      "gen": 9,
+      "best": 0.38677262540987845,
+      "mean": 0.41747450907704065
+    },
+    {
+      "gen": 10,
+      "best": 0.4019259285087331,
+      "mean": 0.4206119060475345
+    },
+    {
+      "gen": 11,
+      "best": 0.39887874182200106,
+      "mean": 0.42604357697701795
+    },
+    {
+      "gen": 12,
+      "best": 0.38572741266704746,
+      "mean": 0.41637642855220225
+    },
+    {
+      "gen": 13,
+      "best": 0.3951624713623856,
+      "mean": 0.41882875983875395
+    },
+    {
+      "gen": 14,
+      "best": 0.3965855120143795,
+      "mean": 0.4224548205926284
+    },
+    {
+      "gen": 15,
+      "best": 0.39049991582553256,
+      "mean": 0.41184167367145297
+    },
+    {
+      "gen": 16,
+      "best": 0.39591922313637573,
+      "mean": 0.41016363881885914
+    },
+    {
+      "gen": 17,
+      "best": 0.3881556412588133,
+      "mean": 0.41522280183802374
+    },
+    {
+      "gen": 18,
+      "best": 0.3902645260212717,
+      "mean": 0.4139238621560306
+    },
+    {
+      "gen": 19,
+      "best": 0.36887715836615426,
+      "mean": 0.4080694644687128
+    },
+    {
+      "gen": 20,
+      "best": 0.37911983138893246,
+      "mean": 0.4012204677937735
+    },
+    {
+      "gen": 21,
+      "best": 0.3718991797040999,
+      "mean": 0.3954260473393912
+    },
+    {
+      "gen": 22,
+      "best": 0.37275865315811124,
+      "mean": 0.3969797896979544
+    },
+    {
+      "gen": 23,
+      "best": 0.37311768793544214,
+      "mean": 0.3929068220870364
+    },
+    {
+      "gen": 24,
+      "best": 0.371198908246113,
+      "mean": 0.39738673365641913
+    },
+    {
+      "gen": 25,
+      "best": 0.37183559363971047,
+      "mean": 0.38895941383826377
+    },
+    {
+      "gen": 26,
+      "best": 0.3756138796747865,
+      "mean": 0.4038810987352018
+    },
+    {
+      "gen": 27,
+      "best": 0.36596153587699537,
+      "mean": 0.38935672954594625
+    }
+  ],
+  "train_best": 0.36596153587699537,
+  "scenarios": {
+    "nominal": {
+      "FIFO": {
+        "cmax_mean": 1520.683480353047,
+        "cmax_std": 165.47651421357978,
+        "tardiness_mean": 2761.435336996257,
+        "tardiness_std": 703.0291181989577,
+        "mean_tardiness_mean": 172.58970856226605,
+        "mean_tardiness_std": 43.93931988743485,
+        "ontime_mean": 0.51875,
+        "ontime_std": 0.09091095990901729,
+        "energy_mean": 303.20960322061444,
+        "energy_std": 35.0401836946851,
+        "setups_mean": 57.8,
+        "setups_std": 5.890223836332985,
+        "imbalance_mean": 377.67433374403043,
+        "imbalance_std": 33.696092020120396,
+        "failures_mean": 18.02137084733384,
+        "failures_std": 3.2930325642529428,
+        "bd_delay_mean": 865.0258006720245,
+        "bd_delay_std": 158.0655630841413,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": [
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 32.33,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 43.76,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Lockstitch-1",
+            "start": 32.33,
+            "end": 56.73,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Bartack-1",
+            "start": 32.33,
+            "end": 58.82,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 32.33,
+            "end": 73.18,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 43.76,
+            "end": 95.35,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-1",
+            "start": 56.73,
+            "end": 102.49,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-2",
+            "start": 58.82,
+            "end": 132.19,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 73.18,
+            "end": 94.12,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 94.12,
+            "end": 120.47,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 94.12,
+            "end": 124.44,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 95.35,
+            "end": 133.99,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "frame",
+            "machine": "Hardware-1",
+            "start": 102.49,
+            "end": 131.4,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 120.47,
+            "end": 180.17,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 124.44,
+            "end": 146.54,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 124.44,
+            "end": 149.89,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "wheels",
+            "machine": "Hardware-1",
+            "start": 131.4,
+            "end": 148.49,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 133.99,
+            "end": 165.34,
+            "pm": false
+          }
+        ]
+      },
+      "SPT": {
+        "cmax_mean": 1547.6069881235107,
+        "cmax_std": 229.59257059874932,
+        "tardiness_mean": 512.8493721376433,
+        "tardiness_std": 571.8836565867041,
+        "mean_tardiness_mean": 32.053085758602705,
+        "mean_tardiness_std": 35.742728536669006,
+        "ontime_mean": 0.815625,
+        "ontime_std": 0.11555607832062365,
+        "energy_mean": 268.2996005896448,
+        "energy_std": 40.763532453502854,
+        "setups_mean": 40.65,
+        "setups_std": 5.788145780726965,
+        "imbalance_mean": 366.0394647784953,
+        "imbalance_std": 59.25451823991215,
+        "failures_mean": 15.562170643127127,
+        "failures_std": 3.807412041052484,
+        "bd_delay_mean": 746.984190870102,
+        "bd_delay_std": 182.75577797051926,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": [
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 25.38,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 33.99,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 25.38,
+            "end": 40.17,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 33.99,
+            "end": 54.21,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 40.17,
+            "end": 60.92,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 40.17,
+            "end": 68.51,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 54.21,
+            "end": 92.42,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 60.92,
+            "end": 100.83,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 60.92,
+            "end": 119.59,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 68.51,
+            "end": 100.12,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 92.42,
+            "end": 124.08,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 100.12,
+            "end": 122.32,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 100.83,
+            "end": 122.83,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_strap",
+            "machine": "Lockstitch-1",
+            "start": 119.59,
+            "end": 140.51,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 122.32,
+            "end": 150.59,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 122.83,
+            "end": 145.86,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 124.08,
+            "end": 137.96,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 137.96,
+            "end": 184.64,
+            "pm": false
+          }
+        ]
+      },
+      "EDD": {
+        "cmax_mean": 1545.4335551877462,
+        "cmax_std": 175.2179091040626,
+        "tardiness_mean": 212.12065427197058,
+        "tardiness_std": 355.52300181332254,
+        "mean_tardiness_mean": 13.257540891998161,
+        "mean_tardiness_std": 22.22018761333266,
+        "ontime_mean": 0.890625,
+        "ontime_std": 0.1296424105193326,
+        "energy_mean": 299.3117028009857,
+        "energy_std": 39.67536054227052,
+        "setups_mean": 57.65,
+        "setups_std": 6.761150633933313,
+        "imbalance_mean": 377.37156581464376,
+        "imbalance_std": 49.19229633128219,
+        "failures_mean": 16.94603148234754,
+        "failures_std": 3.4842090313873046,
+        "bd_delay_mean": 813.4095111526818,
+        "bd_delay_std": 167.24203350659067,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "ATC": {
+        "cmax_mean": 1631.7547892967998,
+        "cmax_std": 188.23494066108208,
+        "tardiness_mean": 274.7479054247309,
+        "tardiness_std": 410.65632553251874,
+        "mean_tardiness_mean": 17.17174408904568,
+        "mean_tardiness_std": 25.66602034578242,
+        "ontime_mean": 0.8625,
+        "ontime_std": 0.1323497161629788,
+        "energy_mean": 299.1276912210763,
+        "energy_std": 37.593383755657214,
+        "setups_mean": 57.1,
+        "setups_std": 6.356927427286666,
+        "imbalance_mean": 393.82063703456623,
+        "imbalance_std": 45.113240891237815,
+        "failures_mean": 17.43625510087844,
+        "failures_std": 3.288333437770457,
+        "bd_delay_mean": 836.9402448421652,
+        "bd_delay_std": 157.84000501298198,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "RCH": {
+        "cmax_mean": 1234.4236557547608,
+        "cmax_std": 146.3171118702287,
+        "tardiness_mean": 260.94866892951916,
+        "tardiness_std": 250.45428434165984,
+        "mean_tardiness_mean": 16.309291808094947,
+        "mean_tardiness_std": 15.65339277135374,
+        "ontime_mean": 0.853125,
+        "ontime_std": 0.12043472516810003,
+        "energy_mean": 211.00161470990378,
+        "energy_std": 28.55319542961642,
+        "setups_mean": 48.05,
+        "setups_std": 5.844250435932288,
+        "imbalance_mean": 260.3550374220382,
+        "imbalance_std": 31.457178181351424,
+        "failures_mean": 10.125109133529218,
+        "failures_std": 2.2544531973799646,
+        "bd_delay_mean": 486.0052384094025,
+        "bd_delay_std": 108.21375347423832,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "RCH-SSDT": {
+        "cmax_mean": 1051.6251056359556,
+        "cmax_std": 83.41094744399369,
+        "tardiness_mean": 165.1255413266484,
+        "tardiness_std": 204.54619255861283,
+        "mean_tardiness_mean": 10.320346332915525,
+        "mean_tardiness_std": 12.7841370349133,
+        "ontime_mean": 0.903125,
+        "ontime_std": 0.1082056855933959,
+        "energy_mean": 167.5227196587727,
+        "energy_std": 19.410129318305067,
+        "setups_mean": 43.15,
+        "setups_std": 7.596917657493521,
+        "imbalance_mean": 222.0514423038935,
+        "imbalance_std": 26.53248956256559,
+        "failures_mean": 0.90890060264177,
+        "failures_std": 0.1464104205774592,
+        "bd_delay_mean": 43.62722892680496,
+        "bd_delay_std": 7.027700187718043,
+        "pms_mean": 5.35,
+        "pms_std": 1.6630662866176473,
+        "gantt_seed0": [
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 42.9,
+            "pm": true
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 28.59,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 28.59,
+            "end": 45.14,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Lockstitch-1",
+            "start": 42.9,
+            "end": 67.3,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Bartack-1",
+            "start": 42.9,
+            "end": 69.39,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 42.9,
+            "end": 65.62,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 45.14,
+            "end": 65.89,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 45.14,
+            "end": 76.36,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 65.62,
+            "end": 87.79,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 65.89,
+            "end": 125.48,
+            "pm": true
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-1",
+            "start": 67.3,
+            "end": 113.06,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 76.36,
+            "end": 98.37,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 76.36,
+            "end": 110.05,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 87.79,
+            "end": 119.31,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 110.05,
+            "end": 150.13,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "frame",
+            "machine": "Hardware-1",
+            "start": 113.06,
+            "end": 141.97,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 113.06,
+            "end": 160.59,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 119.31,
+            "end": 150.64,
+            "pm": false
+          }
+        ]
+      },
+      "RCH-no-resource": {
+        "cmax_mean": 1050.5776149578028,
+        "cmax_std": 106.80352534424398,
+        "tardiness_mean": 135.41188831485474,
+        "tardiness_std": 139.18291861527973,
+        "mean_tardiness_mean": 8.463243019678421,
+        "mean_tardiness_std": 8.698932413454983,
+        "ontime_mean": 0.903125,
+        "ontime_std": 0.07714850256076539,
+        "energy_mean": 168.2128608859101,
+        "energy_std": 21.140179628603164,
+        "setups_mean": 41.5,
+        "setups_std": 8.900029568253663,
+        "imbalance_mean": 218.58336961861946,
+        "imbalance_std": 34.05581102930665,
+        "failures_mean": 0.8861955568725246,
+        "failures_std": 0.14859806101549766,
+        "bd_delay_mean": 42.53738672988119,
+        "bd_delay_std": 7.132706928743888,
+        "pms_mean": 5.7,
+        "pms_std": 1.5927467172350909,
+        "gantt_seed0": null
+      },
+      "RCH-no-status": {
+        "cmax_mean": 1260.444914193327,
+        "cmax_std": 179.23042908433956,
+        "tardiness_mean": 268.4744865922388,
+        "tardiness_std": 282.7919982888516,
+        "mean_tardiness_mean": 16.779655412014925,
+        "mean_tardiness_std": 17.674499893053223,
+        "ontime_mean": 0.875,
+        "ontime_std": 0.1033962739835639,
+        "energy_mean": 207.7350350275155,
+        "energy_std": 24.261195237609343,
+        "setups_mean": 45.1,
+        "setups_std": 5.179920747209209,
+        "imbalance_mean": 263.8005459476384,
+        "imbalance_std": 36.50698708599836,
+        "failures_mean": 10.215692009973457,
+        "failures_std": 2.0047961665707845,
+        "bd_delay_mean": 490.35321647872604,
+        "bd_delay_std": 96.23021599539764,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      }
+    },
+    "rush": {
+      "FIFO": {
+        "cmax_mean": 2012.993733133412,
+        "cmax_std": 180.29363296831136,
+        "tardiness_mean": 7701.615405315753,
+        "tardiness_std": 992.1269932134676,
+        "mean_tardiness_mean": 385.0807702657875,
+        "mean_tardiness_std": 49.60634966067337,
+        "ontime_mean": 0.41500000000000004,
+        "ontime_std": 0.07272876792721383,
+        "energy_mean": 416.93504941815553,
+        "energy_std": 36.30884184357363,
+        "setups_mean": 78.05,
+        "setups_std": 6.2616207755534115,
+        "imbalance_mean": 498.3504629086432,
+        "imbalance_std": 38.604254938314135,
+        "failures_mean": 30.23700639622651,
+        "failures_std": 4.203570107283063,
+        "bd_delay_mean": 1451.376307018872,
+        "bd_delay_std": 201.77136514958704,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": [
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 32.33,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 43.76,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Lockstitch-1",
+            "start": 32.33,
+            "end": 56.73,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Bartack-1",
+            "start": 32.33,
+            "end": 58.82,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 32.33,
+            "end": 73.18,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 43.76,
+            "end": 95.35,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-1",
+            "start": 56.73,
+            "end": 102.49,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-2",
+            "start": 58.82,
+            "end": 132.19,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 73.18,
+            "end": 94.12,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 94.12,
+            "end": 120.47,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 94.12,
+            "end": 124.44,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 95.35,
+            "end": 133.99,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "frame",
+            "machine": "Hardware-1",
+            "start": 102.49,
+            "end": 131.4,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 120.47,
+            "end": 180.17,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 124.44,
+            "end": 146.54,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 124.44,
+            "end": 149.89,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "wheels",
+            "machine": "Hardware-1",
+            "start": 131.4,
+            "end": 148.49,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 133.99,
+            "end": 165.34,
+            "pm": false
+          }
+        ]
+      },
+      "SPT": {
+        "cmax_mean": 1928.5046259365524,
+        "cmax_std": 189.91255137005928,
+        "tardiness_mean": 3090.4169577280195,
+        "tardiness_std": 951.317686753209,
+        "mean_tardiness_mean": 154.520847886401,
+        "mean_tardiness_std": 47.56588433766046,
+        "ontime_mean": 0.515,
+        "ontime_std": 0.06091408963277277,
+        "energy_mean": 356.03809863731,
+        "energy_std": 35.06070108243427,
+        "setups_mean": 53.0,
+        "setups_std": 7.8068795572272425,
+        "imbalance_mean": 454.2508197116428,
+        "imbalance_std": 51.90924459072003,
+        "failures_mean": 24.296347722817284,
+        "failures_std": 3.5962206868526008,
+        "bd_delay_mean": 1166.2246906952298,
+        "bd_delay_std": 172.61859296892496,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": [
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 25.38,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 33.99,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 25.38,
+            "end": 40.17,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 33.99,
+            "end": 54.21,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 40.17,
+            "end": 60.92,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 40.17,
+            "end": 68.51,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 54.21,
+            "end": 92.42,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 60.92,
+            "end": 100.83,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 60.92,
+            "end": 119.59,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 68.51,
+            "end": 100.12,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 92.42,
+            "end": 124.08,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 100.12,
+            "end": 122.32,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 100.83,
+            "end": 122.83,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_strap",
+            "machine": "Lockstitch-1",
+            "start": 119.59,
+            "end": 140.51,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 122.32,
+            "end": 150.59,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 122.83,
+            "end": 145.86,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 124.08,
+            "end": 137.96,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 137.96,
+            "end": 184.64,
+            "pm": false
+          }
+        ]
+      },
+      "EDD": {
+        "cmax_mean": 2001.4541381396539,
+        "cmax_std": 196.67298347586018,
+        "tardiness_mean": 2715.968261968268,
+        "tardiness_std": 1085.0909690868195,
+        "mean_tardiness_mean": 135.79841309841342,
+        "mean_tardiness_std": 54.254548454340984,
+        "ontime_mean": 0.425,
+        "ontime_std": 0.08506963092234007,
+        "energy_mean": 408.1864458803726,
+        "energy_std": 39.67036758666782,
+        "setups_mean": 76.9,
+        "setups_std": 6.608606828260124,
+        "imbalance_mean": 493.90981829039526,
+        "imbalance_std": 48.00328711174313,
+        "failures_mean": 27.385348881863592,
+        "failures_std": 4.0584918243997485,
+        "bd_delay_mean": 1314.496746329453,
+        "bd_delay_std": 194.8076075711879,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "ATC": {
+        "cmax_mean": 2008.1427209364526,
+        "cmax_std": 208.60451567740134,
+        "tardiness_mean": 2870.9640106057755,
+        "tardiness_std": 1277.7531089349204,
+        "mean_tardiness_mean": 143.5482005302888,
+        "mean_tardiness_std": 63.88765544674601,
+        "ontime_mean": 0.41,
+        "ontime_std": 0.08522416262267904,
+        "energy_mean": 403.0972300343591,
+        "energy_std": 44.099133991353305,
+        "setups_mean": 76.95,
+        "setups_std": 7.653516563611375,
+        "imbalance_mean": 486.2255609635614,
+        "imbalance_std": 55.88367368727314,
+        "failures_mean": 27.112244245184332,
+        "failures_std": 4.408588767057864,
+        "bd_delay_mean": 1301.3877237688484,
+        "bd_delay_std": 211.61226081877763,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "RCH": {
+        "cmax_mean": 1676.1265185948191,
+        "cmax_std": 217.3962477160475,
+        "tardiness_mean": 1577.586880004845,
+        "tardiness_std": 872.2427396604168,
+        "mean_tardiness_mean": 78.87934400024224,
+        "mean_tardiness_std": 43.61213698302084,
+        "ontime_mean": 0.49499999999999994,
+        "ontime_std": 0.13268482640413234,
+        "energy_mean": 302.37812524603333,
+        "energy_std": 38.6753594233611,
+        "setups_mean": 64.0,
+        "setups_std": 6.545388091103376,
+        "imbalance_mean": 365.10980780999256,
+        "imbalance_std": 53.5994235821816,
+        "failures_mean": 17.927962499395328,
+        "failures_std": 3.7669630045636,
+        "bd_delay_mean": 860.5421999709758,
+        "bd_delay_std": 180.81422421905285,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "RCH-SSDT": {
+        "cmax_mean": 1264.6240576045925,
+        "cmax_std": 106.44586547481777,
+        "tardiness_mean": 735.5074841005876,
+        "tardiness_std": 522.0450502955011,
+        "mean_tardiness_mean": 36.775374205029365,
+        "mean_tardiness_std": 26.102252514775056,
+        "ontime_mean": 0.6849999999999999,
+        "ontime_std": 0.10399898784932576,
+        "energy_mean": 214.57408009982154,
+        "energy_std": 22.141382974498082,
+        "setups_mean": 59.8,
+        "setups_std": 7.613008258030598,
+        "imbalance_mean": 275.88161584330817,
+        "imbalance_std": 35.09122716306858,
+        "failures_mean": 1.0221837813799524,
+        "failures_std": 0.11559024401852955,
+        "bd_delay_mean": 49.06482150623773,
+        "bd_delay_std": 5.548331712889421,
+        "pms_mean": 7.85,
+        "pms_std": 0.670820393249937,
+        "gantt_seed0": [
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 42.9,
+            "pm": true
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 28.59,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 28.59,
+            "end": 45.14,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Lockstitch-1",
+            "start": 42.9,
+            "end": 67.3,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Bartack-1",
+            "start": 42.9,
+            "end": 69.39,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 42.9,
+            "end": 65.62,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 45.14,
+            "end": 65.89,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 45.14,
+            "end": 76.36,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 65.62,
+            "end": 87.79,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 65.89,
+            "end": 125.48,
+            "pm": true
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-1",
+            "start": 67.3,
+            "end": 113.06,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 76.36,
+            "end": 98.37,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 76.36,
+            "end": 110.05,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 87.79,
+            "end": 119.31,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 110.05,
+            "end": 150.13,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "frame",
+            "machine": "Hardware-1",
+            "start": 113.06,
+            "end": 141.97,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 113.06,
+            "end": 160.59,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 119.31,
+            "end": 150.64,
+            "pm": false
+          }
+        ]
+      },
+      "RCH-no-resource": {
+        "cmax_mean": 1274.9094008359777,
+        "cmax_std": 126.35152489899228,
+        "tardiness_mean": 805.8038320157041,
+        "tardiness_std": 672.2847434644052,
+        "mean_tardiness_mean": 40.29019160078521,
+        "mean_tardiness_std": 33.61423717322025,
+        "ontime_mean": 0.7075,
+        "ontime_std": 0.13005565610234154,
+        "energy_mean": 213.01274501384736,
+        "energy_std": 22.849574069128572,
+        "setups_mean": 57.7,
+        "setups_std": 8.991809138262854,
+        "imbalance_mean": 277.9474995989754,
+        "imbalance_std": 37.90639957570238,
+        "failures_mean": 1.021119010480511,
+        "failures_std": 0.1369827595760683,
+        "bd_delay_mean": 49.01371250306452,
+        "bd_delay_std": 6.575172459651283,
+        "pms_mean": 7.7,
+        "pms_std": 0.7326950970650465,
+        "gantt_seed0": null
+      },
+      "RCH-no-status": {
+        "cmax_mean": 1597.4622813341007,
+        "cmax_std": 201.5320173985689,
+        "tardiness_mean": 1473.5861644473364,
+        "tardiness_std": 936.0614213921077,
+        "mean_tardiness_mean": 73.67930822236681,
+        "mean_tardiness_std": 46.80307106960539,
+        "ontime_mean": 0.5574999999999999,
+        "ontime_std": 0.0907207978243949,
+        "energy_mean": 297.98402983632246,
+        "energy_std": 34.934986443589196,
+        "setups_mean": 62.2,
+        "setups_std": 5.62513157740847,
+        "imbalance_mean": 341.23600869250913,
+        "imbalance_std": 49.28291174922769,
+        "failures_mean": 17.148577637221127,
+        "failures_std": 3.43274720183231,
+        "bd_delay_mean": 823.1317265866143,
+        "bd_delay_std": 164.771865687951,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      }
+    },
+    "wear": {
+      "FIFO": {
+        "cmax_mean": 2097.658023495767,
+        "cmax_std": 227.3235869532194,
+        "tardiness_mean": 5898.660899551387,
+        "tardiness_std": 1163.0243075606782,
+        "mean_tardiness_mean": 368.66630622196163,
+        "mean_tardiness_std": 72.68901922254238,
+        "ontime_mean": 0.396875,
+        "ontime_std": 0.06175543338550526,
+        "energy_mean": 388.2432620587439,
+        "energy_std": 38.031233859317105,
+        "setups_mean": 58.0,
+        "setups_std": 6.727789971063071,
+        "imbalance_mean": 441.5276486740446,
+        "imbalance_std": 39.87923658064312,
+        "failures_mean": 42.259439223562296,
+        "failures_std": 4.338964581276785,
+        "bd_delay_mean": 2028.4530827309907,
+        "bd_delay_std": 208.2702999012857,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": [
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 37.67,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 46.54,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Lockstitch-1",
+            "start": 37.67,
+            "end": 63.5,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Bartack-1",
+            "start": 37.67,
+            "end": 66.47,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 37.67,
+            "end": 85.58,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 46.54,
+            "end": 101.58,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-1",
+            "start": 63.5,
+            "end": 112.69,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-2",
+            "start": 66.47,
+            "end": 152.3,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 85.58,
+            "end": 112.73,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 101.58,
+            "end": 132.1,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "frame",
+            "machine": "Hardware-1",
+            "start": 112.69,
+            "end": 143.62,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 112.73,
+            "end": 143.26,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 112.73,
+            "end": 152.69,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 132.1,
+            "end": 177.12,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 143.26,
+            "end": 207.4,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "wheels",
+            "machine": "Hardware-1",
+            "start": 143.62,
+            "end": 162.0,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 152.3,
+            "end": 255.38,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 152.69,
+            "end": 187.69,
+            "pm": false
+          }
+        ]
+      },
+      "SPT": {
+        "cmax_mean": 2034.0385965671853,
+        "cmax_std": 243.3757460072148,
+        "tardiness_mean": 2093.52377309406,
+        "tardiness_std": 1280.6822597321825,
+        "mean_tardiness_mean": 130.84523581837874,
+        "mean_tardiness_std": 80.0426412332614,
+        "ontime_mean": 0.640625,
+        "ontime_std": 0.09908089132782259,
+        "energy_mean": 351.6682741647747,
+        "energy_std": 49.898754159418566,
+        "setups_mean": 43.5,
+        "setups_std": 5.8444755741505245,
+        "imbalance_mean": 417.5573395895058,
+        "imbalance_std": 56.89702624132903,
+        "failures_mean": 36.24046029281984,
+        "failures_std": 5.556024003429723,
+        "bd_delay_mean": 1739.5420940553527,
+        "bd_delay_std": 266.6891521646269,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": [
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 29.48,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 36.09,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 29.48,
+            "end": 47.74,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 36.09,
+            "end": 57.95,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 47.74,
+            "end": 71.63,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 47.74,
+            "end": 83.2,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 57.95,
+            "end": 99.56,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 71.63,
+            "end": 114.05,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 71.63,
+            "end": 140.37,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 83.2,
+            "end": 124.07,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 99.56,
+            "end": 133.69,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 114.05,
+            "end": 140.56,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 124.07,
+            "end": 154.27,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 133.69,
+            "end": 149.59,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_strap",
+            "machine": "Lockstitch-1",
+            "start": 140.37,
+            "end": 162.94,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_strap",
+            "machine": "Bartack-1",
+            "start": 140.56,
+            "end": 169.74,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 149.59,
+            "end": 174.72,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 149.59,
+            "end": 193.35,
+            "pm": false
+          }
+        ]
+      },
+      "EDD": {
+        "cmax_mean": 2059.336071643864,
+        "cmax_std": 206.5388800537909,
+        "tardiness_mean": 1848.9978110660832,
+        "tardiness_std": 1008.5820406201509,
+        "mean_tardiness_mean": 115.5623631916302,
+        "mean_tardiness_std": 63.036377538759425,
+        "ontime_mean": 0.584375,
+        "ontime_std": 0.10590113003223933,
+        "energy_mean": 384.2548426500265,
+        "energy_std": 44.34361701052326,
+        "setups_mean": 58.5,
+        "setups_std": 5.880386668274549,
+        "imbalance_mean": 441.8775963606834,
+        "imbalance_std": 48.913204069014874,
+        "failures_mean": 38.74954874450809,
+        "failures_std": 4.9533691163737466,
+        "bd_delay_mean": 1859.9783397363888,
+        "bd_delay_std": 237.76171758593992,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "ATC": {
+        "cmax_mean": 2120.760786847305,
+        "cmax_std": 247.06585864261686,
+        "tardiness_mean": 2252.4347687863506,
+        "tardiness_std": 1109.197866798819,
+        "mean_tardiness_mean": 140.7771730491469,
+        "mean_tardiness_std": 69.32486667492618,
+        "ontime_mean": 0.546875,
+        "ontime_std": 0.08809711671606632,
+        "energy_mean": 382.025220977034,
+        "energy_std": 44.96731275982108,
+        "setups_mean": 58.6,
+        "setups_std": 5.651269070329527,
+        "imbalance_mean": 453.3767956791272,
+        "imbalance_std": 57.853558876917326,
+        "failures_mean": 38.905032834951,
+        "failures_std": 5.00517492790789,
+        "bd_delay_mean": 1867.4415760776487,
+        "bd_delay_std": 240.24839653957883,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "RCH": {
+        "cmax_mean": 1781.9617046384633,
+        "cmax_std": 217.9989363046455,
+        "tardiness_mean": 895.0644415297211,
+        "tardiness_std": 698.8675641470647,
+        "mean_tardiness_mean": 55.94152759560758,
+        "mean_tardiness_std": 43.679222759191546,
+        "ontime_mean": 0.696875,
+        "ontime_std": 0.11157330314051032,
+        "energy_mean": 310.0037684731384,
+        "energy_std": 40.55142374743699,
+        "setups_mean": 53.05,
+        "setups_std": 5.780866808068802,
+        "imbalance_mean": 350.4239429055903,
+        "imbalance_std": 50.85393597519604,
+        "failures_mean": 30.576922331502725,
+        "failures_std": 4.982647021341418,
+        "bd_delay_mean": 1467.6922719121308,
+        "bd_delay_std": 239.16705702438804,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "RCH-SSDT": {
+        "cmax_mean": 1121.6714143593063,
+        "cmax_std": 113.66267896073883,
+        "tardiness_mean": 287.16746347150496,
+        "tardiness_std": 363.47694966600267,
+        "mean_tardiness_mean": 17.94796646696906,
+        "mean_tardiness_std": 22.717309354125167,
+        "ontime_mean": 0.85,
+        "ontime_std": 0.11719024119600978,
+        "energy_mean": 176.10125590461593,
+        "energy_std": 15.94115471427356,
+        "setups_mean": 47.6,
+        "setups_std": 6.475866127805851,
+        "imbalance_mean": 233.89617193904533,
+        "imbalance_std": 32.14924450645515,
+        "failures_mean": 0.8090631352424837,
+        "failures_std": 0.21842570268819383,
+        "bd_delay_mean": 38.835030491639216,
+        "bd_delay_std": 10.484433729033302,
+        "pms_mean": 11.95,
+        "pms_std": 1.2343760409722462,
+        "gantt_seed0": [
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 34.45,
+            "pm": true
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 36.09,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 34.45,
+            "end": 44.29,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 36.09,
+            "end": 57.95,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 44.29,
+            "end": 68.18,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 44.29,
+            "end": 63.0,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 57.95,
+            "end": 99.56,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 63.0,
+            "end": 83.49,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 68.18,
+            "end": 126.29,
+            "pm": true
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 68.18,
+            "end": 112.9,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 83.49,
+            "end": 97.55,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 97.55,
+            "end": 119.37,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 99.56,
+            "end": 150.15,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_strap",
+            "machine": "Lockstitch-1",
+            "start": 112.9,
+            "end": 136.84,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 119.37,
+            "end": 126.8,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_strap",
+            "machine": "Lockstitch-2",
+            "start": 126.29,
+            "end": 148.7,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 126.8,
+            "end": 151.42,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 126.8,
+            "end": 157.31,
+            "pm": false
+          }
+        ]
+      },
+      "RCH-no-resource": {
+        "cmax_mean": 1109.8462429255721,
+        "cmax_std": 97.01485782064297,
+        "tardiness_mean": 279.48690389921984,
+        "tardiness_std": 274.9774919744982,
+        "mean_tardiness_mean": 17.46793149370124,
+        "mean_tardiness_std": 17.186093248406138,
+        "ontime_mean": 0.83125,
+        "ontime_std": 0.12351086677101054,
+        "energy_mean": 174.55850705396912,
+        "energy_std": 15.384107721721541,
+        "setups_mean": 45.9,
+        "setups_std": 4.88714748358547,
+        "imbalance_mean": 232.5632953393643,
+        "imbalance_std": 31.33365918316363,
+        "failures_mean": 0.8265081450564198,
+        "failures_std": 0.15029567355889611,
+        "bd_delay_mean": 39.67239096270815,
+        "bd_delay_std": 7.214192330827016,
+        "pms_mean": 11.85,
+        "pms_std": 1.2258187382102497,
+        "gantt_seed0": null
+      },
+      "RCH-no-status": {
+        "cmax_mean": 1676.8656472264531,
+        "cmax_std": 261.684436264775,
+        "tardiness_mean": 1054.7072525760668,
+        "tardiness_std": 993.5167959171658,
+        "mean_tardiness_mean": 65.91920328600418,
+        "mean_tardiness_std": 62.094799744822865,
+        "ontime_mean": 0.70625,
+        "ontime_std": 0.11841191485212697,
+        "energy_mean": 283.6237352856152,
+        "energy_std": 40.38186553134862,
+        "setups_mean": 45.2,
+        "setups_std": 6.2374083686972694,
+        "imbalance_mean": 324.0194594032857,
+        "imbalance_std": 58.2790224662981,
+        "failures_mean": 28.88150815052443,
+        "failures_std": 5.609542738838274,
+        "bd_delay_mean": 1386.3123912251726,
+        "bd_delay_std": 269.25805146423704,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      }
+    },
+    "shortage": {
+      "FIFO": {
+        "cmax_mean": 1456.0417093007995,
+        "cmax_std": 191.20662234207435,
+        "tardiness_mean": 2329.6575268026786,
+        "tardiness_std": 685.1103175735578,
+        "mean_tardiness_mean": 145.6035954251674,
+        "mean_tardiness_std": 42.819394848347365,
+        "ontime_mean": 0.54375,
+        "ontime_std": 0.08626954393368681,
+        "energy_mean": 295.45446357189064,
+        "energy_std": 35.639305875777424,
+        "setups_mean": 54.25,
+        "setups_std": 6.180401962740985,
+        "imbalance_mean": 334.7703213687602,
+        "imbalance_std": 40.729151847585506,
+        "failures_mean": 15.853350180705158,
+        "failures_std": 3.4322602241177482,
+        "bd_delay_mean": 760.9608086738475,
+        "bd_delay_std": 164.74849075765195,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": [
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 32.33,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 43.76,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Lockstitch-1",
+            "start": 32.33,
+            "end": 56.73,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 32.33,
+            "end": 73.18,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 43.76,
+            "end": 95.35,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-1",
+            "start": 56.73,
+            "end": 102.49,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 73.18,
+            "end": 94.12,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 94.12,
+            "end": 120.47,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 94.12,
+            "end": 124.44,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 95.35,
+            "end": 133.99,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "frame",
+            "machine": "Hardware-1",
+            "start": 102.49,
+            "end": 131.4,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 120.47,
+            "end": 180.17,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 120.47,
+            "end": 197.45,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 124.44,
+            "end": 149.89,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "wheels",
+            "machine": "Hardware-1",
+            "start": 131.4,
+            "end": 148.49,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 133.99,
+            "end": 165.34,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "qc",
+            "machine": "QC-1",
+            "start": 148.49,
+            "end": 161.05,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 149.89,
+            "end": 167.59,
+            "pm": false
+          }
+        ]
+      },
+      "SPT": {
+        "cmax_mean": 1462.0310445803639,
+        "cmax_std": 219.7054028754289,
+        "tardiness_mean": 350.74403908569866,
+        "tardiness_std": 382.13687359318175,
+        "mean_tardiness_mean": 21.921502442856166,
+        "mean_tardiness_std": 23.88355459957386,
+        "ontime_mean": 0.85,
+        "ontime_std": 0.1118033988749895,
+        "energy_mean": 260.00710890788093,
+        "energy_std": 40.44466983827123,
+        "setups_mean": 37.3,
+        "setups_std": 5.939165278936621,
+        "imbalance_mean": 315.0740529708962,
+        "imbalance_std": 54.91264210474295,
+        "failures_mean": 13.466842296169101,
+        "failures_std": 3.5033282053756136,
+        "bd_delay_mean": 646.4084302161169,
+        "bd_delay_std": 168.1597538580294,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": [
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 25.38,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 33.99,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 25.38,
+            "end": 40.17,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 33.99,
+            "end": 54.21,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 40.17,
+            "end": 60.92,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 40.17,
+            "end": 68.51,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 54.21,
+            "end": 92.42,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 60.92,
+            "end": 100.83,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 60.92,
+            "end": 119.59,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 68.51,
+            "end": 100.12,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 92.42,
+            "end": 124.08,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 100.12,
+            "end": 122.32,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 100.83,
+            "end": 122.83,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_strap",
+            "machine": "Lockstitch-1",
+            "start": 119.59,
+            "end": 140.51,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 122.32,
+            "end": 150.59,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 122.83,
+            "end": 145.86,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 124.08,
+            "end": 137.96,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 137.96,
+            "end": 184.64,
+            "pm": false
+          }
+        ]
+      },
+      "EDD": {
+        "cmax_mean": 1515.939405242285,
+        "cmax_std": 190.24435618757528,
+        "tardiness_mean": 162.6061062636993,
+        "tardiness_std": 353.5085007163621,
+        "mean_tardiness_mean": 10.162881641481206,
+        "mean_tardiness_std": 22.09428129477263,
+        "ontime_mean": 0.925,
+        "ontime_std": 0.10057401045472616,
+        "energy_mean": 290.84437398792096,
+        "energy_std": 39.422522258868646,
+        "setups_mean": 53.95,
+        "setups_std": 5.995392968113538,
+        "imbalance_mean": 332.6934691111818,
+        "imbalance_std": 48.90770442224138,
+        "failures_mean": 14.740786416065031,
+        "failures_std": 3.397619774298085,
+        "bd_delay_mean": 707.5577479711217,
+        "bd_delay_std": 163.0857491663081,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "ATC": {
+        "cmax_mean": 1564.0173693634317,
+        "cmax_std": 200.35225486743866,
+        "tardiness_mean": 219.23574123745365,
+        "tardiness_std": 462.06139193905693,
+        "mean_tardiness_mean": 13.702233827340853,
+        "mean_tardiness_std": 28.87883699619106,
+        "ontime_mean": 0.915625,
+        "ontime_std": 0.12043472516810005,
+        "energy_mean": 289.2347576914056,
+        "energy_std": 38.27226252455081,
+        "setups_mean": 52.35,
+        "setups_std": 7.285710600028553,
+        "imbalance_mean": 336.5106377145619,
+        "imbalance_std": 51.35468228011248,
+        "failures_mean": 15.006880960794941,
+        "failures_std": 3.3023978510357495,
+        "bd_delay_mean": 720.3302861181573,
+        "bd_delay_std": 158.51509684971606,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "RCH": {
+        "cmax_mean": 1225.3626598384863,
+        "cmax_std": 128.84831094588,
+        "tardiness_mean": 171.4409348099236,
+        "tardiness_std": 237.3392265520103,
+        "mean_tardiness_mean": 10.715058425620224,
+        "mean_tardiness_std": 14.833701659500644,
+        "ontime_mean": 0.8875,
+        "ontime_std": 0.10653020327834879,
+        "energy_mean": 208.20422852419847,
+        "energy_std": 28.54188631561503,
+        "setups_mean": 45.0,
+        "setups_std": 6.172946067956105,
+        "imbalance_mean": 228.47956352494936,
+        "imbalance_std": 35.5751409983792,
+        "failures_mean": 9.292632200514028,
+        "failures_std": 2.1488737624433063,
+        "bd_delay_mean": 446.04634562467317,
+        "bd_delay_std": 103.14594059727874,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      },
+      "RCH-SSDT": {
+        "cmax_mean": 1038.7480284657618,
+        "cmax_std": 98.99961891991991,
+        "tardiness_mean": 106.29462591579113,
+        "tardiness_std": 140.68674821263295,
+        "mean_tardiness_mean": 6.643414119736946,
+        "mean_tardiness_std": 8.79292176328956,
+        "ontime_mean": 0.925,
+        "ontime_std": 0.06906328143163531,
+        "energy_mean": 163.47772876279475,
+        "energy_std": 19.070710710648477,
+        "setups_mean": 40.5,
+        "setups_std": 8.550161586654063,
+        "imbalance_mean": 192.33485394405298,
+        "imbalance_std": 34.60409256905896,
+        "failures_mean": 0.7591532470249898,
+        "failures_std": 0.12507511214428496,
+        "bd_delay_mean": 36.439355857199516,
+        "bd_delay_std": 6.003605382925679,
+        "pms_mean": 5.15,
+        "pms_std": 1.5312533566021211,
+        "gantt_seed0": [
+          {
+            "job": 1,
+            "op": "cut_shell",
+            "machine": "Cutter-A",
+            "start": 0.0,
+            "end": 42.9,
+            "pm": true
+          },
+          {
+            "job": 4,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 0.0,
+            "end": 28.59,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-B",
+            "start": 28.59,
+            "end": 45.14,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "reinforce",
+            "machine": "Lockstitch-1",
+            "start": 42.9,
+            "end": 67.3,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "cut_lining",
+            "machine": "Cutter-A",
+            "start": 42.9,
+            "end": 65.62,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 45.14,
+            "end": 65.89,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 45.14,
+            "end": 76.36,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 65.62,
+            "end": 87.79,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-2",
+            "start": 65.89,
+            "end": 125.48,
+            "pm": true
+          },
+          {
+            "job": 1,
+            "op": "sew_shell",
+            "machine": "Lockstitch-1",
+            "start": 67.3,
+            "end": 113.06,
+            "pm": false
+          },
+          {
+            "job": 3,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 76.36,
+            "end": 98.37,
+            "pm": false
+          },
+          {
+            "job": 2,
+            "op": "cut_main",
+            "machine": "Cutter-B",
+            "start": 76.36,
+            "end": 110.05,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-A",
+            "start": 87.79,
+            "end": 119.31,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "cut_sack",
+            "machine": "Cutter-B",
+            "start": 110.05,
+            "end": 150.13,
+            "pm": false
+          },
+          {
+            "job": 1,
+            "op": "frame",
+            "machine": "Hardware-1",
+            "start": 113.06,
+            "end": 141.97,
+            "pm": false
+          },
+          {
+            "job": 4,
+            "op": "sew_body",
+            "machine": "Lockstitch-1",
+            "start": 113.06,
+            "end": 160.59,
+            "pm": false
+          },
+          {
+            "job": 11,
+            "op": "print_logo",
+            "machine": "Embroidery-1",
+            "start": 119.31,
+            "end": 150.64,
+            "pm": false
+          },
+          {
+            "job": 12,
+            "op": "cut_main",
+            "machine": "Cutter-A",
+            "start": 119.31,
+            "end": 142.53,
+            "pm": false
+          }
+        ]
+      },
+      "RCH-no-resource": {
+        "cmax_mean": 1074.6156032642966,
+        "cmax_std": 87.50616513981213,
+        "tardiness_mean": 112.9814251636557,
+        "tardiness_std": 163.86472590244855,
+        "mean_tardiness_mean": 7.061339072728481,
+        "mean_tardiness_std": 10.241545368903035,
+        "ontime_mean": 0.9375,
+        "ontime_std": 0.06725344835612129,
+        "energy_mean": 165.40533864673552,
+        "energy_std": 20.04018744937345,
+        "setups_mean": 40.2,
+        "setups_std": 8.550777126886434,
+        "imbalance_mean": 200.15827254284915,
+        "imbalance_std": 30.738243242243627,
+        "failures_mean": 0.7862362882235032,
+        "failures_std": 0.12482602028351919,
+        "bd_delay_mean": 37.73934183472815,
+        "bd_delay_std": 5.991648973608919,
+        "pms_mean": 5.3,
+        "pms_std": 1.4903196407411892,
+        "gantt_seed0": null
+      },
+      "RCH-no-status": {
+        "cmax_mean": 1204.5943882794886,
+        "cmax_std": 172.9205514379851,
+        "tardiness_mean": 220.59335857323225,
+        "tardiness_std": 270.3268572642969,
+        "mean_tardiness_mean": 13.787084910827016,
+        "mean_tardiness_std": 16.895428579018557,
+        "ontime_mean": 0.890625,
+        "ontime_std": 0.10512171829786049,
+        "energy_mean": 203.21673998727903,
+        "energy_std": 23.928251477134534,
+        "setups_mean": 42.05,
+        "setups_std": 5.325954325159409,
+        "imbalance_mean": 226.3012572772055,
+        "imbalance_std": 34.094418846700044,
+        "failures_mean": 9.01299518101968,
+        "failures_std": 2.063326357859228,
+        "bd_delay_mean": 432.6237686889447,
+        "bd_delay_std": 99.03966517724298,
+        "pms_mean": 0.0,
+        "pms_std": 0.0,
+        "gantt_seed0": null
+      }
+    }
+  },
+  "params": [
+    -1.2439188470162474,
+    0.028318340480852112,
+    -0.3134663703033141,
+    -1.447850889076455,
+    -0.5006626031786545,
+    1.733503682730396,
+    -0.09246996255616743,
+    0.23845640599751367,
+    -2.0171209242662003,
+    -0.08716011784200091,
+    -1.0399511211354717,
+    0.5052695762499068,
+    1.0824964065311116,
+    0.9691951302908979,
+    -0.7067555438595792,
+    0.6718255665187929,
+    1.0234018494099077,
+    0.8519485183141255,
+    1.891504964138816,
+    -1.6209892359181284
+  ],
+  "frontier": [
+    {
+      "label": "time",
+      "omega": [
+        0.55,
+        0.25,
+        0.1,
+        0.1
+      ],
+      "cmax_mean": 1080.5906377494032,
+      "cmax_std": 101.52305087002867,
+      "tardiness_mean": 154.6563815645418,
+      "tardiness_std": 295.0005956444494,
+      "mean_tardiness_mean": 9.666023847783862,
+      "mean_tardiness_std": 18.437537227778087,
+      "ontime_mean": 0.9140625,
+      "ontime_std": 0.14916995041610376,
+      "energy_mean": 164.4852079973828,
+      "energy_std": 10.936973199312161,
+      "setups_mean": 39.0,
+      "setups_std": 5.18238775634773,
+      "imbalance_mean": 225.94006390580915,
+      "imbalance_std": 28.735927178912075,
+      "failures_mean": 0.7781863470666188,
+      "failures_std": 0.11291255491055784,
+      "bd_delay_mean": 37.3529446591977,
+      "bd_delay_std": 5.419802635706775,
+      "pms_mean": 6.5,
+      "pms_std": 0.7559289460184544
+    },
+    {
+      "label": "due",
+      "omega": [
+        0.25,
+        0.55,
+        0.1,
+        0.1
+      ],
+      "cmax_mean": 1065.3847599249,
+      "cmax_std": 118.22394736469776,
+      "tardiness_mean": 260.0412276720147,
+      "tardiness_std": 275.372698435448,
+      "mean_tardiness_mean": 16.25257672950092,
+      "mean_tardiness_std": 17.2107936522155,
+      "ontime_mean": 0.9140625,
+      "ontime_std": 0.10531362600076294,
+      "energy_mean": 164.03053872999465,
+      "energy_std": 12.78859016408145,
+      "setups_mean": 36.875,
+      "setups_std": 6.642665127793212,
+      "imbalance_mean": 217.73949174159117,
+      "imbalance_std": 28.307024155137483,
+      "failures_mean": 0.7745014323265539,
+      "failures_std": 0.17172793484837737,
+      "bd_delay_mean": 37.17606875167459,
+      "bd_delay_std": 8.242940872722112,
+      "pms_mean": 6.0,
+      "pms_std": 0.9258200997725514
+    },
+    {
+      "label": "energy",
+      "omega": [
+        0.2,
+        0.2,
+        0.45,
+        0.15
+      ],
+      "cmax_mean": 1147.0801557010964,
+      "cmax_std": 112.3668556391311,
+      "tardiness_mean": 166.28882179230203,
+      "tardiness_std": 149.3149284837153,
+      "mean_tardiness_mean": 10.393051362018877,
+      "mean_tardiness_std": 9.332183030232207,
+      "ontime_mean": 0.90625,
+      "ontime_std": 0.08838834764831845,
+      "energy_mean": 180.21133794923782,
+      "energy_std": 8.502402887993995,
+      "setups_mean": 50.625,
+      "setups_std": 2.8252686345094435,
+      "imbalance_mean": 246.7443477646917,
+      "imbalance_std": 31.54166844850269,
+      "failures_mean": 0.7893286424804006,
+      "failures_std": 0.13461076162987268,
+      "bd_delay_mean": 37.88777483905923,
+      "bd_delay_std": 6.461316558233885,
+      "pms_mean": 6.625,
+      "pms_std": 0.9161253813129043
+    },
+    {
+      "label": "balance",
+      "omega": [
+        0.2,
+        0.2,
+        0.15,
+        0.45
+      ],
+      "cmax_mean": 1093.5468502635283,
+      "cmax_std": 91.26249417351978,
+      "tardiness_mean": 27.61061718076686,
+      "tardiness_std": 39.518597363497435,
+      "mean_tardiness_mean": 1.7256635737979287,
+      "mean_tardiness_std": 2.4699123352185897,
+      "ontime_mean": 0.96875,
+      "ontime_std": 0.03340765523905305,
+      "energy_mean": 173.49220300539224,
+      "energy_std": 9.718975304276656,
+      "setups_mean": 43.5,
+      "setups_std": 3.7416573867739413,
+      "imbalance_mean": 234.12791061046434,
+      "imbalance_std": 24.67209713043681,
+      "failures_mean": 0.8177249147509873,
+      "failures_std": 0.09630230938353039,
+      "bd_delay_mean": 39.250795908047394,
+      "bd_delay_std": 4.6225108504094585,
+      "pms_mean": 6.875,
+      "pms_std": 0.8345229603962802
+    },
+    {
+      "label": "balanced",
+      "omega": [
+        0.34,
+        0.33,
+        0.18,
+        0.15
+      ],
+      "cmax_mean": 1141.7305320848172,
+      "cmax_std": 111.50127765861535,
+      "tardiness_mean": 152.5655870965947,
+      "tardiness_std": 120.53051273687784,
+      "mean_tardiness_mean": 9.535349193537169,
+      "mean_tardiness_std": 7.533157046054865,
+      "ontime_mean": 0.921875,
+      "ontime_std": 0.055400328776744896,
+      "energy_mean": 173.3681441784961,
+      "energy_std": 15.58304251397933,
+      "setups_mean": 45.375,
+      "setups_std": 7.1501748230375455,
+      "imbalance_mean": 248.1830938066192,
+      "imbalance_std": 31.45521029729326,
+      "failures_mean": 0.7877160882912276,
+      "failures_std": 0.05319659092244085,
+      "bd_delay_mean": 37.810372237978925,
+      "bd_delay_std": 2.55343636427716,
+      "pms_mean": 6.75,
+      "pms_std": 0.8864052604279183
+    }
+  ],
+  "epsilon_sweep": [
+    {
+      "epsilon": 0.02,
+      "cmax_mean": 1145.273178759275,
+      "cmax_std": 173.0549055570658,
+      "tardiness_mean": 290.40439456537877,
+      "tardiness_std": 344.50768142719653,
+      "mean_tardiness_mean": 18.150274660336173,
+      "mean_tardiness_std": 21.531730089199783,
+      "ontime_mean": 0.84375,
+      "ontime_std": 0.0944911182523068,
+      "energy_mean": 181.977749841448,
+      "energy_std": 19.401589623894143,
+      "setups_mean": 51.5,
+      "setups_std": 5.0426750270636544,
+      "imbalance_mean": 248.29718390460485,
+      "imbalance_std": 43.710686893446024,
+      "failures_mean": 0.045631813545924216,
+      "failures_std": 0.021234384698970404,
+      "bd_delay_mean": 2.1903270502043624,
+      "bd_delay_std": 1.0192504655505794,
+      "pms_mean": 15.0,
+      "pms_std": 1.927248223318863
+    },
+    {
+      "epsilon": 0.05,
+      "cmax_mean": 1151.2561884700772,
+      "cmax_std": 117.60057664963482,
+      "tardiness_mean": 251.8245772264698,
+      "tardiness_std": 297.26685404764766,
+      "mean_tardiness_mean": 15.739036076654363,
+      "mean_tardiness_std": 18.57917837797798,
+      "ontime_mean": 0.8671875,
+      "ontime_std": 0.12246309575308217,
+      "energy_mean": 182.29609427011508,
+      "energy_std": 16.166438379105383,
+      "setups_mean": 49.875,
+      "setups_std": 7.434235478033847,
+      "imbalance_mean": 243.8546249826116,
+      "imbalance_std": 38.9033224304514,
+      "failures_mean": 0.2384118331512452,
+      "failures_std": 0.08122104787555003,
+      "bd_delay_mean": 11.443767991259769,
+      "bd_delay_std": 3.898610298026402,
+      "pms_mean": 13.875,
+      "pms_std": 1.5526475085202969
+    },
+    {
+      "epsilon": 0.1,
+      "cmax_mean": 1170.1577632538756,
+      "cmax_std": 143.79245756155558,
+      "tardiness_mean": 204.3745194074135,
+      "tardiness_std": 177.60881227032718,
+      "mean_tardiness_mean": 12.773407462963343,
+      "mean_tardiness_std": 11.100550766895449,
+      "ontime_mean": 0.84375,
+      "ontime_std": 0.11572751247156893,
+      "energy_mean": 195.70867667226335,
+      "energy_std": 18.04154580473109,
+      "setups_mean": 55.625,
+      "setups_std": 6.674846172652328,
+      "imbalance_mean": 252.232603822188,
+      "imbalance_std": 46.82091821011987,
+      "failures_mean": 0.813241021151944,
+      "failures_std": 0.14218705524830874,
+      "bd_delay_mean": 39.03556901529331,
+      "bd_delay_std": 6.824978651918822,
+      "pms_mean": 12.625,
+      "pms_std": 1.3024701806293193
+    },
+    {
+      "epsilon": 0.2,
+      "cmax_mean": 1187.2097085532534,
+      "cmax_std": 138.3520118398028,
+      "tardiness_mean": 207.8041690118187,
+      "tardiness_std": 155.86952646745354,
+      "mean_tardiness_mean": 12.987760563238668,
+      "mean_tardiness_std": 9.741845404215846,
+      "ontime_mean": 0.84375,
+      "ontime_std": 0.11080065755348979,
+      "energy_mean": 198.17851071105179,
+      "energy_std": 18.092613702538053,
+      "setups_mean": 50.875,
+      "setups_std": 7.31803057034961,
+      "imbalance_mean": 254.48576686375526,
+      "imbalance_std": 34.249656286697245,
+      "failures_mean": 2.7413245927558103,
+      "failures_std": 0.40024821233197305,
+      "bd_delay_mean": 131.5835804522789,
+      "bd_delay_std": 19.211914191934714,
+      "pms_mean": 10.375,
+      "pms_std": 1.685018016012207
+    },
+    {
+      "epsilon": 0.5,
+      "cmax_mean": 1335.7418252789876,
+      "cmax_std": 145.52296576402475,
+      "tardiness_mean": 371.60103170855916,
+      "tardiness_std": 105.41855934546368,
+      "mean_tardiness_mean": 23.225064481784948,
+      "mean_tardiness_std": 6.58865995909148,
+      "ontime_mean": 0.7890625,
+      "ontime_std": 0.032346823094172854,
+      "energy_mean": 228.5885644417079,
+      "energy_std": 25.037043777494116,
+      "setups_mean": 53.625,
+      "setups_std": 7.998883850709601,
+      "imbalance_mean": 265.6012690029737,
+      "imbalance_std": 36.85572995522039,
+      "failures_mean": 9.772518992598137,
+      "failures_std": 1.4366502644934394,
+      "bd_delay_mean": 469.0809116447107,
+      "bd_delay_std": 68.95921269568511,
+      "pms_mean": 7.0,
+      "pms_std": 0.7559289460184544
+    }
+  ],
+  "nsga_fronts": [
+    [
+      {
+        "cmax": 1102.015726486827,
+        "tardiness": 1499.4126764185435,
+        "energy": 215.4191711804725
+      },
+      {
+        "cmax": 1126.047241110346,
+        "tardiness": 1113.4843180746611,
+        "energy": 217.66240424008197
+      },
+      {
+        "cmax": 1155.0310473881277,
+        "tardiness": 870.291006011315,
+        "energy": 229.58868338805104
+      },
+      {
+        "cmax": 1171.1681289816472,
+        "tardiness": 666.7346194910825,
+        "energy": 221.1832254652598
+      },
+      {
+        "cmax": 1108.5191896816582,
+        "tardiness": 1048.9909814445514,
+        "energy": 232.38969525370996
+      },
+      {
+        "cmax": 1043.5227079507238,
+        "tardiness": 1478.572158728989,
+        "energy": 222.2156445080089
+      },
+      {
+        "cmax": 1167.7261522227595,
+        "tardiness": 1013.7573561850925,
+        "energy": 217.41379291956918
+      },
+      {
+        "cmax": 1001.5199633631731,
+        "tardiness": 1602.118110638874,
+        "energy": 211.49972148874446
+      },
+      {
+        "cmax": 1289.851158436527,
+        "tardiness": 649.2557545289751,
+        "energy": 221.89179901256657
+      },
+      {
+        "cmax": 1147.3897357479339,
+        "tardiness": 1213.990468519335,
+        "energy": 210.4902474630974
+      },
+      {
+        "cmax": 1163.1633873392236,
+        "tardiness": 1783.0341979478699,
+        "energy": 204.1269865596564
+      },
+      {
+        "cmax": 1211.3055976276044,
+        "tardiness": 1672.2019011507039,
+        "energy": 206.73483234393672
+      },
+      {
+        "cmax": 1101.0581335194424,
+        "tardiness": 2388.4364524631305,
+        "energy": 209.58392162846073
+      },
+      {
+        "cmax": 1165.7168504457377,
+        "tardiness": 1062.4350940992447,
+        "energy": 215.31964019376625
+      }
+    ],
+    [
+      {
+        "cmax": 1335.050429012982,
+        "tardiness": 1862.29482421037,
+        "energy": 280.95038126402795
+      },
+      {
+        "cmax": 1304.3670481289546,
+        "tardiness": 784.1684701401861,
+        "energy": 284.19792373084147
+      },
+      {
+        "cmax": 1465.2777141819563,
+        "tardiness": 152.27832148262894,
+        "energy": 295.6693192658776
+      },
+      {
+        "cmax": 1274.0880210365199,
+        "tardiness": 1455.67727850843,
+        "energy": 288.8044187729903
+      },
+      {
+        "cmax": 1435.104331724001,
+        "tardiness": 338.9628065412426,
+        "energy": 278.8630213318725
+      },
+      {
+        "cmax": 1283.2558735465102,
+        "tardiness": 2434.5218711383086,
+        "energy": 278.17789745354713
+      },
+      {
+        "cmax": 1459.886578489791,
+        "tardiness": 1563.6810496703101,
+        "energy": 272.23522648294784
+      },
+      {
+        "cmax": 1457.1953065822227,
+        "tardiness": 1049.745666066703,
+        "energy": 276.41795515500905
+      },
+      {
+        "cmax": 1433.6398490134704,
+        "tardiness": 663.0921564533833,
+        "energy": 279.8628449473501
+      },
+      {
+        "cmax": 1398.7523136236925,
+        "tardiness": 1616.9797271936302,
+        "energy": 276.5370735559834
+      },
+      {
+        "cmax": 1387.8131655341838,
+        "tardiness": 1647.3672143226927,
+        "energy": 267.57975691603696
+      },
+      {
+        "cmax": 1287.7892437930989,
+        "tardiness": 1920.1742353395298,
+        "energy": 262.5539680358777
+      },
+      {
+        "cmax": 1408.4233523651696,
+        "tardiness": 495.18555665435724,
+        "energy": 280.558374057868
+      },
+      {
+        "cmax": 1420.369842808587,
+        "tardiness": 130.82651168584653,
+        "energy": 296.73890779366246
+      },
+      {
+        "cmax": 1367.8569914226366,
+        "tardiness": 634.5488965162318,
+        "energy": 292.17944709873814
+      },
+      {
+        "cmax": 1378.053350688438,
+        "tardiness": 1562.1082682708056,
+        "energy": 282.04910234241265
+      }
+    ],
+    [
+      {
+        "cmax": 1152.4044943744648,
+        "tardiness": 570.6265049453234,
+        "energy": 247.9484028938672
+      },
+      {
+        "cmax": 1332.1646478058217,
+        "tardiness": 832.247783926735,
+        "energy": 243.0218626412496
+      },
+      {
+        "cmax": 1127.4064406739744,
+        "tardiness": 900.8114276833657,
+        "energy": 240.4937457558874
+      },
+      {
+        "cmax": 1081.140069964837,
+        "tardiness": 1139.2966538382555,
+        "energy": 236.59211589008183
+      },
+      {
+        "cmax": 1309.9675879800855,
+        "tardiness": 1350.6700812772672,
+        "energy": 236.56310610369528
+      },
+      {
+        "cmax": 1272.5494726159927,
+        "tardiness": 832.0931480471745,
+        "energy": 247.33677642428685
+      },
+      {
+        "cmax": 1164.6985138891255,
+        "tardiness": 852.0686684332205,
+        "energy": 244.6090358946434
+      }
+    ],
+    [
+      {
+        "cmax": 1268.2909542824343,
+        "tardiness": 1895.8122612674658,
+        "energy": 250.5935749201152
+      },
+      {
+        "cmax": 1326.1329919842196,
+        "tardiness": 911.3479837963177,
+        "energy": 259.93953398644004
+      },
+      {
+        "cmax": 1465.442849807246,
+        "tardiness": 713.0907088762744,
+        "energy": 260.36822522241135
+      },
+      {
+        "cmax": 1287.8163103103268,
+        "tardiness": 1058.8340752008628,
+        "energy": 259.02452879961965
+      },
+      {
+        "cmax": 1286.4588187167317,
+        "tardiness": 601.0071927102896,
+        "energy": 262.105499652065
+      },
+      {
+        "cmax": 1310.7262511565607,
+        "tardiness": 1803.4800491121657,
+        "energy": 249.94667607862104
+      },
+      {
+        "cmax": 1258.28241033075,
+        "tardiness": 1976.8789557962277,
+        "energy": 250.48152885803296
+      },
+      {
+        "cmax": 1263.4035288414734,
+        "tardiness": 1904.8020534603006,
+        "energy": 246.76090800750154
+      },
+      {
+        "cmax": 1479.263662055792,
+        "tardiness": 325.8521162490024,
+        "energy": 275.79501168655486
+      },
+      {
+        "cmax": 1520.7814656879116,
+        "tardiness": 483.9914525297547,
+        "energy": 251.5293695285846
+      },
+      {
+        "cmax": 1287.9420557580138,
+        "tardiness": 1204.3902183721912,
+        "energy": 257.47561430622716
+      },
+      {
+        "cmax": 1218.7270690863613,
+        "tardiness": 2193.821613506144,
+        "energy": 240.8782420256948
+      },
+      {
+        "cmax": 1257.0512147622637,
+        "tardiness": 789.5107376430506,
+        "energy": 261.8461138195316
+      },
+      {
+        "cmax": 1349.755146925378,
+        "tardiness": 1841.6408416618772,
+        "energy": 245.59783516704346
+      },
+      {
+        "cmax": 1281.2864984904347,
+        "tardiness": 1648.343574504178,
+        "energy": 255.25311076386146
+      },
+      {
+        "cmax": 1361.542682246167,
+        "tardiness": 1072.6624743071168,
+        "energy": 238.21389365749664
+      },
+      {
+        "cmax": 1313.3715900382078,
+        "tardiness": 1359.545437851425,
+        "energy": 253.741080640479
+      },
+      {
+        "cmax": 1255.3515286250686,
+        "tardiness": 1438.922012234391,
+        "energy": 257.4713238370875
+      }
+    ]
+  ]
+}

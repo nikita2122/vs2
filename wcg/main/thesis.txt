@@ -1,0 +1,4642 @@
+Computer Science Manuscript
+System Design and Optimization
+
+Research for Improving the Planting
+Efficiency of a Wooden Seed Sowing
+Machine by Using Vision-Guided
+Feed-Speed Control and Multi-Factor Model
+Predictive Optimization
+
+Three chapters on sensing, control, and numerical estimation
+
+This manuscript proposes two control innovations for a planter that meters irregular
+wooden seeds, principally hardwood seeds such as acorns. Chapter 3 reports a
+numerical estimation of the models derived in Chapter 2. It is not a field trial and
+it does not claim measured plantation results.
+
+October 2026
+
+Abstract
+Direct seeding of hardwoods is attractive because a machine can place wooden seeds,
+especially acorns, at a fraction of the cost of planting nursery seedlings. The same seeds
+defeat the assumptions built into cereal planters. An acorn is heavy, elongated, and
+variable in diameter. A cell that suits red oak doubles on pin oak and misses on bur oak
+or black walnut. A ground wheel slips on a slope, a seed box vibrates, and a vacuum level
+copied from a maize meter either does nothing for a large nut or pulls two small seeds
+into one cell. Previous electronic meters close a speed loop. Previous laboratory studies
+optimize vacuum, hole size, or vibration one factor at a time, usually offline. Neither line
+of work coordinates the input speed of the seeds with the factors of the machine while the
+lot of seeds is changing.
+This manuscript studies that gap as a computer-science problem in system design. Two
+innovations are proposed and then estimated together.
+The first innovation is a vision-guided feed-speed controller. A camera over the throat
+of the hopper measures occupancy, equivalent diameter, and a bridge index. An outer
+kinematic law converts ground speed and the target spacing into a seed rate. An inner fuzzy
+proportional–integral–derivative loop drives the cell-wheel motor. A constraint layer slows
+the wheel when the bridge index crosses a threshold, which is the action that fixed-gain
+speed control does not take. The vision computer is separate from the motor computer,
+because earlier vision meters lost the spacing target when image processing and motor
+control shared one slow microcontroller.
+The second innovation is a multi-factor model-predictive coordinator. At a slower period it chooses vibrator frequency, assist vacuum, and opener depth. Its prediction is a
+logistic map from seed size, vibration, slip, and depth error onto miss probability, double
+probability, and spacing scatter. The map is minimized on a small grid subject to actuator
+limits and a penalty on shaker and vacuum effort. The factor loop is deliberately blind
+
+i
+
+ii
+
+to the vision constraint, so it cannot hide a bad vibration setting behind a slower feed. A
+passive isolator, enabled with this loop, attenuates terrain vibration in the model.
+The two loops are stacked. The factor coordinator sets the mechanical regime. The
+vision loop trims the input speed inside that regime. Chapter 3 integrates the discrete
+models over 4,000 metering events per case, with a fixed random seed, for pin oak, red oak,
+bur oak, and a mixed lot, at two ground speeds, with slope and with harsh vibration. On a
+mild red-oak run the quality-of-feed index moves from 58.6% under ground drive to 88.2%
+with both innovations, and the planting-efficiency index moves from 52.4% to 87.0%. On
+bur oak with slope and a 12 Hz terrain disturbance, quality of feed moves from 20.7%
+to 75.4%. On the disturbed mixed lot the efficiency index rises by about 51 percentage
+points across repeated draws. The shaker uses more energy when it is actually helping.
+Under a 16 Hz disturbance the optimizer drops the shaker command from 9 Hz to 3 Hz
+and relies on isolation, which is a result of the cost, not a hand-written rule. These figures
+are solutions of the stated models. They rank the designs. They are not a substitute for
+a bench or field test.
+
+Contents
+
+Abstract
+
+i
+
+Nomenclature
+
+x
+
+1 Research on Previous Work
+
+2
+
+1.1
+
+1.2
+
+1.3
+
+Research on feed-speed control . . . . . . . . . . . . . . . . . . . . . . . . .
+
+3
+
+1.1.1
+
+What the feed speed is asked to do . . . . . . . . . . . . . . . . . .
+
+3
+
+1.1.2
+
+Ground-wheel drive and slip . . . . . . . . . . . . . . . . . . . . . .
+
+4
+
+1.1.3
+
+Proportional–integral–derivative control of the meter shaft . . . . .
+
+5
+
+1.1.4
+
+Machine vision on the meter . . . . . . . . . . . . . . . . . . . . . .
+
+6
+
+1.1.5
+
+Travel speed as a disturbance, not only as a setpoint . . . . . . . .
+
+7
+
+1.1.6
+
+Where feed-speed research stops for wooden seeds . . . . . . . . . .
+
+8
+
+Research on multi-factor optimization . . . . . . . . . . . . . . . . . . . . .
+
+8
+
+1.2.1
+
+The factors that actually move the fill ratio . . . . . . . . . . . . .
+
+8
+
+1.2.2
+
+Vacuum, hole diameter, and peripheral speed . . . . . . . . . . . .
+
+9
+
+1.2.3
+
+Vibration and the seed-filling angle . . . . . . . . . . . . . . . . . .
+
+10
+
+1.2.4
+
+Mechanical hardwood meters . . . . . . . . . . . . . . . . . . . . .
+
+11
+
+1.2.5
+
+Why offline optimization is not a controller . . . . . . . . . . . . . .
+
+12
+
+1.2.6
+
+Where factor research stops . . . . . . . . . . . . . . . . . . . . . .
+
+13
+
+Problem set . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+14
+
+1.3.1
+
+Indices that score a single-seed machine . . . . . . . . . . . . . . . .
+
+14
+
+1.3.2
+
+The coupled decision . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+15
+
+iii
+
+Contents
+
+iv
+
+1.3.3
+
+Requirements . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+16
+
+1.3.4
+
+Research questions . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+18
+
+1.3.5
+
+Scope . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+19
+
+1.3.6
+
+How a spacing is measured, and why the index needs a procedure .
+
+19
+
+1.3.7
+
+Particle forces underneath the factor map . . . . . . . . . . . . . .
+
+21
+
+2 Design of the Two Controllers
+2.1
+
+2.2
+
+23
+
+Vision-guided feed-speed control . . . . . . . . . . . . . . . . . . . . . . . .
+
+23
+
+2.1.1
+
+Role of the loop . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+23
+
+2.1.2
+
+Sensing and timing . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+24
+
+2.1.3
+
+Feature extraction . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+24
+
+2.1.4
+
+Kinematic command and the constraint . . . . . . . . . . . . . . . .
+
+26
+
+2.1.5
+
+Motor model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+26
+
+2.1.6
+
+Discrete fuzzy proportional–integral–derivative law . . . . . . . . .
+
+27
+
+2.1.7
+
+What the constraint does to a spacing sequence . . . . . . . . . . .
+
+29
+
+2.1.8
+
+Worked numbers for a red-oak frame . . . . . . . . . . . . . . . . .
+
+30
+
+2.1.9
+
+Fault states inside the feed loop . . . . . . . . . . . . . . . . . . . .
+
+31
+
+Multi-factor model-predictive optimization . . . . . . . . . . . . . . . . . .
+
+31
+
+2.2.1
+
+Role of the loop . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+31
+
+2.2.2
+
+Prediction model . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+32
+
+2.2.3
+
+A numerical evaluation of the map . . . . . . . . . . . . . . . . . .
+
+34
+
+2.2.4
+
+Cost and constraints . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+35
+
+2.2.5
+
+Relation to a quadratic program . . . . . . . . . . . . . . . . . . . .
+
+36
+
+2.2.6
+
+Information the coordinator is denied . . . . . . . . . . . . . . . . .
+
+37
+
+2.2.7
+
+Stacking the loops . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+38
+
+2.2.8
+
+Parameter summary . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+39
+
+2.2.9
+
+Discrete realization of the speed loop . . . . . . . . . . . . . . . . .
+
+39
+
+2.2.10 A numerical fuzzy step . . . . . . . . . . . . . . . . . . . . . . . . .
+
+41
+
+Contents
+
+v
+
+2.2.11 Flight after release . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+42
+
+2.2.12 Response times of the two computers . . . . . . . . . . . . . . . . .
+
+43
+
+2.2.13 A slice of the cost grid . . . . . . . . . . . . . . . . . . . . . . . . .
+
+44
+
+2.2.14 Actuator lag and the slew limit . . . . . . . . . . . . . . . . . . . .
+
+45
+
+2.2.15 Failure modes of the stack . . . . . . . . . . . . . . . . . . . . . . .
+
+46
+
+2.2.16 Quantization, one cell period, and a two-step horizon . . . . . . . .
+
+47
+
+2.2.17 Rates and power a builder can check with a stopwatch . . . . . . .
+
+49
+
+2.2.18 What an empty cell does to the count . . . . . . . . . . . . . . . . .
+
+50
+
+2.2.19 What the extra analysis changes . . . . . . . . . . . . . . . . . . . .
+
+52
+
+3 System Build and Estimation
+3.1
+
+3.2
+
+53
+
+System build . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+53
+
+3.1.1
+
+What the build is for . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+53
+
+3.1.2
+
+Mechanical path of a seed . . . . . . . . . . . . . . . . . . . . . . .
+
+54
+
+3.1.3
+
+Sensor list and what each signal is allowed to do . . . . . . . . . . .
+
+55
+
+3.1.4
+
+Computers and the bus between them . . . . . . . . . . . . . . . .
+
+56
+
+3.1.5
+
+Software tasks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+57
+
+3.1.6
+
+Calibration procedure . . . . . . . . . . . . . . . . . . . . . . . . .
+
+58
+
+3.1.7
+
+Safety interlocks
+
+. . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+59
+
+Estimation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+59
+
+3.2.1
+
+What is being estimated . . . . . . . . . . . . . . . . . . . . . . . .
+
+59
+
+3.2.2
+
+Mild red oak . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+61
+
+3.2.3
+
+Slope and harsh vibration on red oak . . . . . . . . . . . . . . . . .
+
+62
+
+3.2.4
+
+Pin oak and the multiple index . . . . . . . . . . . . . . . . . . . .
+
+63
+
+3.2.5
+
+Bur oak and the miss index . . . . . . . . . . . . . . . . . . . . . .
+
+64
+
+3.2.6
+
+Mixed lot . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+65
+
+3.2.7
+
+Energy and the price terms . . . . . . . . . . . . . . . . . . . . . .
+
+66
+
+3.2.8
+
+Where the estimation can mislead . . . . . . . . . . . . . . . . . . .
+
+66
+
+Contents
+
+3.2.9
+
+vi
+
+Answers to the research questions . . . . . . . . . . . . . . . . . . .
+
+68
+
+3.2.10 What a bench would have to show . . . . . . . . . . . . . . . . . .
+
+68
+
+3.2.11 The runs that were summarised . . . . . . . . . . . . . . . . . . . .
+
+69
+
+3.2.12 Reading the near-tie under harsh vibration . . . . . . . . . . . . . .
+
+70
+
+3.2.13 A note on repeatability of the other scenarios . . . . . . . . . . . .
+
+70
+
+3.2.14 Consolidated efficiency . . . . . . . . . . . . . . . . . . . . . . . . .
+
+71
+
+List of Figures
+
+1.1
+
+Ground drive copies slip into every spacing. An electronic rate law uses a
+speed measurement that is not taken from the driven wheel. . . . . . . . .
+
+1.2
+
+The two research lines stop short of a single online design for irregular
+wooden seeds. The gap is the problem set of Section 1.3. . . . . . . . . . .
+
+1.3
+
+5
+
+13
+
+The problem is one plant with two decision rates. Seed-lot statistics and
+terrain disturbances enter both decisions. The indices are defined on the
+spacings that leave the plant. . . . . . . . . . . . . . . . . . . . . . . . . .
+
+2.1
+
+Vision features constrain the speed command. The motor loop closes on
+the encoder and does not wait for the camera. . . . . . . . . . . . . . . . .
+
+2.2
+
+24
+
+Membership of the scaled speed error. The same partition is used for the
+error increment. Output increments use the centroid of the fired labels. . .
+
+2.3
+
+16
+
+28
+
+The factor search predicts the meter with vision off. The feed loop then
+applies the bridge constraint on top of the chosen factors. Neither loop
+waits for the other. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+2.4
+
+36
+
+Worst-case phasing used for the 70 ms response bound. Vision (top) preempts the factor search (bottom). The search still finishes inside the 200 ms
+deadline. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+3.1
+
+Seed path assumed by the controllers. Only frequency, vacuum, wheel
+speed, and depth are commands. The light gate counts seeds after release.
+
+3.2
+
+44
+
+55
+
+Red oak on level ground at 1.10 m/s. Vision trades a lower multiple index
+against a slightly higher miss index. The stacked system lowers both. . . .
+
+vii
+
+62
+
+List of Figures
+
+3.3
+
+viii
+
+Planting efficiency of ground drive against both loops. Pin oak and red oak
+are the mild electronic cases at 1.10 m/s. Bur oak and the mixed lot include
+slope and a terrain frequency of 12 Hz. The bur-oak bar remains the lowest
+of the stacked results, which is the large-seed limit of a 24 mm cell. . . . .
+
+65
+
+List of Tables
+
+2.1
+
+Rule table for the proportional increment ∆Kp . Rows are the scaled error.
+Columns are the scaled error increment. . . . . . . . . . . . . . . . . . . .
+
+29
+
+2.2
+
+Design parameters used by both the controllers and the numerical estimation. 39
+
+2.3
+
+Predicted cost J for nominal red oak at a 6 Hz terrain frequency. Lower is
+better. Vacuum is in kPa and frequency in Hz. . . . . . . . . . . . . . . . .
+
+44
+
+2.4
+
+Failures, the detection the design really has, and the command that remains. 47
+
+3.1
+
+Sensors, rates, and the loop allowed to consume each signal. . . . . . . . .
+
+56
+
+3.2
+
+Tasks, periods, and the action on a missed deadline. . . . . . . . . . . . . .
+
+57
+
+3.3
+
+Red oak, v = 1.10 m/s, level ground, terrain frequency 6 Hz. Energy is the
+mean per event of 0.08ω 2 + 0.012f 2 + 0.02P 2 in the units of the script. . .
+
+61
+
+3.4
+
+Red oak, v = 1.10 m/s, level ground, terrain frequency 16 Hz. . . . . . . .
+
+63
+
+3.5
+
+Remaining red-oak runs. Speed is in m/s, slope in degrees, terrain frequency
+in Hz. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+3.6
+
+69
+
+Planting efficiency ηE in percent for every estimated scenario. Terrain frequency fdist is in hertz and slope is in degrees. Speed is in m/s. . . . . . .
+
+ix
+
+71
+
+Nomenclature
+Symbol
+
+Meaning
+
+Xt
+
+Target in-row spacing (m). Nominal value 0.25 m.
+
+v
+
+Ground speed of the machine (m/s).
+
+λ⋆
+
+Target seed input rate, v/Xt (seeds/s).
+
+Nc
+
+Number of cells on the singulating wheel. Nominal value 12.
+
+ω
+
+Angular speed of the cell wheel (rad/s).
+
+η
+
+Cell fill ratio, seeds released per cell passage.
+
+s
+
+Longitudinal slip of a ground wheel, dimensionless.
+
+d
+
+Equivalent seed diameter (mm).
+
+dc
+
+Cell mouth diameter (mm). Nominal value 24 mm.
+
+f
+
+Vibrator frequency command (Hz).
+
+fdist
+
+Terrain disturbance frequency reaching the frame (Hz).
+
+feff
+
+Frequency experienced by the seed mass (Hz).
+
+f⋆
+
+Size-dependent agitation frequency that the cost prefers (Hz).
+
+P
+
+Assist vacuum at the cell (kPa).
+
+h
+
+Opener depth (mm). Target h⋆ = 30 mm.
+
+ρ
+
+Image occupancy of the hopper throat, in [0, 1].
+
+B
+
+Bridge index computed from occupancy and diameter spread.
+
+pm , pd , ps
+
+Probabilities of a miss, a double, and a single at one cell event.
+
+Qf
+
+Quality-of-feed index (%): spacings in (0.5Xt , 1.5Xt ].
+
+Imult
+
+Multiple index (%): spacings at most 0.5Xt .
+
+Imiss
+
+Miss index (%): spacings greater than 1.5Xt .
+
+Cv
+
+Precision (%): coefficient of variation inside the qualified band.
+
+ηE
+
+Planting-efficiency index (%): qualified seeds per minute divided
+by the kinematic target.
+
+x
+
+List of Tables
+
+1
+
+Symbol
+
+Meaning
+
+Ts
+
+Sample period of a loop. Motor 10 ms, vision 50 ms, factors
+200 ms.
+
+Chapter 1
+Research on Previous Work
+A wooden seed, in the sense used throughout this manuscript, is a hardwood tree seed
+whose mass and shape are those of a nut rather than those of a cereal grain. The working
+examples are pin oak, red oak, and bur oak acorns, together with the larger class that
+includes seeds for which a maize cell is simply the wrong tool. Black walnut sits in that
+larger class. The seeds are wooden in the ordinary mechanical sense: the shell is hard, the
+diameter varies inside a lot, the shape is elongated, and two seeds readily lock against each
+other in a throat. A sowing machine for these seeds has to accept a stream of irregular
+objects, release them one at a time, and put each one at a commanded spacing and a
+commanded depth while the vehicle moves.
+The silvicultural reason for caring about the machine is direct seeding. Planting a nursery seedling is reliable and expensive. Placing the seed itself can cost about a third as
+much, which is why direct seeding of oak remains attractive for restoration even though
+rodents, drought, and handling still make the biological result less certain than transplanting [1, 2, 3, 4]. The machine does not solve depredation. It does decide whether the seed
+arrives at the right place, at the right depth, and without a double or a gap. Those are
+placement questions. They are also control questions, because the input speed of the seeds
+and the factors of the machine move together as soon as the vehicle speed, the slope, or
+the seed lot changes.
+Cereal planters already have a large technical literature. Electric drives replace the
+ground wheel [5, 6, 7]. Vacuum plates are optimized for hole diameter, pressure, and
+peripheral speed [8, 9, 10, 11]. Vision has been put inside a corn meter [12]. Vibration has
+been measured on rapeseed drills and connected to the seed-filling angle [13, 14]. A review
+
+2
+
+Chapter 1. Research on Previous Work
+
+3
+
+of intelligent cereal seeders describes actuators, rate control, and depth control as separate
+subsystems and asks for multi-sensor fusion in the future [15]. Hardwood metering is older
+and thinner. A pneumatic meter on a no-till planter delivered about 95 to 97 percent of
+the expected density for pin oak and red oak and failed on bur oak and black walnut [16].
+A rotating drum with a single-seed pickup was built because nursery beds of oak could
+not be sown by hand at a stable spacing [17]. Forestry practice also includes cab-selected
+spot sowing during site preparation [18]. None of that work closes a loop from an image
+of the wooden seeds to the feed speed, and then from the seed-lot statistics to vibration,
+vacuum, and depth, in one designed system.
+This chapter reviews the two bodies of work that the later designs extend, and then
+writes the problem those designs are required to solve. Section 1.1 reviews feed-speed
+control. Section 1.2 reviews factor optimization. Section 1.3 states the indices, the coupled
+decision, and the requirements. The innovations themselves are designed in Chapter 2 and
+estimated in Chapter 3.
+
+1.1
+
+Research on feed-speed control
+
+1.1.1
+
+What the feed speed is asked to do
+
+Precision metering is a rate-matching problem before it is a shape problem. If the machine
+travels at speed v and the agronomic spacing is Xt , the seed input rate that places one
+seed on each target is
+λ⋆ =
+
+v
+.
+Xt
+
+(1.1)
+
+A wheel with Nc cells, turning at ω radians per second, releases seeds at
+λ=
+
+Nc ω
+η,
+2π
+
+(1.2)
+
+where the fill ratio η is the mean number of seeds that actually leave with each cell. Setting
+λ = λ⋆ and solving for the command gives
+ω⋆ =
+
+2π v
+2π λ⋆
+=
+.
+Nc η̂
+Nc Xt η̂
+
+(1.3)
+
+Every electronic seed meter in the cereal literature is a different way of making ω track
+ω ⋆ when v changes. The difficulty is that η is not a constant for wooden seeds, and v is
+
+Chapter 1. Research on Previous Work
+
+4
+
+not known perfectly if it is inferred from a wheel that slips.
+Equation (1.3) already shows why input speed and machine factors cannot be tuned
+apart. The fill ratio depends on how well the cell matches the seed, on whether the mass
+above the cell is bridged, on vibration, and on vacuum. A controller that treats η̂ as a
+number entered by the operator will run at the wrong speed as soon as the lot changes.
+A controller that only changes vacuum, and leaves ω on a mechanical ratio, will change
+η and then miss the spacing because λ moved. The rest of this section reviews how far
+published feed-speed control has gone, and where it stops.
+
+1.1.2
+
+Ground-wheel drive and slip
+
+The classical transmission is a ground wheel, a chain, and a gearbox. The cell wheel is
+geared so that, with no slip and a nominal fill, Equation (1.3) holds. The construction is
+simple and it needs no electricity. It fails in a specific way. If the drive wheel turns at
+(1−s)v rather than at v, every spacing stretches by 1/(1−s). On a slope or on soft ground
+the slip s is not a small constant. It varies inside a bout. The operator cannot see it in
+the spacing until plants emerge, and wooden seeds are often not assessed by emergence
+for a year.
+Slip is the reason electronic drives were introduced on row-crop planters. Hydraulic
+drives first allowed the rate to be set from the cab and allowed a prescription map. Electric
+drives then removed the shaft and the chain and put a motor on each meter, which adds
+individual-row shutoff, curve compensation, and a faster change of population [5]. The
+same reasoning applies to a single-row hardwood planter, with a harsher slip environment:
+mine spoil, scarified forest soil, and trails are not prepared seedbeds. Wells and colleagues
+already ran their hardwood meter at modest speeds, 2.4 to 4.0 km/h, and still had to
+respect slope [16]. A ground wheel on that terrain is a poor speed sensor.
+Zhao and colleagues made the same diagnosis for maize and replaced the wheel with an
+electronic meter whose shaft speed is computed from the set spacing and the measured
+forward speed [7]. Their model is the discrete cousin of Equation (1.3). They report that a
+fixed-gain proportional–integral–derivative controller was not enough once forward speed
+kept changing, which is why they scheduled the gains. The hardware lesson carries over.
+The gain-scheduling lesson only carries over if the disturbance is speed. For wooden seeds
+the disturbance is also the shape of the next seed.
+
+Chapter 1. Research on Previous Work
+
+Ground wheel
+speed (1 − s)v
+
+Radar or encoder
+on a non-driven wheel
+
+5
+
+Fixed ratio
+gear or chain
+
+Rate law
+ω ⋆ (v, Xt , η̂)
+
+Cell wheel
+ω = (1 − s)ω ⋆
+
+Spacing error
+Motor
+grows as 1/(1⋆ − s)
+tracks ω
+
+Figure 1.1: Ground drive copies slip into every spacing. An electronic rate law uses a speed
+measurement that is not taken from the driven wheel.
+
+1.1.3
+
+Proportional–integral–derivative control of the meter shaft
+
+He and colleagues built a proportional–integral–derivative controller for a maize meter and
+added integral separation so that a large speed step would not wind the integrator up [6].
+The plant is the motor and the plate. The setpoint is a plate speed in revolutions per
+minute. With gains Kp = 16, Ki = 0.05, and Kd = 36 they recorded, for a step from rest
+to 24 r/min, a rise of about 0.4 s, an overshoot of 1.56 percent, and a steady error of 0.75
+percent. On the bench the singulation index reached 98.4 percent at a planting speed of
+12 km/h, with multiples and misses not above 1 percent. Those numbers are for graded
+maize and a plate whose cells match the seed. They show that a well-tuned inner loop can
+make ω follow a command. They do not show that the command is the right one when η
+jumps because two acorns have locked in the throat.
+The classical tuning route is still the one in Ziegler and Nichols, or a relay experiment,
+followed by detuning for overshoot [19, 20, 21]. For a first-order motor model
+τ ω̇ + ω = Km u,
+
+(1.4)
+
+a proportional–integral controller u = Kp e + Ki e with e = ω ⋆ − ω gives the closed-loop
+R
+
+characteristic polynomial
+τ s2 + (1 + Km Kp )s + Km Ki = 0.
+
+(1.5)
+
+Both coefficients are positive for positive gains, so the frozen-gain loop is stable. The design
+knobs are natural frequency and damping, not a table of fuzzy rules. Fuzzy scheduling is
+useful when the same gains must cover a stick–slip load as the hopper empties, which is the
+situation Zhao and colleagues addressed [7]. Their fuzzy proportional–integral–derivative
+law, tuned from a Ziegler–Nichols start, shortened the simulated response by 0.23 s. On
+
+Chapter 1. Research on Previous Work
+
+6
+
+a soil-bin bench the qualified index was 96.74 percent, the multiple index 2.15 percent,
+and the miss index 1.10 percent. In the field the qualified index fell to 84.21 percent and
+the miss index rose to 7.89 percent, still inside the industry specification they cite [22].
+The drop from bin to field is the number that matters for a forest machine. A controller
+identified on a smooth belt will meet a rougher disturbance outdoors, and the specification
+written for maize is not a specification for acorns.
+Dambroz and colleagues showed that a low-cost electric drive can also select which seed
+lot reaches a horizontal disk, and can vary the rate, on a planter type that is common
+where expensive row drives are not [23]. The computer-science content of that machine
+is a mode switch and a rate command. It is relevant here because a wooden-seed hopper
+may hold more than one species, as forestry spot sowers already do [18]. This manuscript
+does not design multi-species switching. It does assume that the controller must survive
+a change of diameter statistics without a new mechanical plate.
+
+1.1.4
+
+Machine vision on the meter
+
+Speed feedback answers the question “is the shaft turning at ω ⋆ ?”. It does not answer “is
+there a seed on the next cell?”. Optoelectronic sensors in the seed tube answer a later
+question: a seed has already been released, or it has not [24, 25, 26]. By the time the
+tube sensor fires, the empty cell has passed the release point. The spacing error is already
+committed. That is why a camera looking at the plate, rather than at the tube, is the
+more interesting sensor for feed-speed control.
+Borja and colleagues mounted a camera on a pneumatic corn meter and classified each
+hole as filled or empty [12]. The mechatronic drive advanced the plate when an empty
+hole was about to be presented, so that a filled neighbour would arrive at the tube on
+time. The classifier was accurate: 0.2564 percent error on 780 images. At simulated 2
+and 4 km/h the vision meter missed significantly less often than the same meter without
+vision. At 6 km/h the vision meter missed more. The authors attribute the reversal to
+the microcontroller, which could not finish the image and the motor update inside the
+time available. The result is a systems result, not an agronomic curiosity. Perception and
+actuation need separate time budgets. A design that repeats their architecture on a faster
+wooden-seed wheel will repeat their failure, even if the classifier is perfect.
+The image processing they needed is classical. A gray image of a cell can be thresholded
+by Otsu’s method, which chooses the cut that maximises the between-class variance of the
+
+Chapter 1. Research on Previous Work
+
+7
+
+histogram [27, 28]. Edges of a seed against the plate can be extracted by Canny’s detector
+when the threshold is unstable [29]. Connected components then yield area A, from which
+an equivalent diameter
+s
+
+d=2
+
+A
+π
+
+(1.6)
+
+is defined even though the seed is not a disk. Circularity 4πA/Per2 , with Per the perimeter,
+is low for an elongated acorn and high for a round pellet. Open-source implementations of
+these steps are ordinary engineering tools [30]. A deep detector is not required to decide
+whether the throat is packed. It would also be the wrong default on a small machine,
+because the failure mode reported by Borja is latency, and a larger model makes latency
+worse.
+Navid-style image evaluation of a meter on a grease belt is a laboratory cousin of the
+same idea: the camera grades spacing after the fact [31]. Post-hoc grading is how this
+manuscript will score its own numerical trials, using the indices of Section 1.3. It is not
+a real-time constraint. The real-time use of vision in the first innovation is narrower than
+a general detector. The camera estimates three scalars—occupancy, mean diameter, and
+a bridge index—and the constraint layer uses only those scalars. The motor loop never
+waits for an image.
+
+1.1.5
+
+Travel speed as a disturbance, not only as a setpoint
+
+Equation (1.3) treats v as a known input. Liu and colleagues showed that travel speed
+also changes the uniformity that a meter can physically deliver [32]. Finger-pickup, scoopwheel, air-pressure, and air-blowing meters for maize were all sensitive to speed, on the
+bench and in the field. The mechanism is not the control law. At higher peripheral speed
+the seed has less time to settle in the cell, the release trajectory changes, and bounce in the
+tube grows. Onal, Degirmencioglu, and Yazgi found an upper seed-release frequency near
+16 seeds per second for cotton and maize on their vacuum unit, and an upper peripheral
+speed near 0.34 m/s, beyond which the qualified index fell [11]. A hardwood planter will
+not run at maize field speeds. Wells operated near 0.7 to 1.1 m/s. Even in that band,
+speed remains a disturbance of η, so a controller that raises ω in proportion to v can push
+the cell past the speed at which a heavy seed will still seat.
+This is the first place where a pure tracking loop is the wrong optimality condition.
+Tracking ω ⋆ minimises (ω − ω ⋆ )2 . Planting efficiency depends on misses and doubles. If
+
+Chapter 1. Research on Previous Work
+
+8
+
+raising ω toward ω ⋆ increases misses because seeds are bridging, the tracker is faithfully doing harm. The vision constraint in Chapter 2 exists to break that faithfulness on purpose,
+for a short time, and then to recover the rate when the bridge index falls.
+
+1.1.6
+
+Where feed-speed research stops for wooden seeds
+
+The reviewed controllers were built for seeds that are small relative to their variation, or
+that have been graded and coated until they behave like the spherical pellets Yazgi and
+Degirmencioglu used as a controlled material [33]. A wooden seed violates that preparation. Diameter coefficients of variation of 0.12 to 0.20 inside one species, and above 0.30
+in a mixed lot, are normal rather than defective. The cell cannot be resized on the move.
+What can be resized, in effect, is the time allowed for a seed to fall into the cell, and that
+time is the feed speed.
+Published vision adjusts the plate after an empty hole is seen, or grades the result offline.
+Published fuzzy control adjusts gains so that shaft speed tracks a kinematic command
+derived from forward speed. Neither computes a bridge index from the shape statistics
+of the seeds in the throat, and neither treats a reduction of feed speed as a constrained
+decision rather than as a tracking error. That is the opening for the first innovation. It is
+an opening in control architecture and in real-time system structure: which computer sees
+the image, which computer turns the motor, and which quantity is allowed to saturate.
+
+1.2
+
+Research on multi-factor optimization
+
+1.2.1
+
+The factors that actually move the fill ratio
+
+Feed speed is one input. The machine has others, and the hardwood problem is that they
+interact. The factors considered in this manuscript are the following.
+1. Vibrator frequency at the seed box. Low-frequency agitation can unlock a bridge
+of large seeds. High-frequency agitation fluidises a mass of small seeds and, past a
+threshold, destroys the fill.
+2. Assist vacuum at the cell. Vacuum is the main factor in cereal precision meters. For
+a heavy nut it is a weak force compared with weight, and for a small seed in a large
+cell it is a way to pick up two seeds.
+
+Chapter 1. Research on Previous Work
+
+9
+
+3. Opener depth. Depth does not change the meter directly. It changes bounce and
+the vertical error, and it is the factor a forester means by “sown properly” [1].
+4. Ground speed, already discussed, which sets the time budget of every other factor.
+5. Terrain vibration and slope, which are disturbances rather than commands, but
+which enter the same equations as the commands.
+A design that optimizes one of these while holding the others at a convenient constant
+will look good in that slice and fail in the slice beside it. The literature is rich in such
+slices. It is poor in online coordination.
+
+1.2.2
+
+Vacuum, hole diameter, and peripheral speed
+
+Karayel, Barut, and Ozmerzi modelled the vacuum pressure required to hold a seed on a
+plate as a function of seed mass, hole area, and the speed of the plate [9]. The force balance
+is the one every pneumatic meter uses: pressure difference times hole area must exceed
+weight, centrifugal force, and a margin for vibration. Singh, Singh, and Saraswat optimized
+pressure, hole size, and speed for cotton and showed that the optimum is a point in a threedimensional factor space, not a universal pressure [10]. Yazgi and Degirmencioglu made
+the experimental design explicit. A central composite response surface over vacuum, hole
+diameter, and peripheral speed, fitted to the multiple index, the miss index, and the
+quality-of-feed index, gave an optimum near 5.5 kPa and a 3 mm hole for cotton, and no
+optimum inside the tested range for plate speed [8]. The statistical method is appropriate
+for a fixed seed lot in a laboratory. It produces a setpoint, not a controller. When the next
+lot has a different diameter, the surface is a different surface, and the machine is already
+in the field.
+The aerodynamic calculation of Onal and colleagues makes the same point from the
+other direction. A vacuum band that is wide relative to the seed creates a region in which
+two seeds can seal, so adding holes to a plate in order to lower peripheral speed can raise
+the multiple index [11]. For maize they recommended the familiar 26-hole plate. For
+cotton they recommended fewer holes than the 72-hole plate supplied by default. The
+recommendation is a mechanical redesign. A wooden-seed machine that must accept pin
+oak and bur oak in the same season cannot carry a family of plates and still claim to be
+automatic. The online substitute is to change vacuum and feed speed, which are actuators,
+and to refuse a vacuum that the current diameter statistics do not support. That refusal
+
+Chapter 1. Research on Previous Work
+
+10
+
+is exactly what the factor coordinator in Chapter 2 does when it drives assist vacuum to
+zero for the lots studied here.
+
+1.2.3
+
+Vibration and the seed-filling angle
+
+Wu and colleagues measured the vibration of a centralized rapeseed meter and reconstructed the seed motion with a discrete-element model [13, 34]. Field frequencies occupied
+0 to 180 Hz. In the simulation, vibration did not merely shake seeds in place. It raised the
+seed-filling angle from a band of 56 to 59 degrees with no vibration to a band of 70 to 91
+degrees with vibration. The angle is the geometric expression of how far around the filling
+zone the seeds are still in contact with the meter. A larger angle means a disturbed free
+surface. Bench results followed the geometry: with vibration at 10 to 40 Hz the targetseed rate lay between 88.7 and 99.4 percent, against 100 percent with the device at rest.
+Longitudinal offset of the seed layer mattered more than lateral offset. Holding that offset
+inside 0 to 20 mm kept the target rate above 91 percent. The practical conclusion they
+draw is to manage seed-layer height so that vibration has less to act on.
+Zhang and colleagues put a hole-wheel rapeseed meter on a rig whose eccentric mass
+produced controlled vibration, and compared amplitude with frequency [14]. Amplitude,
+inside a few millimetres, did little. Frequency did a great deal. From 0 to 10 Hz the
+discharge stayed near 7.6 to 8.2 g/min and the coefficient of variation of uniformity stayed
+in a stable band. From 10 to 24 Hz the discharge fell nearly linearly with frequency
+(R2 = 0.92) and the coefficient of variation rose nearly linearly (R2 = 0.88). The 10 Hz
+threshold is the empirical anchor used later in the miss model. It was measured on
+rapeseed, not on acorns. Using it for wooden seeds is a modelling choice, stated as such
+in Chapter 2, not a claim that an acorn mass has the same resonance. The qualitative
+content that transfers is the existence of a frequency above which more agitation is not
+more singulation.
+Li and colleagues, working on irregular vegetable seeds rather than on nuts, found the
+opposite sign at a much higher frequency [35]. An air-suction drum, with suction near
+16 kPa, clearing air near 3.4 kPa, and a cassette vibrated at 50 Hz, reached a qualified
+rate of 96.9 percent, with 1.4 percent reseeding and 1.7 percent empty holes. Suction
+dominated, then clearing air, then vibration. The seeds were small and irregular, and the
+vibration was a high-frequency assist to stop them sticking, not a low-frequency unlock
+of a bridge of heavy objects. Copying 50 Hz and 16 kPa onto an acorn meter would be
+
+Chapter 1. Research on Previous Work
+
+11
+
+a category error. The factor coordinator must be allowed to choose a low frequency for
+a heavy seed and to choose almost no vacuum when the cell is larger than the seed. A
+response surface fitted to pepper seeds will not make that choice.
+Inclination is a related factor. Lei and colleagues showed that the angle of a centralized
+rapeseed meter changes the seed motion enough to move the performance indices, using
+the same discrete-element tools [36, 37, 38]. A planter on a 10 to 20 degree trail is an
+inclined meter whether or not the designer intended one. Wells had already included slope
+in the hardwood tests: pin oak still metered at 97 percent on a 50 percent grade in the
+laboratory at 3.2 km/h, and red oak at 97 percent on that grade at 4.0 km/h, while the
+field result on a mild grade was about 95 percent of the target density at 2.4 km/h [16].
+The laboratory number and the field number are both high, and both are for the species
+the cell could accept. The same paper is the source for the failure mode this manuscript
+refuses to ignore. Bur oak and black walnut did not meter satisfactorily. A larger seed
+does not become a smaller seed because the vacuum is raised.
+
+1.2.4
+
+Mechanical hardwood meters
+
+The pneumatic hardwood meter of Wells is the closest field ancestor. A commercial no-till
+unit was rebuilt with a pneumatic singulator and, after penetration failed, with a parabolic
+ripper. The metering result is species-dependent in exactly the way a fixed cell predicts.
+Seeds near the design size pass. Seeds far above it do not. There is no vision and no online
+change of speed beyond the ground-driven ratio.
+The Tourney nursery seeder is the closest mechanical ancestor for singulation by geometry rather than by air [17]. A drum with an internal pickup carries one acorn out of the
+mass and releases it at a fixed clock position. Five rows, 26 holes per revolution, a drum
+speed of 27 r/min at 1 mile per hour, and a target of eight acorns per foot, give a concrete rate calculation of the same family as Equation (1.3). The inventors abandoned an
+adjustable cone gearbox for a more direct drive after the gearbox proved to be the wrong
+place to put the adjustment. That history supports a direct electric drive. It also shows
+the limit of a purely mechanical pickup: the hole and the clock angle are manufactured,
+and a mixed lot returns the designer to the original bridging problem they had already
+seen when several acorns arrived at once.
+Maleki and colleagues evaluated a multi-flight auger as a mass-flow meter for a grain
+drill [39]. An auger is the wrong singulator for a seed that must be placed at 0.25 m,
+
+Chapter 1. Research on Previous Work
+
+12
+
+because it is designed to produce a continuous ribbon. It remains relevant as a warning.
+Many “seeders” in forestry are mass-flow devices or spot broadcasters [18]. A precision
+index is then the wrong score, and a precision controller is the wrong investment. This
+manuscript is about the precision case: one wooden seed, one station, a measured spacing.
+
+1.2.5
+
+Why offline optimization is not a controller
+
+Response-surface and discrete-element studies share a workflow. The factors are chosen,
+the machine or the particle model is run, a polynomial or a simulation output is fitted,
+and an optimum is published. The optimum is a point (P ⋆ , d⋆hole , ω ⋆ ) or a recommended
+band of frequencies. Nothing in that workflow runs while the hopper is emptying and the
+slope is changing.
+Model-predictive control was built for exactly the online version of this workflow. At
+each sample one solves a finite-horizon problem, applies the first move, and solves again
+when the state has moved [40, 41, 42, 43, 44]. Industrial surveys describe the method
+as standard on slow multivariable plants where constraints are the real specification [45].
+The stability theory for the constrained case is mature: a terminal cost and a terminal
+set, together with a feasible optimisation, give a decreasing cost and an invariant set [46].
+Explicit solutions exist when the problem is a small quadratic program, which removes
+the need to run an iterative solver on the machine [47, 48]. None of this has been the
+controller of a hardwood meter. Cereal rate loops are single-input speed loops. Cereal
+factor studies are offline. The second innovation is the transfer of a constrained, recedinghorizon coordinator onto the factor vector of a wooden-seed machine, with a prediction
+model small enough to sit beside the speed loop rather than replace it.
+Identification of that prediction model is a separate and older subject [49, 50, 51]. A
+recursive least-squares update can track a slow change in the gain from frequency to fill as
+the lot changes. This manuscript uses a fixed logistic map whose coefficients are published
+in Chapter 2, and it says so. The map is structured so that a later project can replace the
+coefficients with estimates from a bench without changing the coordinator. Pretending
+that the coefficients are already hardwood measurements would make the estimation in
+Chapter 3 look like a field result. It is not.
+
+Chapter 1. Research on Previous Work
+
+1.2.6
+
+13
+
+Where factor research stops
+
+Three limits recur.
+First, the factors are optimized one experiment at a time. Vacuum studies hold vibration at whatever the bench happens to produce. Vibration studies hold vacuum at
+the manufacturer’s setting. Depth is another control loop in the intelligent-seeder review,
+often a down-force loop, not a decision variable inside the same cost as miss and multiple
+[15].
+Second, the sign of the vibration effect depends on the seed. Rapeseed is hurt above
+about 10 Hz [14]. Small irregular vegetable seeds are helped at 50 Hz [35]. Acorn singulation, in the nursery machine, was helped by a geometric pickup and hurt by bridging
+[17]. A coordinator that cannot change its preferred frequency with measured diameter
+will copy the wrong paper.
+Third, the large-seed failure is accepted as a mechanical fact [16]. It is a mechanical
+fact for a fixed cell and a fixed speed. It is not yet a fact about a machine that is allowed
+to slow the input, agitate at a few hertz, drop the vacuum, and hold the depth. Whether
+that combination recovers a useful fraction of the lost quality is the estimation question
+of Chapter 3. The literature does not answer it, because the combination has not been
+the object of the literature.
+Speed loop
+PID or fuzzy PID
+
+Offline surface
+vacuum, hole, speed
+
+Vibration study
+one frequency band
+
+No online coupling of
+feed speed and factors
+for variable wooden seeds
+
+This manuscript
+vision-constrained feed
+and factor MPC
+Figure 1.2: The two research lines stop short of a single online design for irregular wooden seeds.
+The gap is the problem set of Section 1.3.
+
+Chapter 1. Research on Previous Work
+
+1.3
+
+Problem set
+
+1.3.1
+
+Indices that score a single-seed machine
+
+14
+
+Kachman and Smith compared the statistics people report for a precision planter and
+rejected the bare mean and the bare standard deviation of spacing [52]. Both are pulled
+by the misses and the doubles, so a machine with many skips can show a plausible mean.
+The indices that survived their comparison, and that ISO 7256 and the Chinese single-seed
+test methods also organise around, are defined from the theoretical spacing Xt [53, 54, 31].
+Let the observed positive spacings be zi . Then
+1
+#{i : zi ≤ 0.5Xt },
+n
+1
+Qf = 100 · #{i : 0.5Xt < zi ≤ 1.5Xt },
+n
+1
+Imiss = 100 · #{i : zi > 1.5Xt }.
+n
+
+Imult = 100 ·
+
+(1.7)
+(1.8)
+(1.9)
+
+The three percentages sum to 100. Precision is the coefficient of variation inside the
+qualified set only,
+Cv = 100 ·
+
+std{zi : 0.5Xt < zi ≤ 1.5Xt }
+.
+mean{zi : 0.5Xt < zi ≤ 1.5Xt }
+
+(1.10)
+
+A precision below about 29 to 30 percent is the informal acceptance band cited from
+Kachman and Smith by later vacuum-meter papers [11]. A miss index and a multiple
+index each under about 5 percent, and a quality-of-feed index above about 90 percent, are
+the cereal aspirations. This manuscript does not adopt 90 percent as a pass mark for bur
+oak. Wells did not get a satisfactory meter on that seed with a fixed pneumatic cell. The
+problem is to raise the indices from the ground-driven baseline, especially the miss index
+on large seeds and the multiple index on small seeds, without inventing a new cell for each
+lot.
+Quality of feed is a statement about spacings, not about productivity. A machine that
+creeps at a low v can post a high Qf and finish little ground. The planting-efficiency index
+used in the estimation is the rate of qualified spacings divided by the kinematic target λ⋆ :
+ηE = 100 ·
+
+qualified spacings per second
+.
+v/Xt
+
+(1.11)
+
+If the meter runs at the right mean rate and the only errors are local doubles and misses,
+ηE and Qf are close. If the controller deliberately slows the feed, spacings stretch, Imiss
+
+Chapter 1. Research on Previous Work
+
+15
+
+rises, and ηE falls even when doubles disappear. That distinction is a required part of
+the problem statement. A design that only maximises Qf can do so by going slowly. A
+design that only maximises seeds per minute can do so by doubling. The cost in Chapter 2
+penalises both.
+A short numerical illustration fixes the definitions. Suppose Xt = 0.25 m and twenty
+spacings in metres are
+0.04, 0.24, 0.26, 0.23, 0.51, 0.22, 0.25, 0.11, 0.27, 0.24,
+0.48, 0.25, 0.23, 0.08, 0.26, 0.24, 0.62, 0.25, 0.22, 0.27.
+Five spacings are at most 0.125 m, so Imult = 25. Three spacings exceed 0.375 m, so
+Imiss = 15. The remaining twelve give Qf = 60. The qualified values have mean 0.247 m
+and standard deviation about 0.017 m, so Cv ≈ 6.8. The mean of all twenty spacings is
+pulled up by the gaps and would have flattered a bad multiple count if it had been the
+only report. This is the Kachman argument in one row of numbers. The estimation in
+Chapter 3 applies the same definitions to thousands of simulated spacings.
+
+1.3.2
+
+The coupled decision
+
+Let the factor command at a slow sample be
+
+
+uk = fk Pk hk
+
+T
+
+,
+
+(1.12)
+
+and let the fast feed command be the wheel speed ωk , or equivalently the scale σk = ωk /ωk⋆
+by which the kinematic speed is multiplied. The seed lot at that moment is summarised
+by a diameter distribution with mean d¯ and coefficient of variation cd . Disturbances are
+slip sk , terrain frequency fdist,k , and a depth disturbance. A metering event then produces
+a spacing contribution whose probabilities depend on all of these:
+¯ cd , uk , σk , sk , fdist,k ).
+(pm , pd , ps ) = Π(d,
+
+(1.13)
+
+Chapter 1. Research on Previous Work
+
+16
+
+The map Π is specified in Chapter 2. The decision problem is to choose the sequence of
+uk and σk so that the expected indices improve and the actuator effort stays inside limits:
+h
+
+min E wm pm + wd pd + ws (Cv /100) + wu ℓ(u)
+
+i
+
+u,σ
+
+subject to f ∈ [0, 14],
+
+P ∈ [0, 8],
+
+σ ∈ [0.72, 1.08],
+
+h ∈ [15, 50],
+
+(1.14)
+
+|ωk+1 − ωk | ≤ ∆ωmax .
+
+The expectation is over the diameter draw and over the disturbances. The weights are
+design choices. The constraints are hardware limits. Equation (1.14) is not solved as one
+giant program on the machine. It is split, and the split is the architecture.
+The fast part owns σ. It can see a bridge forming and it must act inside one or two cell
+periods. The slow part owns u. Vibration, vacuum, and depth are not usefully changed at
+100 Hz, and their effect is on the statistics of the next several hundred seeds. Splitting the
+decision is justified by time scale, which is a standard reason for cascade and hierarchical
+control [55, 56, 57]. It is also justified by failure containment. If the camera stalls, the
+slow loop still holds a feasible (f, P, h) and the fast loop falls back to kinematic tracking.
+If the slow solver fails to return a feasible point, the last feasible u is held and the fast
+loop continues. A single optimiser that needs both the image and a converged quadratic
+program before it will turn the motor recreates the latency failure of the combined vision
+meter [12].
+Seed lot
+¯ cd
+d,
+
+Disturbances
+s, fdist , v
+
+Slow decision
+f, P, h
+
+Fast decision
+feed scale σ
+
+Cell wheel, tube,
+opener
+
+Indices
+Qf , Imiss , Imult , ηE
+
+Figure 1.3: The problem is one plant with two decision rates. Seed-lot statistics and terrain
+disturbances enter both decisions. The indices are defined on the spacings that leave the plant.
+
+1.3.3
+
+Requirements
+
+The requirements below are written so that a later bench test can accept or reject the
+design. The numerical estimation checks only the subset that can be checked on the
+
+Chapter 1. Research on Previous Work
+
+17
+
+model.
+1. Rate. Given v and Xt , the unconstrained feed command shall implement Equation (1.3) with η̂ = 1 as the nominal fill. The nominal spacing studied here is
+Xt = 0.25 m. At v = 1.1 m/s the target rate is 4.4 seeds/s, or 264 seeds/min.
+2. Slip. The speed used in Equation (1.3) shall not be taken from a driven ground
+wheel. Slope-induced slip shall not scale the mean spacing.
+3. Bridge constraint. When the bridge index exceeds its threshold, the feed scale
+shall decrease, and the decrease shall be limited so that a single bad frame cannot
+stall the wheel. The limit used in the model is a scale reduction of at most 0.22.
+4. Latency. Image features shall be computed on a processor that does not share its
+deadline with the motor current loop. The motor period is 10 ms. The feature
+period is 50 ms. A missed feature frame shall hold the last bridge index for at most
+three periods and then decay the constraint.
+5. Factors. Vibration frequency, assist vacuum, and opener depth shall be commands,
+not factory constants. Frequency shall be selectable at least over 0 to 14 Hz. Vacuum
+shall be selectable at least over 0 to 8 kPa and shall be allowed to sit at zero.
+6. Large seed. On a lot whose mean diameter exceeds the cell, the design shall be
+scored by the change in Imiss relative to ground drive, not by a maize acceptance
+threshold.
+7. Small seed. On a lot whose mean diameter is well below the cell, the design shall
+be scored by the change in Imult .
+8. Harsh vibration. When the terrain disturbance lies above the 10 Hz anchor, the
+factor command shall not add a second high frequency on top of it if the predicted
+miss probability increases.
+9. Fallback. Loss of vision shall leave a stable speed loop. Loss of the factor solver
+shall leave the last feasible factor command.
+10. Effort. The cost shall include a positive price on vibrator frequency and on vacuum,
+so that a flat region of the quality surface does not default to maximum actuation.
+11. Indices. Reports shall include Qf , Imult , Imiss , Cv , and ηE . A mean spacing alone
+shall not be used as a pass criterion [52].
+
+Chapter 1. Research on Previous Work
+
+18
+
+12. Honesty of evidence. Any number produced by integrating Equation (1.13) shall
+be labelled as a model solution. A requirement that needs a physical hopper, a
+physical camera, or a live seed lot is out of scope for Chapter 3 and remains a
+requirement on a future experiment.
+Requirement 12 is unusual in a problem set and is included because the estimation
+method can be misread. The logistic map is anchored to published qualitative facts: slip
+hurts a ground drive [7, 5]; vision can cut misses when the computer keeps up and can
+fail when it does not [12]; vibration above about 10 Hz hurt the rapeseed meters that
+were measured [14, 13]; vacuum and hole size trade doubles against misses [8, 11]; large
+hardwood seeds defeated a fixed pneumatic cell [16]. The coefficients that turn those facts
+into probabilities are choices of this manuscript. They are published so the estimation can
+be repeated. They are not identified from a new hardwood experiment.
+
+1.3.4
+
+Research questions
+
+The problem set reduces to three questions, which the remaining chapters answer in design
+and then in numbers.
+1. Can a feed-speed loop that is allowed to slow down when a vision bridge index is
+high reduce doubles on small wooden seeds and gaps on large ones, beyond what
+shaft-speed tracking already achieves by rejecting slip?
+2. Can a slow constrained optimiser, choosing vibration, vacuum, and depth from a
+size-aware prediction, improve the same indices in regimes where speed tracking has
+little to offer, in particular under terrain vibration and on seeds larger than the cell?
+3. When the two loops run together, do they interfere? In particular, does the vision
+loop’s willingness to stretch the spacing cancel the factor loop’s gain in planting
+efficiency, or do the loops improve different terms of the cost?
+The first question is about the first innovation. The second is about the second. The
+third is about the architecture that stacks them. A positive answer to the first two and a
+qualified answer to the third are both useful. If the stack interferes, the design should say
+so, because a deployer who turns both loops on by default would otherwise misread the
+mild-case tables.
+
+Chapter 1. Research on Previous Work
+
+1.3.5
+
+19
+
+Scope
+
+The machine in view is a single-row unit pulled or carried at about 0.7 to 1.2 m/s, with a
+12-cell wheel, a 24 mm cell, a vibratory hopper, a small assist vacuum that is allowed to be
+off, a depth-controlled opener, and a tube. Multi-row coordination, curve compensation,
+prescription maps, and species switching are outside the design [5, 23, 58, 59]. Rodent
+protection, seed treatment, and germination are outside the indices [1, 2]. Communication
+with a tractor bus is mentioned in the build only as a possible later carrier for the set-point
+Xt ; the control design does not depend on ISO 11783 [60].
+The computer-science contribution is the split real-time system, the vision constraint
+on an otherwise standard motor loop, and the constrained coordinator that treats machine factors as a short-horizon decision with an explicit cost. The mechanical layout in
+Chapter 3 is the minimum hardware on which those two programs have a meaning. It is
+not offered as a new singulator geometry. The drum pickup of Dinkel and Kangas and
+the pneumatic cell of Wells remain the mechanical precedents [17, 16]. The claim is that
+those mechanisms are being asked to run open-loop with respect to the two variables that
+dominate their errors: how fast the wooden seeds are fed in, and how the box, the air,
+and the opener are set while that happens.
+Predictive control enters as a constrained finite-horizon decision, not as a neural policy
+and not as a claim of global optimality over soil and weather [46, 45]. Fuzzy control enters
+as a bounded scheduling of three gains on a motor that is already stable at the frozen gains
+[61, 62, 63, 64]. Vision enters as a scalar constraint, not as a detector of tree species. Each
+of those reductions is deliberate. Each keeps a failure of one component from becoming a
+failure of the whole machine, which is the system requirement that the cereal vision meter
+did not meet when the processor fell behind [12].
+
+1.3.6
+
+How a spacing is measured, and why the index needs a
+procedure
+
+The indices of Section 1.3 are only as good as the ruler that produces zi . Three procedures
+appear in the work reviewed above, and they do not measure the same object.
+The sticky-belt procedure lays a belt under the tube, moves the belt at the simulated
+ground speed, and reads gaps between seeds that have stuck where they fell [31, 11, 26].
+It removes soil bounce and opener depth. It keeps tube bounce and meter errors. It is the
+
+Chapter 1. Research on Previous Work
+
+20
+
+right procedure for judging the feed-speed loop, because that loop’s product is a release
+time. ISO 7256 is written in this spirit: a single-seed drill is tested for the regularity
+of the metered stream, not for the forest that may or may not grow [53]. The Chinese
+single-seed method GB/T 6973 organises the same three percentages, multiples, qualified,
+and misses, about the theoretical spacing [54]. JB/T 10293 then turns those percentages
+into a specification a manufacturer can claim against [22]. A hardwood machine should
+be willing to be scored by the same arithmetic even if it is not willing to adopt the maize
+pass marks. The arithmetic is what makes Table 3.3 comparable with a future belt test.
+The field procedure measures plants, not seeds. Emergence, rodents, and depth then
+enter zi [1, 52]. A miss in the field is no longer evidence that the cell was empty. Kachman
+and Smith were explicit that a gap can be a failure to drop or a failure to emerge, and
+that the indices do not separate them. This manuscript therefore refuses field plant counts
+as the acceptance test of the controllers. They are the acceptance test of a plantation.
+Mixing the two is how a good meter is blamed for a dry week, and how a bad meter is
+excused by a kind season.
+The optoelectronic procedure sits between the belt and the field. A gate in the tube
+times each seed and converts time to distance by multiplying by v [24, 25]. The conversion
+is exact only if v is the speed used by the kinematic law and the seed’s exit velocity along
+the row is negligible. A heavy acorn leaves the cell with a tangential speed rω. At
+r = 0.09 m and ω = 2.30 rad/s that tangential speed is 0.21 m/s, which is not negligible
+beside a ground speed of 0.7 m/s. The horizontal component depends on the release
+angle. A tube gate that assumes the seed’s row-speed equals v will assign the wrong
+spacing by a few centimetres, which is enough to move a seed across the 0.5Xt boundary
+when Xt = 0.25 m. The estimation avoids that bias by placing seeds from the event model
+directly. A bench that uses a tube gate will need the release-angle correction derived in
+Section 2.2.11, or it will disagree with the belt for a reason that is geometry rather than
+control.
+Panning and colleagues also remind the reader that a laboratory ranking and a field
+ranking of planters need not match, even for sugarbeet, which is a far more uniform seed
+than an acorn [31]. The estimation in this manuscript is a third thing again: a ranking
+inside a declared model. It is closer to a belt test than to a field test, and it is not a
+belt test. The procedure that would make it a belt test is the one named at the end of
+Chapter 3.
+
+Chapter 1. Research on Previous Work
+
+1.3.7
+
+21
+
+Particle forces underneath the factor map
+
+The logistic map is a summary. The physics it summarises is a contact problem. A
+discrete-element model represents each seed as a body with a position and a spin, and
+integrates the contact forces with its neighbours and with the wall [34]. The normal force
+is a spring and a damper in the overlap. The tangential force is a spring limited by friction,
+which is what allows an arch to stand. For two acorns the overlap spring is a crude model
+of a wooden shell, but the structure of the argument does not depend on the spring law.
+An arch over the cell stands when the contact normals meet the wall at an angle steeper
+than the friction cone. Vibration that reverses the contact force for part of each cycle
+collapses the arch. Vibration that keeps the contacts sliding turns the hopper into a fluid
+and the cell fills with whatever arrives, including two small seeds.
+Wu and colleagues used that style of model to show a filling angle that opens under
+vibration, and Hu and colleagues coupled it to an airflow solver for a pneumatic rapeseed
+meter [13, 38, 37]. The angle is a geometric observable of the same arch. A larger angle
+means contacts that have walked up the wall. The 10 Hz threshold of Zhang and colleagues
+is, in this language, the frequency at which the arch no longer reforms between cycles for
+a small seed [14]. A large wooden seed has a longer contact time and a higher mass, so the
+frequency at which its arch collapses is lower. Equation (2.20) is that statement written as
+a decreasing function of diameter. It is not a modal analysis of an acorn. It is the smallest
+formula that gives the coordinator permission to treat pin oak and bur oak as different
+vibratory problems, which the single-frequency vegetable-seed result does not [35].
+Inclination enters the same contact balance. On a slope the gravity vector gains a
+component along the throat, and the arch becomes asymmetric [36]. Wells could still
+meter red oak on a steep laboratory grade because the pneumatic force dominated that
+component for a seed that fitted the hole [16]. A seed that does not fit never receives
+the pneumatic force, and the slope component only makes the miss more likely. The slip
+term in Equation (2.25) is the kinematic half of slope. The contact half is left inside the
+miss coefficient on δ+ , which is why the estimation does not add a third slope mechanism.
+Adding one without a measurement would be a second unsupported constant.
+This particle picture also explains a limit of vision. The camera sees the free surface and
+the seeds in the window. It does not see the contact forces under that surface. The bridge
+index is a proxy: high occupancy, low circularity, and oversize are the visible correlates of
+an arch. They will be wrong when an arch stands below a surface that looks open, which
+
+Chapter 1. Research on Previous Work
+
+22
+
+is a known hopper failure and a reason the constraint is capped. A capped constraint can
+be late. An uncapped constraint can stop the machine on a misread surface. The cap at
+22 percent is the design’s choice of which error is cheaper.
+
+Chapter 2
+Design of the Two Controllers
+This chapter specifies the two innovations at the level of signals, equations, and timing.
+Section 2.1 designs the vision-guided feed-speed controller. Section 2.2 designs the multifactor coordinator and the stack that joins the two. The hardware that gives these signals
+a physical place is specified in Section 3.1, after the signals are known, so that the build
+follows the information flow rather than the other way around.
+
+2.1
+
+Vision-guided feed-speed control
+
+2.1.1
+
+Role of the loop
+
+The feed-speed controller is a cascade with a constraint. The outer input is ground speed
+v and the spacing set-point Xt . The inner output is a motor voltage, or a speed-mode
+torque command, that turns the cell wheel. Between them sits a scalar σ ∈ [0.72, 1.08]
+that multiplies the kinematic speed. When the throat looks clear, σ stays near 1 and the
+loop is an ordinary electronic meter [6, 7]. When the throat looks bridged, σ falls and the
+wheel waits. The waiting is the innovation. A tracker without the constraint would treat
+the same situation as a brief shortfall of fill and would not change its behaviour at all,
+because the shaft would still be at the commanded speed.
+The loop does not detect species and does not draw boxes around seeds for an operator.
+It compresses each accepted frame into the features of Section 2.1.3. Those features are
+the only vision data the motor computer is allowed to see.
+
+23
+
+Chapter 2. Design of the Two Controllers
+
+2.1.2
+
+24
+
+Sensing and timing
+
+Two speed sensors are required by the problem set. A radar, or an encoder on an undriven
+wheel, supplies v. An encoder on the cell-wheel shaft supplies ω. A driven ground wheel
+is logged and is not used in the control law, so that a later comparison with ground drive
+remains possible.
+The camera looks down at the hopper throat through a window that is wiped mechanically. The region of interest is fixed in the image, about 640 by 200 pixels after cropping,
+covering the last few centimetres before the cell mouth. The exposure is strobed for 0.2 ms
+so that motion at 1.2 m/s does not smear a seed by more than a fraction of a millimetre at
+the working distance. The vision processor runs the steps of Section 2.1.3 and publishes
+a feature datagram at 20 Hz. The motor computer runs at 100 Hz. If a datagram is late,
+the motor computer holds the previous bridge index and increments a miss counter. After
+three missed datagrams, 150 ms, it decays the bridge index by half each further period
+and the constraint opens. The motor never blocks on a frame. This split is the direct
+answer to the 6 km/h reversal reported when one microcontroller did both jobs [12].
+A photoelectric sensor in the seed tube is not inside the constraint. It is a logger. It
+counts releases so that an estimator can compare commanded rate with delivered rate.
+Using it as the bridge sensor would reintroduce the delay the camera is there to avoid
+[24, 25].
+Camera
+20 Hz
+
+Speed v
+
+Features
+d, ρ, B
+
+Constraint
+σ(B)
+
+Kinematic
+ω⋆
+
+Fuzzy PID
+100 Hz
+
+Motor and
+cell wheel
+
+Encoder ω
+Figure 2.1: Vision features constrain the speed command. The motor loop closes on the encoder
+and does not wait for the camera.
+
+2.1.3
+
+Feature extraction
+
+Each accepted gray frame is normalised by a running estimate of the empty-throat image,
+so that a slow change of dust does not move the threshold. Otsu’s method then separates
+
+Chapter 2. Design of the Two Controllers
+
+25
+
+seed pixels from the background on the residual [27, 28]. Small components, below 20 mm2
+at the calibrated scale, are rejected as chips. The remaining components supply areas Aj
+and perimeters. Equivalent diameters follow Equation (1.6). Occupancy is the seed-pixel
+area divided by the window area,
+ρ=
+
+1 X
+Aj .
+Awin j
+
+(2.1)
+
+The diameter summary used by the constraint is the mean d¯ of the components and the
+coefficient of variation cd of those diameters. Circularity of component j is
+γj =
+
+4πAj
+∈ (0, 1].
+2
+Per,j
+
+(2.2)
+
+An elongated acorn has a low γj . The bridge index combines occupancy, a circularity
+penalty, and oversize relative to the cell:
+max(d¯ − dc , 0)
+B = ρ (0.45 + 0.55 min(1, cd /0.25)) 1 +
+.
+dc
+
+
+
+
+(2.3)
+
+The thresholds inside Equation (2.3) are design choices. Occupancy alone would treat a
+full but flowing throat as a bridge. The circularity term raises the index when the lot is
+irregular. The oversize term raises it when the seeds in view are larger than the 24 mm
+cell, which is the bur-oak situation. B is dimensionless. In the numerical model the relief
+starts at B > 0.42.
+The same frame updates a one-pole filter that the constraint uses as its occupancy state,
+ρk+1 = 0.92 ρk + 0.08 ρraw
+k ,
+
+(2.4)
+
+so that a single specular frame cannot slam the wheel. When the constraint is active and
+the wheel has slowed, the raw occupancy target inside the filter is pulled toward 0.48,
+representing a throat that is being allowed to clear. When the constraint is idle, the filter
+simply tracks the measurement.
+
+Chapter 2. Design of the Two Controllers
+
+2.1.4
+
+26
+
+Kinematic command and the constraint
+
+With the nominal fill η̂ = 1 and Nc = 12,
+ω⋆ =
+
+2πv
+.
+12 Xt
+
+(2.5)
+
+At v = 1.10 m/s and Xt = 0.25 m, λ⋆ = 4.40 seeds/s and ω ⋆ = 2.304 rad/s, which is
+22.0 r/min. At v = 0.70 m/s the same spacing asks for 14.0 r/min. These are gentle shaft
+speeds. The motor is not being asked for maize peripheral speeds. It is being asked for a
+stable low speed under a changing load, which is a harder control problem than the raw
+number suggests, because stiction is a larger fraction of the torque.
+The constrained command is
+
+with
+
+ωcmd = σ(B) ω ⋆ ,
+
+(2.6)
+
+B ≤ 0.42,
+σ(B) = 
+
+
+
+
+1 − min 0.22, 0.55 (B − 0.42) , B > 0.42.
+
+(2.7)
+
+
+
+
+
+1,
+
+The largest cut is 22 percent. A bridge that would mathematically demand a stop is not
+allowed to stop the machine. The wheel keeps turning, the tube keeps receiving whatever
+seeds are free, and the index is recomputed. The lower clip at 0.72 and the upper clip at
+1.08 are applied after σ and after the small tracking residual of the inner loop, so a noisy
+fuzzy action cannot wind the scale outside that band.
+Equation (2.7) is a static nonlinearity, not a second dynamic controller. Its stability
+effect is that it moves the setpoint. The inner loop is still asked to track a piecewiseconstant speed. Setpoint moves are rate-limited at the equivalent of 8 rad/s2 so that a
+newly detected bridge becomes a ramp rather than a step into the motor.
+
+2.1.5
+
+Motor model
+
+The electrical and mechanical equations of a permanent-magnet direct-current motor, or
+of a current-controlled brushless motor reduced to the same form, are
+di
+= −Ri − Ke ω + u,
+dt
+dω
+J
+= Kt i − bω − τload .
+dt
+L
+
+(2.8)
+(2.9)
+
+Chapter 2. Design of the Two Controllers
+
+27
+
+The load torque τload contains bearing friction, the intermittent torque of a seed entering
+a cell, and a stiction term that is largest when the hopper is full. For the speed loop the
+electrical pole is neglected. It sits well above 100 Hz on a small drive, and the current loop
+of a servo amplifier already hides it. The design model used for tuning is Equation (1.4),
+repeated here with the numbers used in the estimation:
+0.18 ω̇ + ω = uω ,
+
+(2.10)
+
+where uω is a speed command in the same units as ω after the inner current loop, and 0.18 s
+is the mechanical time constant under a representative hopper load. A 10 ms sample is
+twenty times faster than this pole, which is the usual rule for a discrete speed loop [57, 21].
+Load torque is not measured. It appears as a disturbance. Integral action rejects a
+constant disturbance. A seed that wedges and then releases is a pulse disturbance, which
+integral action handles if the gains are not so high that the pulse becomes an oscillation.
+The fuzzy layer exists to lower the proportional gain when the error is large and the error
+is still growing, and to raise it when the error is small, which is the standard reason for
+scheduling on a plant whose friction changes [7, 20].
+
+2.1.6
+
+Discrete fuzzy proportional–integral–derivative law
+
+Let the sample index of the motor loop be n, with Tm = 0.01 s. The tracking error and
+its backward difference are
+en = ωcmd,n − ωn ,
+
+∆en = en − en−1 .
+
+(2.11)
+
+The control law is
+un = Kp (en , ∆en ) en + Ki (en , ∆en ) Tm
+
+n
+X
+j=0
+
+ej + Kd (en , ∆en )
+
+∆en
+,
+Tm
+
+(2.12)
+
+with the integrator clamped and with the sum frozen whenever |en | > esep . The separation
+threshold used here is esep = 0.8 rad/s. Integral separation is the device He and colleagues
+used to keep a large step from overshooting, and it is retained for the same reason [6].
+Anti-windup is the clamp: the summed error is not updated when un is on its rail.
+
+Chapter 2. Design of the Two Controllers
+
+28
+
+The gains are a nominal triple plus a bounded fuzzy increment,
+Kp = Kp0 + ∆Kp ,
+
+Ki = Ki0 + ∆Ki ,
+
+Kd = Kd0 + ∆Kd ,
+
+(2.13)
+
+with Kp0 = 2.4, Ki0 = 6.0, and Kd0 = 0.08 on the normalised speed model of Equation (2.10). The increments are the outputs of a Mamdani inference on two inputs [62, 61].
+Each input is scaled into the linguistic range by
+ẽ = sat(en /0.6),
+
+g = sat(∆e /0.15),
+∆e
+n
+
+(2.14)
+
+where the saturation limits the argument to [−1, 1]. The linguistic labels are negative big,
+negative small, zero, positive small, and positive big. Membership of the zero label is a
+triangle peaking at 0 with support [−0.4, 0.4]. The small labels are triangles centred at
+±0.5 with support of width 0.8. The big labels are trapezoids that reach membership 1
+at ±1 and fall to 0 at ±0.4. The same shapes are used for both inputs. Figure 2.2 draws
+the error membership. The increment memberships on the output universe [−1, 1] use the
+same five labels, and the inferred set is reduced to a number by the centroid.
+NB
+
+NS
+
+Z
+
+PS
+
+PB
+
+0.2
+
+0.4
+
+Membership
+
+1
+
+0.5
+
+0
+
+−1
+
+−0.8
+
+−0.6
+
+−0.4
+
+−0.2
+
+0
+
+0.6
+
+0.8
+
+1
+
+Scaled error ẽ
+Figure 2.2: Membership of the scaled speed error. The same partition is used for the error
+increment. Output increments use the centroid of the fired labels.
+
+Table 2.1 lists the rule for ∆Kp . The rules for ∆Ki use the opposite corner emphasis:
+integral gain is allowed to rise only when both the error and the increment are near zero,
+and it is cut when the error is large, which keeps the separator and the fuzzy layer from
+fighting. The rules for ∆Kd raise derivative gain when the error and the increment have
+the same sign and a large magnitude, that is, when the shaft is running away from the
+command. Rules are written in the usual condensed form. “Error is negative big and the
+increment is negative big implies ∆Kp positive big” means the loop is below the command
+
+Chapter 2. Design of the Two Controllers
+
+29
+
+and still falling, so proportional action should strengthen.
+Table 2.1: Rule table for the proportional increment ∆Kp . Rows are the scaled error. Columns
+are the scaled error increment.
+
+NB
+NS
+Z
+PS
+PB
+
+NB
+
+NS
+
+Z
+
+PS
+
+PB
+
+PB
+PB
+PS
+PS
+Z
+
+PB PS Z
+PS PS Z
+PS Z NS
+Z NS NS
+NS NS NB
+
+NS
+NS
+NS
+NB
+NB
+
+The centroid is scaled into the increments by ∆Kp ∈ [−0.8, 0.8], ∆Ki ∈ [−2, 2], and
+∆Kd ∈ [−0.03, 0.03]. These boxes are part of the design. At every corner, Kp and Ki
+stay positive, so the proportional–integral polynomial of Equation (1.5) keeps positive
+coefficients on the design model. A pure derivative Kd s is improper on Equation (2.10).
+The implementation filters the difference with a first-order pole at 40 Hz, which keeps the
+high-frequency gain finite [20]. The resulting claim is limited on purpose. Positive frozen
+gains and a filtered derivative make each frozen loop a standard stable speed servo on
+Equation (2.10). They are not a Lyapunov certificate for the time-varying fuzzy system
+[64]. The schedule is still reasonable because it moves with the tracking error, and the
+error of a 0.18 s plant does not cross the whole linguistic range in one 10 ms sample unless
+the setpoint jumps. Setpoint jumps are rate-limited, as already stated. A vertex check of
+the discrete spectral radius belongs to the implementation test of a future build. It is not
+reported as a completed numerical proof in this manuscript.
+
+2.1.7
+
+What the constraint does to a spacing sequence
+
+A cell event occurs every time the wheel advances by 2π/Nc . If the scale σ is constant
+over the event, the distance the machine travels between events is
+∆x =
+
+v
+Xt
+=
+,
+λ
+σ
+
+(2.15)
+
+because λ = σv/Xt when the fill is one seed per event. A scale of 0.85 stretches the
+geometric spacing by 1/0.85 ≈ 1.18. Part of that stretch is the point of the constraint:
+a double that would have produced a 0.2Xt gap is replaced by a later single. Part of
+the stretch is a new miss if the following event is empty for an unrelated reason. The
+estimation has to be able to show both parts. A controller that is scored only on doubles
+
+Chapter 2. Design of the Two Controllers
+
+30
+
+will always want the lowest σ. The efficiency index of Equation (1.11) punishes the stretch.
+The photoelectric count provides a runtime estimate of fill after the fact,
+η̂n =
+
+Ntube (tn ) − Ntube (tn − Tη )
+,
+Nc (θ(tn ) − θ(tn − Tη ))/2π
+
+(2.16)
+
+with Tη = 2 s. This estimate is logged. It is not allowed to divide Equation (2.5) in the
+present design. Dividing by a noisy η̂ rebuilds the kinematic command every two seconds
+and fights the constraint. A later revision can blend η̂ into ω ⋆ with a time constant of tens
+of seconds, once a bench has shown that the estimate is calm. The requirement list does
+not demand that blend.
+
+2.1.8
+
+Worked numbers for a red-oak frame
+
+Take a red-oak mean diameter of 20.5 mm, a lot coefficient of variation of 0.15, and a cell
+of 24 mm. Suppose the filtered occupancy is 0.62. Equation (2.3) gives
+B = 0.62 (0.45 + 0.55 · 0.15/0.25) (1 + 0) = 0.62 · 0.78 = 0.484,
+
+(2.17)
+
+because cd /0.25 = 0.60 and there is no oversize. The excess over 0.42 is 0.064, and
+0.55 × 0.064 = 0.035, which is below the 0.22 cap. The scale drops from 1 to 0.965. At
+1.10 m/s the commanded shaft speed falls from 22.0 r/min to 21.2 r/min. The intervention
+is small because this frame is only mildly occupied and the seeds fit the cell. That is the
+correct behaviour. The constraint is not a permanent detune.
+Now take a bur-oak frame with d¯ = 32 mm, cd = 0.20, and ρ = 0.70. Then
+
+
+
+
+B = 0.70 (0.45 + 0.55 · 0.80) 1 + (32 − 24)/24 = 0.70 · 0.89 · 1.333 = 0.830.
+
+(2.18)
+
+The excess is 0.410, and 0.55×0.410 = 0.226, which the cap cuts to 0.22. The scale is 0.78,
+and the shaft command falls from 22.0 r/min to 17.2 r/min. The wheel gives the large
+seeds more time. Whether that time becomes filled cells or merely larger gaps is decided
+by the vibrator as well as by the wheel, which is why the second loop exists. Vision alone,
+in the later tables, improves doubles more reliably than it improves misses.
+
+Chapter 2. Design of the Two Controllers
+
+2.1.9
+
+31
+
+Fault states inside the feed loop
+
+Four fault states are defined so that the real-time program has somewhere to go.
+1. Vision hold. A late datagram holds B. Tracking continues. A counter is incremented.
+2. Vision decay. After 150 ms, B is halved each 50 ms until it lies below 0.42. The
+constraint opens. The operator lamp for vision is lit. The motor loop is unchanged.
+3. Encoder loss. If the shaft encoder misses two periods, the motor current is removed
+and the wheel stops. Coasting a cell wheel with an unknown speed is how doubles
+become a pile. This state is a stop, not a fallback to open voltage.
+4. Speed-sensor loss. If v is stale for 200 ms, ω ⋆ is held at its last value for 1 s
+and then ramped to zero. Holding forever would keep planting after the tractor has
+stopped only if the failure mode is a stuck high reading, which is unsafe. Ramping
+down is the chosen failure direction.
+None of these states requires the factor coordinator. They are local to the feed computer.
+The factor computer is informed by a single health bit so that it can freeze u when the
+wheel is stopped, rather than integrating a model that assumes events are still occurring.
+
+2.2
+
+Multi-factor model-predictive optimization
+
+2.2.1
+
+Role of the loop
+
+The factor coordinator owns vibration frequency f , assist vacuum P , and opener depth
+h. It does not own the wheel speed. It runs at 5 Hz, which is once every 200 ms, and
+on this machine that is once every few cell events at the speeds of interest. Its job is to
+keep the triple (f, P, h) at a point where the fast loop’s constraint is rarely needed. A
+coordinator that needs the constraint to look good has chosen a bad regime. For that
+reason the prediction inside the coordinator is evaluated at σ = 1 and with the vision flag
+clear. The vision loop may still act, and the estimation credits that action separately. The
+coordinator is not allowed to assume that the action will happen.
+This separation is also a software separation. The factor task can overrun a deadline
+without stretching a motor period. On an overrun the previous feasible triple is held.
+
+Chapter 2. Design of the Two Controllers
+
+32
+
+Holding a feasible input is the standard fallback of a predictive controller that misses a
+sample [43, 44].
+
+2.2.2
+
+Prediction model
+
+The model is a logistic map from a seed diameter and a factor triple to the probabilities
+of a miss and a double at one cell event. It is the map Π of Equation (1.13), written so
+that it can be evaluated inside a grid search. Define the normalised size errors and the
+harshness of the motion that the seed mass actually feels:
+δ+ = max(d − dc , 0)/dc ,
+
+
+δ− = max(dc − d, 0)/dc ,
+
+
+f ⋆ (d) = clip 4 + 5 dc /d, 3, 11 ,
+
+
+a(f, d) = exp
+
+(2.19)
+(2.20)
+
+ 
+
+
+
+− (f − f ⋆ (d))/2.6
+
+2
+
+(2.21)
+
+,
+
+H(feff ) = max(feff − 10, 0)/10.
+
+(2.22)
+
+The preferred frequency f ⋆ falls as the seed gets larger: a 32 mm seed prefers about 7.8 Hz
+before the clip, and a 15 mm seed prefers about 12 Hz before the clip, which then limits it
+to 11 Hz. The Gaussian a is near 1 only when the command sits close to that preference.
+Harshness H is zero at or below the 10 Hz anchor taken from the rapeseed vibration trials
+and rises linearly above it [14]. The frequency that enters H is not the command alone.
+Terrain and the shaker both reach the box,
+r
+
+feff =
+
+
+
+αiso fdist
+
+2
+
++ f 2.
+
+(2.23)
+
+When the coordinator is off, the isolator is treated as passive and αiso = 1. When the
+coordinator is on, the mount described in Section 3.1 is taken to attenuate the terrain
+contribution to αiso = 0.55. That number is an assumption of the model, not a measured
+transmissibility. It is applied consistently in the estimation, and the text that discusses
+energy will show what the assumption does: the optimiser can park feff just under 10 Hz
+by a combination of isolation and a modest command.
+Depth error, slip, and speed-scale error enter as further dimensionless terms,
+εh = |h − h⋆ |/h⋆ ,
+
+oσ = max(σ − 1.08, 0),
+
+uσ = max(0.92 − σ, 0),
+
+(2.24)
+
+Chapter 2. Design of the Two Controllers
+
+33
+
+with h⋆ = 30 mm. The linear predictors are
+zm = − 1.55 + 5.2 δ+ + 2.4 H + 2.6 s + 2.2 oσ + 1.4 uσ
+
+(2.25)
+
++ 1.3 εh − 1.7 a (0.35 + δ+ ) − 0.85 ν a,
+zd = − 2.05 + 3.6 δ− + 1.7 (P/8) (0.4 + δ− )
++ 1.1
+
+max(6 − f, 0)
+δ− + 0.6 oσ − 0.9 ν − 0.5 a.
+6
+
+(2.26)
+
+Here ν ∈ {0, 1} is the vision flag, which the coordinator sets to 0. The probabilities are
+pd = ℓ(zd ) (1 − pm ),
+
+pm = ℓ(zm ),
+
+ps = 1 − p m − p d ,
+
+(2.27)
+
+with the logistic function ℓ(z) = (1 + e−z )−1 evaluated on a clipped z so that the implementation cannot overflow. Scatter of a qualified spacing is modelled as a standard
+deviation
+
+
+ς = Xt 0.07 + 0.045 H + 0.035 εh + 0.03 |σ − 1|
+⋆
+
+
+
+(2.28)
+
++ 0.02 (1 − 0.6ν) + 0.015 |f − f |/6 .
+Equation (2.28) does not feed the logistic. It feeds the cost, as a stand-in for the precision
+term.
+Each coefficient has a stated job. The intercepts −1.55 and −2.05 set a mild baseline miss and double probability when every error term is zero and agitation is absent:
+ℓ(−1.55) ≈ 0.175 and ℓ(−2.05) ≈ 0.114 before the agitation credit, which is then modified
+by a. The large coefficient 5.2 on δ+ is the Wells effect, written as a steep miss penalty
+once the seed exceeds the cell [16]. The coefficient 3.6 on δ− is the double penalty for a
+small seed in a large cell [8, 11]. The vacuum term is multiplied by (0.4 + δ− ) so that
+vacuum is almost harmless when the seed fills the cell and is harmful when the seed is
+small. The harshness coefficient 2.4 is the Zhang effect, scaled so that a disturbance well
+above 10 Hz moves the miss probability by tens of points if isolation is absent [14]. None
+of these coefficients was fitted to a new data set. Replacing them with fitted values is
+future experimental work. Keeping them public is what makes Chapter 3 repeatable.
+
+Chapter 2. Design of the Two Controllers
+
+2.2.3
+
+34
+
+A numerical evaluation of the map
+
+The map should be evaluated once by hand so that the later tables have an anchor.
+Consider red oak at d = 20.5 mm, dc = 24 mm, so δ+ = 0 and δ− = 3.5/24 = 0.1458. The
+preferred frequency is
+f ⋆ = 4 + 5 · (24/20.5) = 9.85 Hz,
+
+(2.29)
+
+inside the clip. With a command f = 9 Hz,
+
+
+
+
+a = exp − ((9 − 9.85)/2.6)2 = exp(−0.107) = 0.899.
+
+(2.30)
+
+Under the coordinator, a terrain frequency of 6 Hz and αiso = 0.55 give
+feff =
+
+q
+
+(0.55 · 6)2 + 92 =
+
+√
+
+91.89 = 9.59 Hz,
+
+(2.31)
+
+so H = 0. Take σ = 1, s = 0.004, εh = 0, and ν = 1 for a feed-loop evaluation (the
+coordinator itself would set ν = 0). Then
+zm = −1.55 + 2.6 · 0.004 − 1.7 · 0.899 · 0.35 − 0.85 · 0.899
+= −1.55 + 0.010 − 0.535 − 0.764 = −2.84,
+pm = ℓ(−2.84) = 0.055.
+
+(2.32)
+(2.33)
+
+The double predictor with P = 0 is
+zd = −2.05 + 3.6 · 0.1458 − 0.9 − 0.5 · 0.899
+= −2.05 + 0.525 − 0.9 − 0.450 = −2.87,
+pd = ℓ(−2.87) (1 − 0.055) = 0.054 · 0.945 = 0.051.
+
+(2.34)
+(2.35)
+
+About 89 percent of events at this single diameter are singles before spacing classification.
+The quality-of-feed index in a full Monte Carlo run is lower than this event-single rate,
+because spacing classification also punishes rate error, but the event rate shows that the
+stacked loops sit in a high-single region for a seed that fits the cell.
+The contrasting ground-drive evaluation uses f = 0, P = 3 kPa, ν = 0, s = 0.07,
+σ = 0.93, and feff = 6 so that H = 0. Agitation a is essentially zero because the command
+is many standard deviations from 9.85 Hz. Then zm = −1.55 + 2.6 · 0.07 = −1.37 and
+pm = ℓ(−1.37) = 0.203. The double predictor picks up both the size term and the vacuum
+
+Chapter 2. Design of the Two Controllers
+
+35
+
+term,
+zd = −2.05 + 0.525 + 1.7 · (3/8) · 0.546 + 1.1 · 0.146 = −1.02,
+
+(2.36)
+
+so ℓ(zd ) = 0.266 and pd = 0.266 · (1 − 0.203) = 0.212. The event-single probability is about
+0.58. The ground-drive rows in Chapter 3 land on a quality-of-feed index of the same
+order. The map is doing what it was constructed to do: a fitted cell without agitation
+and with a few kilopascals of vacuum doubles a slightly small seed, and wheel slip adds
+misses.
+
+2.2.4
+
+Cost and constraints
+
+At a coordinator step the diameter distribution is represented by three points, the running
+¯ the high point d(1
+¯ + cd ), and the low point d(1
+¯ − cd ), with weights 1/2, 1/4, and
+mean d,
+1/4. The running mean is the vision mean when vision is healthy and a hopper-sample
+mean entered by the operator otherwise. Using three points rather than a full quadrature
+is a load decision. The factor computer must finish inside 200 ms with margin, and three
+evaluations of ℓ are cheap.
+The cost summed over the three points is
+J(f, P, h) =
+
+3
+X
+
+
+
+(i)
+(i)
+wi 9 p(i)
+m + 6 pd + 4 ς /Xt + 0.004 f + 0.01 P
+
+
+
+,
+
+(2.37)
+
+i=1
+
+with σ = 1, ν = 0, and the slip inside the prediction fixed at 0.02 because the electronic
+drive, not the coordinator, is responsible for slip. Depth is not searched. The depth servo
+is required to hold h⋆ , and the prediction uses h = h⋆ . Searching depth as well would only
+restate that the best depth error is zero. The servo’s value appears in the estimation as a
+reduction of the depth noise, from a standard deviation of 6.5 mm with a passive opener
+to 1.2 mm with the servo. That reduction changes εh in Equation (2.25) and is part of
+the second innovation’s hardware, not a third control algorithm.
+The searched set is the Cartesian product
+f ∈ {2, 3, . . . , 12} Hz by steps of 1,
+
+P ∈ {0, 1, 2, 3.5, 5} kPa.
+
+(2.38)
+
+Eleven frequencies and five pressures give 55 costs. Each cost is three logistic evaluations. The search is exhaustive on this set, so the computed minimiser is exact on the
+set. Exhaustive search on 55 points is a model-predictive controller whose horizon is one
+
+Chapter 2. Design of the Two Controllers
+
+36
+
+statistical step and whose input set is a grid. It is not a long-horizon quadratic program. It
+is still receding-horizon control in the original sense: the first, and only, move of the solved
+problem is applied, and the problem is solved again at the next sample with updated d¯
+and fdist [40, 41]. A one-step horizon is justified because the factor commands have no
+meaningful dynamics inside 200 ms other than actuator lag, and the lag is handled by a
+slew limit rather than by a multi-step model. Frequency may change by at most 2 Hz per
+sample. Vacuum may change by at most 1 kPa per sample. The opener servo has its own
+loop and is not slewed by this search.
+The prices 0.004 on frequency and 0.01 on vacuum are small next to a miss probability
+of 0.2, which is multiplied by 9. They matter when two grid points have almost the same
+predicted misses. In that flat region the optimiser prefers the quieter point. Under a harsh
+terrain disturbance the flat region is not where the action is: adding shaker frequency raises
+feff through Equation (2.23) and can push H above zero. The price and the harshness
+term then agree, and the command falls. The estimation shows this fall, from 9 Hz in a
+mild case to 3 Hz when fdist = 16 Hz.
+Measurements
+¯ cd , fdist
+d,
+
+Logistic map
+ν = 0, σ = 1
+
+Feed loop
+uses ν = 1
+and its own σ(B)
+
+55-point grid
+min J(f, P )
+
+Slew limit
+hold last if late
+
+Shaker, vacuum
+regulator, depth servo
+
+Figure 2.3: The factor search predicts the meter with vision off. The feed loop then applies the
+bridge constraint on top of the chosen factors. Neither loop waits for the other.
+
+2.2.5
+
+Relation to a quadratic program
+
+A reader who expects the classical quadratic program can recover it as an approximation.
+Let x stack the three probabilities and the normalised scatter at the mean diameter, and
+let the grid be replaced by a box u ∈ U. Linearising Π about the previous command u−
+
+Chapter 2. Design of the Two Controllers
+
+37
+
+gives
+x ≈ x− + G (u − u− ),
+
+(2.39)
+
+and the cost 9pm + 6pd + 4ς/Xt plus a move penalty (u − u− )T R(u − u− ) is a convex
+quadratic if one ignores the logistic curvature, or if one keeps the curvature and accepts
+a sequential quadratic program [65, 48]. Constraints are the box and the slew. That
+program is the form surveyed by Qin and Badgwell and analysed by Mayne and colleagues
+[45, 46]. It was not the form implemented for the estimation, because the logistic is cheap
+to evaluate exactly and the input dimension is two once depth is removed. The grid avoids
+a linearisation error near δ+ = 0, where the max(·, 0) terms are not differentiable and a
+gradient method needs a subgradient convention.
+An explicit multi-parametric solution in the sense of Bemporad and colleagues would
+be attractive if the linear model were trusted, because the control law would become a
+lookup of critical regions [47]. With a non-smooth logistic and an input grid of 55 points,
+the lookup is the grid itself. Memory on the factor computer is not the binding constraint.
+Deadline margin is. Fifty-five evaluations leave the processor idle for most of the 200 ms
+period, which is the desired state of a safety-related task: busy for a short, bounded time,
+then waiting.
+Stability of a one-step constrained search on a static map is simpler than stability of
+a dynamic horizon. The applied u is always one of the 55 feasible points, the slew limit
+makes the applied sequence Lipschitz in time, and the plant-side actuators are themselves
+stable servos. There is no hidden unstable mode in the coordinator. The quality of the
+closed loop is entirely a question of whether J ranks the true probabilities in the right
+order. That is a model-quality question, and Chapter 3 does not answer it experimentally.
+It answers the narrower question of how the indices move when the plant is the same map
+the coordinator optimises, with Monte Carlo variation of diameter, slip, and depth noise
+that the coordinator does not see seed by seed. Even in that favourable situation the
+coordinator is not given the per-seed diameter, only the lot statistics, so the comparison
+is not a tautology of perfect preview.
+
+2.2.6
+
+Information the coordinator is denied
+
+The following quantities are measured somewhere on the machine and are intentionally
+not inputs to J.
+
+Chapter 2. Design of the Two Controllers
+
+38
+
+1. The instantaneous bridge index B. If J could see B, it would learn to leave a bridge
+in place and let σ(B) clean it up, which shows up as good pd in a joint predictor and
+as a poor ηE on the machine.
+2. The tube count over the last second. That count is the outcome. Using it inside
+the same period double-counts the event the cost is predicting. A slow outer trim of
+the intercepts in Equations (2.25) and (2.26), with a time constant of a minute, is a
+reasonable adaptive extension [49, 50, 51]. It is not part of this design.
+3. Opener draft force. Draft is a useful depth-loop measurement and a poor miss
+predictor unless it is calibrated per soil. The depth loop closes on a potentiometer.
+Draft is logged for a future soil-specific correction.
+Denying information is part of the architecture. A hierarchical controller that passes
+every measurement to every layer becomes a single optimiser with a distributed implementation, and it fails as a single optimiser [55]. The bit that does pass upward is health:
+vision alive, encoder alive, wheel stopped. Health bits change modes. They do not enter
+J as if they were diameters.
+
+2.2.7
+
+Stacking the loops
+
+The stack at a moment when both loops are healthy is the following sequence. The
+description is the program order on two computers that share a small datagram and do
+not share a clock beyond a 1 ms time stamp.
+¯ cd , ρ, and B.
+1. The vision computer publishes d,
+¯ cd , and the latest inertial
+2. The factor computer, if it is on a 200 ms boundary, reads d,
+estimate of fdist , evaluates J on the grid with ν = 0, slew-limits the winner, and
+publishes (f, P ). The depth servo is continuously commanded to h⋆ and does not
+wait for this boundary.
+3. The motor computer reads v and B, forms ωcmd from Equations (2.5)–(2.7), and
+runs Equation (2.12) at 100 Hz.
+4. The shaker amplifier and the vacuum regulator track f and P with their own current
+loops. Those loops are not redesigned here. They are required to reach a 2 Hz step
+in under 150 ms and a 1 kPa step in under 150 ms, which is the slew assumption
+made above.
+
+Chapter 2. Design of the Two Controllers
+
+39
+
+Interference, if it appears, will appear as a gain in Qf that does not appear in ηE ,
+because σ < 1 stretches spacings. The problem statement asked for that distinction to be
+preserved in the report. The estimation therefore publishes both indices for every case,
+including the cases where vision alone lowers efficiency relative to a pure speed loop. That
+outcome is a successful warning from the design, not a failure of the table.
+
+2.2.8
+
+Parameter summary
+
+Table 2.2 collects the numbers a reimplementation needs. Anything not in the table is a
+logging choice and does not change the indices.
+Table 2.2: Design parameters used by both the controllers and the numerical estimation.
+
+Symbol
+
+Role
+
+Xt
+Nc
+dc
+h⋆
+Tm
+Tv
+Tf
+τ
+Bon
+σmin
+Kp0 , Ki0 , Kd0
+αiso
+fharsh
+Grid
+Weights
+Prices
+
+Target spacing
+Cells on the wheel
+Cell mouth
+Target depth
+Motor period
+Vision period
+Factor period
+Motor time constant
+Constraint threshold
+Deepest feed cut
+Nominal gains
+Terrain attenuation, coordinator on
+Harshness anchor
+Frequency and vacuum
+pm , pd , ς/Xt
+Per hertz and per kilopascal
+
+Value
+0.25 m
+12
+24 mm
+30 mm
+10 ms
+50 ms
+200 ms
+0.18 s
+0.42
+0.78
+2.4, 6.0, 0.08
+0.55
+10 Hz
+11 by 5 points
+9, 6, 4
+0.004, 0.01
+
+The two innovations are now fully specified as programs. The rest of this chapter records
+the discrete realization, one fully numerical inference, the flight of a seed after release, the
+schedulability argument, and a slice of the cost grid. The next chapter places the programs
+on a machine and runs them under the lots and disturbances of the problem set.
+
+2.2.9
+
+Discrete realization of the speed loop
+
+Equation (2.10) is continuous. The feed computer is not. With a zero-order hold on the
+command and a sample Tm = 0.01 s, the exact discretization of τ ω̇ +ω = uω is a first-order
+
+Chapter 2. Design of the Two Controllers
+
+40
+
+difference
+ωn+1 = a ωn + (1 − a) un ,
+
+a = e−Tm /τ .
+
+(2.40)
+
+Substituting τ = 0.18 s gives Tm /τ = 0.0556 and a = 0.9460. The one-step gain on the
+command is 1 − a = 0.0540. A command that steps by 1 rad/s therefore moves the shaft
+by only 0.054 rad/s on the next sample, which is why the loop needs many samples to
+finish a bridge-induced ramp and why a 10 ms budget is comfortable for the arithmetic
+even though it is tight for a stall detector.
+The proportional–integral law without the derivative, written backwards in time so that
+it can be coded as a recurrence, uses the summed error sn and the clamped increment
+
+
+
+s
+
+sn = 
+
+|en | > 0.8 rad/s or u on its rail,
+
+n−1 ,
+
+
+sn−1 + Tm en ,
+
+(2.41)
+
+otherwise,
+
+and
+
+
+
+
+un = sat Kp en + Ki sn + Kd δn ,
+
+(2.42)
+
+where δn is the filtered difference. The derivative filter is itself a discrete pole. A continuous
+pole at 40 Hz has time constant 1/(2π · 40) ≈ 4.0 ms. Its exact sample coefficient at 10 ms
+is not the right object, because the difference is already a once-per-sample quantity. The
+implementation uses an exponential smoother on ∆en /Tm ,
+δn = β δn−1 + (1 − β)
+
+en − en−1
+,
+Tm
+
+β = e−Tm /τd ,
+
+(2.43)
+
+with τd = 4 ms, so β = e−2.5 = 0.0821. The filter is fast relative to the motor and slow
+relative to a single-sample encoder spike. An encoder that glitches by one count on a
+4096-count wheel at 22 r/min produces a false ∆ω of 2π/4096 radians in 10 ms, which is
+0.15 rad/s of false rate. Multiplied by Kd = 0.08 that glitch is a 0.012 rad/s command
+bump, smaller than the tracking residual already budgeted in the estimation. The filter
+is what keeps a two-count glitch from becoming a command. This arithmetic is the sort
+of check that belongs in the feed computer’s design review. It is not a result from a logic
+analyser.
+Integral separation and the rail clamp interact. If the clamp freezes sn while the separation condition is also true, the sum is frozen once, not twice. The code path must be a
+single conditional. Two nested conditionals that both subtract the last addition will drift.
+
+Chapter 2. Design of the Two Controllers
+
+41
+
+The specification is Equation (2.41): one freeze flag, the logical or of the two reasons.
+
+2.2.10
+
+A numerical fuzzy step
+
+The rule table is easier to trust after one sample is evaluated by hand. Take en = 0.30 rad/s
+and en−1 = 0.35 rad/s, so the shaft is below the command and the error is shrinking. The
+scaled inputs of Equation (2.14) are
+ẽ = 0.30/0.6 = 0.50,
+
+g = (0.30 − 0.35)/0.15 = −0.333.
+∆e
+
+(2.44)
+
+On the error partition of Figure 2.2, ẽ = 0.50 sits on the peak of the positive-small triangle,
+so µPS (ẽ) = 1. The positive-big trapezoid is 0 at 0.4 and 1 at 1.0, so
+µPB (ẽ) = (0.50 − 0.40)/(1.00 − 0.40) = 0.167.
+
+(2.45)
+
+Zero, negative-small, and negative-big are 0 at this point. On the increment, −0.333 falls
+inside the negative-small triangle centred at −0.5 with support from −0.9 to −0.1. The
+left slope would be irrelevant. The right slope runs from membership 1 at −0.5 to 0 at
+−0.1, and −0.333 is (0.5 − 0.333)/0.4 = 0.417 of the way from the centre to the edge, so
+g = 1 − 0.417 = 0.583. The zero triangle has support [−0.4, 0.4] and peak 1 at 0,
+µNS (∆e)
+
+so at −0.333 its membership is 1 − 0.333/0.4 = 0.168. Negative-big is the trapezoid that
+is 1 at −1 and 0 at −0.4. At −0.333 it is already 0.
+Four rule conjunctions survive, using the minimum for “and”. From Table 2.1, error
+positive-small and increment negative-small fires ∆Kp at label Z with strength min(1, 0.583) =
+0.583. Error positive-small and increment zero fires NS with strength min(1, 0.168) =
+0.168. Error positive-big and increment negative-small fires NS with strength min(0.167, 0.583) =
+0.167. Error positive-big and increment zero fires NS with strength min(0.167, 0.168) =
+0.167. The output labels are placed at Z= 0 and NS= −0.5 on the increment universe.
+Aggregating by the maximum, the Z spike has height 0.583 and the NS spike has height
+max(0.168, 0.167, 0.167) = 0.168. A centroid of two spikes is
+c=
+
+0.583 · 0 + 0.168 · (−0.5)
+= −0.112.
+0.583 + 0.168
+
+(2.46)
+
+Scaled into the proportional box [−0.8, 0.8], the increment is ∆Kp = −0.090. The nominal
+Kp0 = 2.4 becomes Kp = 2.31. The loop is close to the command and the error is already
+
+Chapter 2. Design of the Two Controllers
+
+42
+
+shrinking, so the scheduler slightly reduces proportional gain rather than kicking the shaft.
+A large growing error would have fired the PB corner of the table and moved ∆Kp the
+other way. The example is the ordinary sample, which is the sample the machine sees
+most often. A design that only behaves well on the linguistic corners and chatters in the
+middle is the design this calculation is meant to forbid.
+The same sample’s integral rules, which cut Ki away from zero error, produce a small
+negative ∆Ki because ẽ is not inside the zero label. Derivative rules see an error and
+an increment of opposite signs, so they do not raise Kd . The net command correction
+relative to the nominal triple is a few percent. That is what “bounded schedule” means
+in a number rather than in a slogan [62, 63].
+
+2.2.11
+
+Flight after release
+
+The spacing model in the estimation advances the tractor by Xt /σ and then adds a random
+scatter. The scatter has a mechanical source that should be written down so a bench can
+look for it. A seed leaves the cell at angle ψ below the horizontal with speed rω relative
+to the housing, and the housing moves at v. In a frame fixed to the ground at the release
+instant the initial velocity is
+ẋ(0) = v − rω cos ψ,
+
+ẏ(0) = −rω sin ψ,
+
+(2.47)
+
+with y positive upward and the tube entrance a distance Lt below the release. For the
+nominal wheel, r = 0.09 m and ω = 2.30 rad/s, so rω = 0.207 m/s. At ψ = 70◦ , which
+is a release on the lower rear of the wheel, ẋ(0) = v − 0.071 m/s and ẏ(0) = −0.195 m/s.
+The time to fall Lt = 0.40 m under gravity, ignoring wall strikes, solves
+Lt = −ẏ(0) t + 12 gt2 .
+
+(2.48)
+
+The positive root is t = 0.306 s when ẏ(0) = −0.195 m/s. During that time the tractor
+moves vt. The seed’s own ẋ is smaller than v by 0.071 m/s, so the seed lands 0.071·0.306 ≈
+0.022 m behind the point a kinematic model would predict. Two centimetres is 0.09Xt .
+It shifts the whole row. It does not by itself create a miss, because every seed is late by
+a similar amount when ω tracks v. It creates a miss when ω and v stop matching, which
+is exactly the ground-drive slip case, and it creates a double-looking pair when one seed
+glances off the tube wall and the next does not.
+
+Chapter 2. Design of the Two Controllers
+
+43
+
+The random term ς in Equation (2.28) is the wall-glance term. Its baseline 0.07Xt =
+17.5 mm is the same order as the kinematic lag just computed. The coefficients on harshness and depth add the extra glances that a shaking tube and a bouncing shoe produce.
+The estimation does not integrate Equation (2.48) seed by seed. It would be a better
+bench model and a worse real-time model. The factor computer has no business integrating projectile motion at 5 Hz. The derivation is here so that a disagreement of about two
+centimetres between a tube gate and a belt is not mistaken for a control failure.
+Bounce at the furrow bottom adds a second delay that depth error changes. A seed that
+strikes a shoe set 10 mm high spends longer in the slot and can roll. The depth servo’s job,
+inside this derivation, is to keep that second delay repeatable. The 1.2 mm residual used
+when the coordinator is on is a statement that the second delay is then almost common
+mode and disappears from the spacing differences. The 6.5 mm residual used otherwise is
+a statement that it does not.
+
+2.2.12
+
+Response times of the two computers
+
+The periods in Table 2.2 are not a schedule until each task’s worst-case execution is set
+against them. The feed computer has one control task. At a 2 ms budget inside 10 ms
+its utilization is 0.20. A single task at that utilization cannot miss a deadline unless the
+budget is a lie. The stall rule, two missed periods, is then a watchdog on the lie: if the
+timer interrupt is late twice, the motor current is removed. The watchdog is a hardware
+timer that the control task must kick. A software counter inside the late task will not
+count.
+The vision and factor computer has two periodic tasks on one processor. Vision needs
+up to 30 ms every 50 ms. The search needs up to 40 ms every 200 ms. If vision is released
+first and runs to its budget, the search can start 30 ms into a vision period. In the worst
+phasing, vision is released again before the search finishes. Preemptive priority is given
+to vision, so the search is suspended. The search’s worst-case response is its own 40 ms
+plus the vision executions that can preempt it. In 40 ms of search time at most one vision
+job is released, adding 30 ms, so the response is at most 70 ms. The deadline is 200 ms.
+The margin is 130 ms, which is the quantity that absorbs a slow frame, a checksum retry,
+and the logger. This is a response-time bound for two periodic tasks with one preemption
+edge, not a general schedulability theorem. It is enough for this task set because there are
+only two tasks and the higher one does not preempt itself.
+
+Chapter 2. Design of the Two Controllers
+
+44
+
+The bound fails if the vision budget is wrong. A frame that takes 80 ms blows the 50 ms
+period and steals the margin from the search. The fault rule already treats a late feature
+datagram as a hold on B. The additional requirement is that a frame which overruns is
+aborted at 30 ms and published as a miss, rather than allowed to complete late and then
+count as a success. Aborting a late frame is what keeps the 70 ms bound true. Completing
+it “just this once” is how the corn vision meter lost the 6 km/h case [12].
+0
+
+50
+
+100
+
+150
+
+200
+ms
+
+vision
+search, preempted
+search resumes
+Worst release: search starts as vision ends, and is cut by the next frame.
+
+Figure 2.4: Worst-case phasing used for the 70 ms response bound. Vision (top) preempts the
+factor search (bottom). The search still finishes inside the 200 ms deadline.
+
+2.2.13
+
+A slice of the cost grid
+
+The search is small enough that a slice of it can be printed. Table 2.3 evaluates Equation (2.37) at the nominal red-oak diameter 20.5 mm with coefficient of variation 0.15,
+terrain frequency 6 Hz, slip 0.02, vision flag 0, and the predictor’s terrain weight. The
+predictor does not use αiso = 0.55. It uses
+feff =
+which is a terrain coefficient
+
+√
+
+q
+
+2
+0.35 fdist
++ f 2,
+
+(2.49)
+
+0.35 ≈ 0.59, slightly more pessimistic than the plant coeffi-
+
+cient 0.55. The pessimism is intentional in the script that produces Chapter 3: the search
+plans for a worse mount than the plant applies. The difference is small. It is recorded here
+so that a reader who recomputes feff with 0.55 and does not match a grid point knows
+which constant moved.
+Table 2.3: Predicted cost J for nominal red oak at a 6 Hz terrain frequency. Lower is better.
+Vacuum is in kPa and frequency in Hz.
+
+f
+
+P =0
+
+P =1
+
+P =2
+
+P = 3.5
+
+P =5
+
+3
+6
+9
+12
+
+3.052
+2.844
+2.171
+3.219
+
+3.157
+2.942
+2.255
+3.300
+
+3.267
+3.046
+2.346
+3.387
+
+3.443
+3.213
+2.494
+3.529
+
+3.631
+3.394
+2.657
+3.685
+
+Chapter 2. Design of the Two Controllers
+
+45
+
+Every row prefers P = 0. The vacuum term in Equation (2.26) has no benefit at ν = 0
+for this diameter, and the price 0.01 per kilopascal makes a useless vacuum strictly worse.
+The best printed point is 9 Hz and 0 kPa, with J = 2.171. Twelve hertz is worse than
+√
+√
+3 Hz because feff crosses the 10 Hz anchor: 0.35 · 36 + 144 = 156.6 = 12.5 Hz. Nine
+√
+hertz stays under it: 0.35 · 36 + 81 = 9.59 Hz. The Monte Carlo runs select this same
+corner for mild red oak, so the printed slice and the long runs agree on the nominal lot.
+The harsh slice is a near-tie, and the thesis should say so rather than invent a wide
+margin. At fdist = 16 Hz and P = 0, the same nominal diameter gives J(3) = 3.052
+and J(9) = 3.052, equal to three digits, with 9 Hz lower only in the fourth digit (3.0521
+against 3.0522). Four hertz and 8 Hz are worse, near 3.10 and 3.12. The agitation credit
+of sitting on f ⋆ ≈ 9.85 Hz almost cancels the harshness of pushing feff to about 13 Hz.
+The recorded harsh-case run in Chapter 3 selected 3 Hz because the search sees the sample
+mean of the drawn diameters, not the nominal 20.5 mm, and because a tie keeps the earlier
+grid point only when the later point is not strictly smaller. A sample mean a few tenths
+of a millimetre off nominal is enough to break a tie this close. The design consequence
+is practical. Under a 16 Hz disturbance the coordinator does not have a deep preference
+between a quiet command and the preferred agitation. Both beat the middle frequencies.
+A later bench that measures a true preference should replace the harshness coefficient
+before anyone treats 3 Hz as a unique optimum.
+
+2.2.14
+
+Actuator lag and the slew limit
+
+The grid writes a step. The shaker and the regulator do not. Each is modelled, for the
+purpose of the slew numbers only, as a first-order lag
+τa f˙a + fa = f,
+
+τa Ṗa + Pa = P,
+
+(2.50)
+
+with τa ≤ 40 ms so that a 2 Hz step is 95 percent complete in about 120 ms and a 1 kPa
+step likewise. The requirement stated in the stacking list was 150 ms. The lag model
+shows that the requirement is a time-constant requirement of about 40 ms, not a vague
+“fast enough”. A shaker amplifier that is fast in current and slow in mechanical stroke
+will violate it even if the electrical specification looks fine. The stroke is the quantity in
+Equation (2.23).
+The slew limit of 2 Hz per 200 ms step is 10 Hz per second, which a 40 ms lag can
+
+Chapter 2. Design of the Two Controllers
+
+46
+
+follow. The limit is therefore not hiding an actuator that cannot keep up. It is preventing
+the search from chattering between the 3 Hz and 9 Hz near-tie when the sample mean
+jitters. Without the slew, a mean that wanders by a tenth of a millimetre would bang
+the shaker between two equally good commands. With the slew, a change from 9 Hz to
+3 Hz takes three periods, 0.6 s, which is about two or three cell events at 4.4 seeds/s. The
+seeds in between see an intermediate frequency. That intermediate is one of the middle
+frequencies the grid dislikes. The estimation does not simulate the slew. It applies the
+chosen command for the whole run, because each reported case has constant lot statistics
+and a constant disturbance. A bout in which the disturbance steps from 6 Hz to 16 Hz
+would pay a short transient the tables do not contain. The transient is bounded by 0.6 s of
+travel, about 0.7 m at 1.1 m/s, which is three target spacings. Three spacings are visible
+on a belt and invisible in a 4,000-event mean.
+
+2.2.15
+
+Failure modes of the stack
+
+Table 2.4 lists the failures that change a command, the detection that is actually implemented by the rules already stated, and the command that remains. A failure with no
+detection does not belong in a table that pretends to be an analysis. Those failures are
+listed as undetected on purpose.
+Two rows deserve a longer remark because they are the ones a demonstration could hide.
+A stuck radar is worse than a dead radar. The dead case is specified: after 200 ms the
+command is held and then ramped to zero. A stuck high case looks like a healthy sensor
+that believes the tractor is moving. Seeds are metered onto a machine that is standing
+still, which piles wooden seeds in one spot. The design as written does not detect this.
+A revision that compares radar speed with the undriven-wheel encoder, and trips when
+they disagree by more than 15 percent for half a second, would close it. The revision is
+named here so that the gap is part of the design record rather than a surprise on the first
+stationary test.
+A camera scale error is the other silent fault. The bridge index moves when the millimetre scale moves, because oversize in Equation (2.3) is a ratio of diameters. A scale
+that reads 10 percent high makes a 22 mm seed look like a 24 mm seed and under-calls the
+bridge. The disk calibration catches a scale error at service. Nothing catches it after the
+camera is knocked. A cheap in-bout check is the diameter implied by the tube-gate pulse
+width, which depends on seed size and not on the camera. The design logs the pulse width
+
+Chapter 2. Design of the Two Controllers
+
+47
+
+Table 2.4: Failures, the detection the design really has, and the command that remains.
+
+Failure
+
+Detection
+
+Late vision frame Datagram age
+Wrong scale fac- Not detected online
+tor in the camera
+Shaft
+encoder Two missed periods
+stop
+Radar stuck at a Not detected online
+high speed
+Late factor search
+Search and plant
+disagree on α
+Vacuum
+transducer offset
+Depth
+potentiometer bias
+Isolator collapse,
+α→1
+
+Command that remains
+Last B, then decay after 150 ms
+A biased B. Caught only by the
+disk calibration
+Motor current removed
+
+ω ⋆ follows the stuck value. A separate timeout on acceleration would
+be a revision
+Deadline at 200 ms
+Previous (f, P )
+Not a failure. The Search is pessimistic relative to the
+0.35 weight is speci- plant
+fied
+Zero check at start A drifting offset reintroduces douonly
+bles. No in-bout zero
+Rail calibration only A constant depth bias. Spacing
+scatter grows through εh
+Only if fdist on the The search sees the harsher freframe rises and the quency and moves f
+search reacts
+
+and does not compare it. The comparison is a consistent extension of the “tube gate is
+a logger” rule: the logger can audit the camera without entering the constraint. Putting
+the pulse width inside B would couple a post-release sensor into a pre-release decision and
+would reintroduce the delay the cascade was built to avoid.
+
+2.2.16
+
+Quantization, one cell period, and a two-step horizon
+
+The shaft encoder sets a floor under the fuzzy loop that the continuous model hides. A
+4096-count encoder on the cell shaft has an angular quantum of 2π/4096 = 1.53×10−3 rad.
+At the 10 ms sample the corresponding speed quantum, if speed is a first difference, is
+0.153 rad/s. The nominal red-oak command is 2.30 rad/s, so the quantum is 6.7 percent of
+the command if the difference is taken raw. That is coarser than the 0.012 tracking residual
+g The feed computer
+used in the estimation, and it would dominate the fuzzy input ∆e.
+
+therefore does not differentiate adjacent samples alone. It fits speed over a window of
+Nw = 8 samples, 80 ms, which divides the quantum by 8 and yields a speed quantum of
+about 0.019 rad/s, just above the residual and just below the scale of ∆e that moves a
+membership from zero to small. Eighty milliseconds is 0.44 of the motor time constant,
+so the window adds lag of that order. The derivative filter of Equation (2.43) and the
+
+Chapter 2. Design of the Two Controllers
+
+48
+
+window are redundant if both are naive. The specification is that the windowed speed
+is the feedback ωn , and the derivative filter runs on the tracking error of that alreadywindowed speed. A second difference of the raw counts is not computed.
+The same 80 ms window is the right size relative to a cell. At ω = 2.30 rad/s a 12-cell
+wheel presents a new cell every 2π/(12ω) = 0.228 s. The vision period, 50 ms, samples
+the throat about four times per cell. The motor period samples it about 23 times. The
+factor period, 200 ms, is almost one cell. A constraint that changes σ therefore takes
+effect on the cell that is about to be filled, not on a cell that has already released. This
+timing is the reason the camera looks at the throat rather than at the tube. A tube gate
+0.3 s later, from the flight calculation, reports a cell that the wheel has already left. Four
+vision samples per cell is also the budget inside which a single aborted frame, the 30 ms
+abort of the response-time argument, still leaves three frames. The bridge index is a vote
+across those frames through the one-pole filter of Equation (2.4), whose 0.92 coefficient
+remembers roughly twelve frames. A one-frame lie decays. A real bridge, present for a
+third of a second, accumulates.
+A two-step horizon is the natural objection to the one-step grid. Suppose the disturbance is known to step from 6 Hz to 16 Hz one period from now, and the command is 9 Hz.
+A two-step search could move toward 3 Hz on this period, arriving as the step arrives,
+whereas the one-step search waits to see 16 Hz and then slews. The value of that preview
+is the cost of three spacings of intermediate frequency, which the slew analysis already
+bounded at about 0.7 m of travel. Preview would save that 0.7 m. It would require a
+forecast of terrain frequency. The inertial unit’s one-second Fourier window is a report
+of the past second, not a forecast of the next 200 ms. Using it as a forecast would be a
+model of the ground that this machine does not have. The one-step search is the controller
+that matches the sensor. A terrain map from a previous pass would justify a two-step,
+or a longer, horizon, and would be a different study, closer to the prescription maps of
+variable-rate cereal planting than to a single-row hardwood meter [58, 59, 15].
+The small-gain view of the constraint is similar in spirit. The map from σ to the next
+bridge index is not known as a transfer function. What is known is a bound. The scale
+cannot fall by more than 0.22, and the occupancy filter cannot move by more than 0.08 of
+its input per vision sample. A scale cut therefore cannot chase its own tail inside one cell
+period: the wheel slows, the filter moves a small step toward the clear-throat target, and
+the next σ is computed from a B that has not yet fully forgotten the bridge. The loop can
+
+Chapter 2. Design of the Two Controllers
+
+49
+
+oscillate only if B itself oscillates, which a real arch does not do at 20 Hz. The cap and
+the filter are the small-gain ingredients. They are not a computed gain margin. They are
+the structural reason a margin is plausible, and they are the knobs a bench would turn if
+the wheel hunted.
+
+2.2.17
+
+Rates and power a builder can check with a stopwatch
+
+The kinematic numbers are simple enough to audit without the simulator, and they should
+be audited, because every later index is a fraction of them. At v = 1.10 m/s and Xt =
+0.25 m the target is λ⋆ = 4.40 seeds/s, which is 264 seeds per minute and 15,840 seeds
+per hour. A 15 litre hopper holding acorns at a bulk density near 0.6 kg/L holds about
+9 kg. Red-oak acorns near 4.6 g give roughly 2,000 seeds in a full hopper, which is
+2000/4.40 ≈ 455 s, or seven and a half minutes, of continuous metering. The hopper is a
+short-bout vessel on purpose. A refill warning at 15 percent mass fires with a little more
+than a minute left, which is enough to stop at the end of a pass and not enough to forget.
+Pin-oak seeds are lighter, so the same mass is more seeds and a longer bout. Bur oak is
+the opposite. The warning is on mass, not on a seed count, because the load cell does not
+know the species and the camera’s count of the throat is not a count of the hopper.
+The shaft speed that serves this rate, with twelve cells and a unit fill, is 22.0 r/min. A
+builder with a tachometer and an empty throat can command that speed and watch the
+encoder. The check does not need seeds. If the tachometer reads 22 r/min while the radar
+reads 1.10 m/s and the set spacing is 0.25 m, Equation (2.5) is implemented. Seeds are
+what test the fill, not the arithmetic.
+The energy proxy can be audited in the same spirit. The script accumulates 0.08ω 2 +
+0.012f 2 +0.02P 2 once per cell event. At the mild red-oak both-mode point, ω = 2.30 rad/s,
+f = 9 Hz, and P = 0, one event costs
+0.08 · (2.30)2 + 0.012 · 92 + 0 = 0.423 + 0.972 = 1.395,
+
+(2.51)
+
+which matches the table entry 1.39. The shaker term is 70 percent of the proxy. At the
+harsh-case command f = 3 Hz the shaker term falls to 0.012 · 32 = 0.108, and the wheel
+term is unchanged, so the event cost falls near 0.53, again the order of the harsh-case table.
+The proxy is not a wattmeter. It is a weighted sum that makes this comparison obvious:
+the camera and the fuzzy increments do not appear in it, and the shaker does. A builder
+
+Chapter 2. Design of the Two Controllers
+
+50
+
+who later measures current will not reproduce 1.39. A builder who finds that the shaker
+current is a small fraction of the wheel-motor current has discovered that the prices in J
+were in the wrong ratio, and should raise the frequency price or lower the wheel weight
+before trusting the quiet-versus-loud tie. The functional form is the part worth keeping.
+The coefficients 0.08, 0.012, and 0.02 are placeholders until a current clamp replaces them.
+Cell time and computer time meet in one inequality that is worth writing as a release
+check. A cell period is 0.228 s at the nominal rate. Inside that period the feed computer
+runs about 23 motor steps, the vision computer owes four frames, and the factor computer
+owes one search. The sums of the budgets are 23 × 2 ms, 4 × 30 ms, and 40 ms, which are
+46 ms, 120 ms, and 40 ms. The vision budget sum, 120 ms, fits in 228 ms with 108 ms
+to spare, but only if the four frames do not stack. They do not stack if each frame is
+aborted at 30 ms, because 4 × 30 = 120 < 228 and the frames are released 50 ms apart.
+The inequality 4 × 30 ms < 0.228 s is the release check for the nominal speed. It fails
+at a shaft speed high enough that the cell period drops below 120 ms, which would be
+ω > 2π/(12 · 0.120) = 4.36 rad/s, or about 42 r/min, corresponding to v = 2.08 m/s at
+this spacing. The machine is not specified to run there. The inequality says why. It is
+the same lesson as the 6 km/h reversal on the corn meter, written as a speed limit that
+belongs to the vision budget rather than to the agronomy [12].
+
+2.2.18
+
+What an empty cell does to the count
+
+The rate audit above assumes every cell releases one seed. The indices exist because that
+assumption fails, and the failure has a counting form that is easy to misread on a display.
+Suppose that over N cell passages the machine travels N Xt /σ and releases Ns singles
+and Nd doubles, with the rest empty. The number of seeds is Ns + 2Nd . The number of
+positive spacings is one less than the number of seeds, which for a long run is essentially
+Ns + 2Nd . A double contributes a short spacing and also splits what would have been one
+interval into two, so it increases the spacing count. A miss contributes no spacing of its
+own. It lengthens a neighbour. The miss index is therefore not 100(N − Ns − Nd )/N .
+That ratio is the empty-cell rate. The miss index is the fraction of observed spacings that
+exceed 1.5Xt . If empties arrive in isolation, each empty lengthens one spacing from about
+Xt to about 2Xt and the miss index is close to the empty-cell rate. If two empties arrive
+together, one spacing of about 3Xt replaces two empty cells in the count, and the miss
+index, which divides by the number of spacings rather than by the number of cells, moves
+
+Chapter 2. Design of the Two Controllers
+
+51
+
+differently from the empty-cell rate. The plantation looks worse. The percentage may
+rise or fall. The estimation’s event model places isolated empties more often than bursts,
+because each event is drawn independently. A real arch lasts for several cells and would
+burst. The bridge constraint is the mechanism aimed at that burst: it slows the wheel
+while B stays high, which is a run of cells rather than one draw. The independent-draw
+estimation therefore understates the value of the constraint on true arches and overstates
+the chance that a single slow cell is enough. That bias is a reason the both-mode gain
+on bur oak in Chapter 3 should be read as a lower bound on what a persistent bridge
+would give the constraint to do, and as an upper bound on how tidy the resulting spacings
+would look. Independent draws make tidy tables. Arches make clumps. The controller is
+designed for the clumps. The table is computed from the draws. Both facts belong in the
+design record so that a belt test full of clumps is not scored as a refutation of a table that
+assumed none.
+A twenty-cell strip makes the distinction numerical. Write E for an empty cell and S
+for a single, and ignore doubles. The release pattern
+SSESSSEESSSSESSSSSES
+has five empties in twenty cells, an empty-cell rate of 25 percent. The spacings, in units
+of Xt and dropping the final open end, are approximately
+1, 2, 1, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 2.
+Fourteen spacings follow. Four of them exceed 1.5, so the miss index is 4/14 ≈ 29 percent,
+against an empty-cell rate of 25 percent. The denominator shrank, because an empty
+cell does not create a spacing of its own, and the double empty became one spacing of 3
+rather than two entries. A display that shows 25 percent skips from the tube gate, which
+counts empties, and a display that shows 29 percent miss index from a belt, which counts
+spacings, are both right. They are not the same statistic. The estimation reports the
+belt statistic, Equations (1.7)–(1.9). The tube gate in the build reports the empty-cell
+rate through Equation (2.16). An operator who treats them as one number will “tune”
+a controller that is already consistent. The design keeps them on different computers for
+that reason, not only for the deadline.
+
+Chapter 2. Design of the Two Controllers
+
+2.2.19
+
+52
+
+What the extra analysis changes
+
+None of these calculations change the five modes of the estimation. They change what
+a disagreement with the estimation would mean. A two-centimetre bias is flight, not a
+bad gain. A tie between 3 Hz and 9 Hz is a flat cost, not a bug in the arg-minimum. A
+vision overrun that is allowed to finish is a broken response-time bound, not a mysterious
+rise in misses. The controllers remain the constraint of Equation (2.7) and the grid of
+Equation (2.37). The surrounding arithmetic is the part that makes those two equations
+implementable on the two computers of Section 3.1 without confusing their faults with
+their tuning.
+
+Chapter 3
+System Build and Estimation
+The controllers of Chapter 2 need a machine that can produce their signals and a numerical
+procedure that can score them without pretending to be a field season. Section 3.1 specifies
+that machine as a system build: mechanics only so far as the signals require, then sensors,
+computers, timing, and calibration. Section 3.2 integrates the same models the controllers
+use and reads the indices defined in Section 1.3.
+
+3.1
+
+System build
+
+3.1.1
+
+What the build is for
+
+The build is a single-row wooden-seed planter whose information architecture matches
+Figure 2.3. It is specified here as an engineering description, not as a fabricated prototype.
+No mass, no weld, and no photographed assembly is claimed. The description is detailed
+because a control design that does not name its sensors cannot be implemented, and
+because several modelling assumptions in Chapter 2 are assumptions about hardware.
+The isolator attenuation αiso = 0.55, the depth-noise reduction from 6.5 mm to 1.2 mm,
+and the refusal to take speed from a driven wheel are all build decisions. If a later prototype
+changes them, the estimation has to be rerun. That dependency is intentional.
+The agronomic envelope is the one already used in the hardwood trials and in the
+direct-seeding review. Forward speed is 0.6 to 1.2 m/s. Target spacing is 0.25 m, which is
+a restoration spacing rather than a nursery-bed spacing of several seeds per foot [17, 1].
+Target depth is 30 mm, inside the band in which acorns are covered without being buried
+
+53
+
+Chapter 3. System Build and Estimation
+
+54
+
+past their reserves. The cell mouth is 24 mm, chosen as a compromise around red oak and
+knowingly wrong for pin oak and bur oak. The control system is the means of living with
+that compromise. A family of interchangeable cells would also work, and would not need
+this thesis. The build keeps one cell in order to force the controllers to do the work.
+
+3.1.2
+
+Mechanical path of a seed
+
+Seeds sit in a hopper of about 15 litres, enough for a short bout at 4.4 seeds/s without a
+refill and small enough that the changing head of seeds is a real load disturbance on the
+wheel. The hopper floor is a short vibratory tray driven by an electromagnetic shaker.
+The tray discharges into a throat that is the camera’s window. Below the window, a
+12-cell wheel of 180 mm pitch diameter picks seeds from the throat and carries them to
+a release at the bottom of the housing. Elastomer inserts in the cells accept a diameter
+band around 24 mm without machining a new wheel for each species. They do not, and
+cannot, accept a 32 mm acorn and a 15 mm acorn with equal fill. That is the residual the
+controllers are scored on.
+A low-pressure port opens onto the cell during the rising half of the rotation and is
+vented before release. The port is the assist vacuum. Its regulator must be able to hold
+0 kPa, meaning the port is open to atmosphere, because the cost will select that point
+for small seeds. A regulator that cannot go to zero is the wrong part, even if its span is
+otherwise impressive. The maximum used by the grid is 5 kPa, and the hardware stop is
+8 kPa, above the grid so that a faulted command still has a relief valve under the cereal
+pressures that this machine deliberately does not use [9, 35].
+From the release, a smooth tube of 40 mm inside diameter drops the seed to the opener.
+The tube is straight enough that a photoelectric gate sees one chord of the seed, and short
+enough that time of flight at a drop of 0.4 m is under 0.3 s. That delay is why the gate
+is a logger and not the bridge sensor. The opener is a narrow shoe behind a ripper point,
+the arrangement Wells adopted after a plain no-till opener failed to penetrate spoil [16].
+Depth is set by a linear actuator against a gauge wheel, with a potentiometer on the pivot.
+A press wheel closes the slot. The press wheel is not controlled. Its load is a spring.
+The vibratory tray, the cell wheel, the vacuum port, and the opener are the four actuated
+elements. Everything else is structure. The structure that matters to the model is the
+mount between the seed box and the frame. Rubber isolators are specified at the box feet,
+and the coordinator-on case takes their attenuation of terrain frequency as αiso = 0.55
+
+Chapter 3. System Build and Estimation
+
+55
+
+in Equation (2.23). The coordinator-off case bypasses the assumption by using αiso = 1,
+which represents either locked mounts or a frame that was never isolated. This is a coarse
+representation of a transfer function. It is enough to let the cost discover that adding
+shaker frequency on top of an already harsh frame is expensive in misses. A measured
+transmissibility would replace the constant 0.55 without a change to the grid search.
+Single row, 0.6–1.2 m/s, Xt = 0.25 m
+Hopper
+Shaker tray
+f
+
+Throat window
+camera
+
+12-cell wheel
+ω, vacuum P
+Tube and
+light gate
+
+Isolated box mount, αiso
+
+Opener
+depth h
+
+Gauge wheel and press wheel
+
+Figure 3.1: Seed path assumed by the controllers. Only frequency, vacuum, wheel speed, and
+depth are commands. The light gate counts seeds after release.
+
+3.1.3
+
+Sensor list and what each signal is allowed to do
+
+Table 3.1 is the interface control document in miniature. A signal that is not in the table
+does not enter a control law in this design. Adding a signal later is a revision, not a silent
+improvement, because the estimation will not have seen it.
+The inertial unit is not a navigation system. A short Fourier magnitude, updated every
+200 ms on a one-second window of vertical acceleration, supplies the peak frequency inside
+2 to 30 Hz. That peak is fdist in Equation (2.23). If the spectrum is flat, the factor loop
+uses the last peak and sets a stale flag. A stale disturbance frequency freezes the frequency
+command and still allows vacuum to be optimised, because vacuum does not depend on
+feff except through the shared cost.
+The camera calibration is a scale factor from pixels to millimetres, obtained from a
+20 mm disk placed in the throat. Equivalent diameter in Equation (1.6) inherits that
+scale. A 5 percent scale error moves a 20 mm seed by 1 mm, which is small beside the
+gap between pin oak and bur oak and is large beside a claim of millimetre metrology. The
+design does not make a millimetre claim. It claims that the bridge index rank-orders a
+packed throat against a flowing one.
+
+Chapter 3. System Build and Estimation
+
+56
+
+Table 3.1: Sensors, rates, and the loop allowed to consume each signal.
+
+Sensor
+
+Period
+
+Consumer
+
+Use
+
+Radar
+or
+undriven-wheel
+encoder
+Cell-wheel
+encoder
+Throat camera
+
+10 ms
+
+Feed loop
+
+Ground speed v in the kinematic law
+
+10 ms
+
+Feed loop
+
+50 ms
+
+Shaft speed ω for the fuzzy
+PID
+¯ cd , ρ, B
+com- Features d,
+
+Vision
+puter
+Logger only
+
+Tube light gate
+
+event
+
+Opener
+poten- 10 ms
+tiometer
+Inertial unit on 20 ms
+the frame
+Shaker current
+10 ms
+Vacuum
+trans- 20 ms
+ducer
+Hopper load cell
+100 ms
+
+3.1.4
+
+Depth servo
+
+Delivered-rate estimate, not
+the constraint
+Hold h⋆ = 30 mm
+
+Factor loop
+
+Dominant terrain frequency
+fdist
+ampli- Track the frequency command
+
+Shaker
+fier
+Regulator
+
+Logger only
+
+Track P , including the zero
+point
+Refill warning below 15 percent mass
+
+Computers and the bus between them
+
+Two processors are specified, matching the deadline split.
+The feed computer is a small microcontroller with a hardware encoder interface and
+a 10 ms timer interrupt that cannot be disabled by the communication routine. It runs
+Equation (2.12) and Equation (2.7). It receives feature datagrams and factor-health bits.
+It does not decode images. Its worst-case execution for the control step is required to be
+under 2 ms, leaving 8 ms of idle time inside the period. That idle time is the margin
+Borja’s combined processor did not have [12].
+The vision and factor computer is a single-board processor with a camera interface.
+Vision and the grid search share it because both are slow relative to the motor and both
+tolerate a missed deadline. They do not share a thread. Vision is a high-priority periodic
+thread at 50 ms. The grid search is a lower-priority thread released every 200 ms. If the
+search is still running when the next vision frame is due, the frame runs and the search
+continues. If the search is still running at the next 200 ms boundary, its result is discarded
+and the previous (f, P ) is held. Discarding a late result is safer than applying a result
+computed from a stale d¯ that has since been replaced. The search was sized at 55 costs so
+
+Chapter 3. System Build and Estimation
+
+57
+
+that a discard is a fault, not the normal path.
+¯ cd , ρ, B,
+The datagram between the boards is a fixed 32-byte record: time stamp, d,
+vision-health, factor-health, f , P , and a checksum. A failed checksum is treated as a
+missed vision frame and follows the hold-and-decay rule. There is no dynamic allocation
+in the receive path. An ISO 11783 implement bus can carry the spacing set-point Xt from
+a tractor terminal in a later integration [60]. The control laws do not read that bus in the
+design scored here. Xt is a stored parameter.
+Power is a 12 V machine bus with a separate regulator for the cameras and processors,
+so that a shaker current spike does not brown out the microcontroller. The shaker amplifier
+and the wheel motor have their own drivers and their own current limits. The wheel-motor
+current limit is set so that a jammed cell stalls the motor and raises the encoder-loss fault,
+rather than shearing the elastomer. That current limit is a mechanical-protection setting.
+It is not a control gain.
+
+3.1.5
+
+Software tasks
+
+The tasks and their budgets are listed in Table 3.2. Budgets are requirements on a future
+implementation. They are consistent with the periods in Table 2.2. They have not been
+measured on a board in this study.
+Table 3.2: Tasks, periods, and the action on a missed deadline.
+
+Task
+
+Period
+
+Budget
+
+On a missed deadline
+
+Motor control
+
+10 ms
+
+2 ms
+
+Vision features
+
+50 ms
+
+30 ms
+
+Depth servo
+
+10 ms
+
+1 ms
+
+200 ms
+
+20 ms
+
+200 ms
+100 ms
+
+40 ms
+10 ms
+
+Stop the wheel if two periods are
+missed
+Feed loop holds B, then decays
+it
+Hold last valve or motor command for 50 ms, then freeze
+depth
+Freeze f , continue vacuum
+search
+Keep previous feasible (f, P )
+Drop the oldest log block
+
+Disturbance
+trum
+Factor grid
+Logger
+
+spec-
+
+The logger is the only task allowed to drop data. Control tasks hold a feasible command
+or they stop the actuator. This is the operational content of requirement 9 in Section 1.3.
+It is also the reason the factor search was not placed inside the motor interrupt. An
+occasional 40 ms search is acceptable on its own core and unacceptable inside a 10 ms
+
+Chapter 3. System Build and Estimation
+
+58
+
+interrupt.
+State machines for the feed faults were listed in Section 2.1. The factor task adds
+two states. In search, it publishes a new grid minimiser after the slew limit. In hold, it
+publishes the previous command and lights a lamp. Entry to hold is a late search, a stale d¯
+older than 500 ms, or a wheel-stopped bit from the feed computer. Exit from hold requires
+three healthy cycles, so a flickering health bit does not chatter the shaker.
+
+3.1.6
+
+Calibration procedure
+
+Calibration is a procedure, not a learning algorithm. It is specified because the features and
+the depth servo are meaningless without it. The order matters. A scale factor computed
+before the camera is clamped will be repeated after the next service and will silently shift
+B.
+1. Clamp the camera and the lamp. Place the 20 mm disk in the throat on the centreline. Record the equivalent diameter reported by Equation (1.6) and set the
+millimetre scale so that the report is 20 mm. Repeat at 10 mm left and right of
+centre. Reject the mount if the three reports differ by more than 0.6 mm.
+2. Empty the throat. Record the residual image used by the background subtraction.
+Confirm that occupancy reads below 0.02.
+3. Command the wheel at 15 r/min with an empty throat. The shaft encoder and a
+hand tachometer shall agree within 0.3 r/min. This checks Equation (2.5)’s sensor,
+not the seed path.
+4. Command f from 2 to 12 Hz in 2 Hz steps against a strobe or a frequency output
+of the amplifier. The inertial unit, mounted for this step on the tray rather than on
+the frame, shall report the same peak within 0.5 Hz. Then return the unit to the
+frame.
+5. Command P at 0, 2, and 5 kPa. The transducer shall read within 0.3 kPa. The zero
+command shall read below 0.2 kPa. A zero that actually holds 1 kPa will bias the
+cost toward doubles on small seeds.
+6. Set the opener on a flat rail and command 20, 30, and 40 mm. The potentiometer
+reading shall be within 1.5 mm. This is the sensor error. The 1.2 mm standard
+deviation used in the estimation is the closed-loop residual about the set-point, which
+
+Chapter 3. System Build and Estimation
+
+59
+
+includes rail roughness in the model and is not the same number as the calibration
+tolerance.
+7. Drive the unit on a hard surface at a constant 1.0 m/s and compare radar speed
+with distance over time. The mean error shall be below 2 percent. Slip of a driven
+wheel is not a failure of this check. A difference between radar and the driven wheel
+is the slip the control law is there to ignore.
+No seed is required for these steps. A seed check is a bench experiment and sits outside
+this manuscript. The estimation does not use the tolerances as random errors except for
+the depth residual and the slip model already stated. Adding the calibration tolerances as
+extra noise would be a straightforward sensitivity run. It was not the run reported below.
+
+3.1.7
+
+Safety interlocks
+
+The wheel motor is disabled when the opener is raised, so that a headland turn does not
+drill seeds onto the surface. The shaker is disabled when the hopper mass is below the
+refill threshold, so that an empty tray is not driven at 10 Hz for a bout. The vacuum
+pump or regulator is disabled at the same time. These interlocks are combinational logic
+on the feed computer, independent of the factor search. A software fault in J cannot leave
+the shaker running on an empty machine once the load cell has crossed the threshold. The
+load cell itself can fail. A stuck high reading leaves the shaker enabled, which is the worse
+direction for noise and the safer direction for not silencing a full hopper. The failure is
+detected by the operator from the mass display, not by a second estimator.
+
+3.2
+
+Estimation
+
+3.2.1
+
+What is being estimated
+
+The estimation integrates the event model of Section 2.2.2 over long sequences of seeds.
+It asks how the indices move when the feed law and the factor law are switched on and
+off. The plant and the coordinator’s predictor are the same logistic map. The Monte
+Carlo still has private randomness: each event draws a diameter from the lot, a slip, and
+a depth error. The coordinator sees only the lot mean and coefficient of variation. The
+feed constraint sees a filtered occupancy state, not the next diameter. The comparison
+
+Chapter 3. System Build and Estimation
+
+60
+
+is therefore a comparison of information and of actions, not a replay of one open-loop
+trajectory.
+Five modes are defined.
+1. Ground. The wheel is geared to the driven wheel. The speed scale equals 1−s. Slip
+has mean 0.07 + 0.012 times slope in degrees. Factors are fixed at f = 0, P = 3 kPa,
+and a passive depth error of standard deviation 6.5 mm. Terrain enters with αiso = 1.
+2. PID. Electronic tracking of ω ⋆ from radar speed. The scale is 1 plus a small tracking
+residual of standard deviation 0.012. No vision constraint. Factors remain at the
+ground-drive constants. Slip is rejected except for a quarter of the ground-drive slip
+passed into the probability map, representing residual speed error.
+3. Vision. The PID mode plus the bridge constraint of Equation (2.7). Factors remain
+fixed. This mode is the first innovation alone.
+4. MPC. The PID mode plus the grid minimiser of Equation (2.37), the isolated mount
+αiso = 0.55, and the tight depth residual of standard deviation 1.2 mm. Vision is
+off. This mode is the second innovation alone.
+5. Both. Vision and MPC together.
+Each case runs 4,000 cell events. The random generator is the NumPy generator with
+seed 20261029 for the main table, and with seeds 20261029 + 17r for twelve repeats of
+the mixed-lot gain. The script that implements the modes is simulate_estimation.py,
+stored with this manuscript. A reimplementation that follows Section 2.2.2 and the mode
+list above should match the table to sampling error. The script is the definition of the
+sampling error that was actually used.
+Lots are log-normal in diameter. Pin oak has mean 15 mm and coefficient of variation
+0.12. Red oak has 20.5 mm and 0.15. Bur oak has 32 mm and 0.20. The mixed lot has
+22 mm and 0.32, which is a stand-in for a hopper that was not cleaned between species.
+Scenarios cross these lots with speed, slope, and a terrain frequency. The eight scenarios
+are the rows of the tables in this section. They were chosen to probe the requirements: a
+mild red-oak baseline, a slope, a harsh vibration, a small seed, a large seed, and a mixture.
+Indices follow Equations (1.7)–(1.11). Positions are accumulated by advancing Xt /σ at
+each event, placing one seed on a single, placing two seeds 0.22Xt apart on a double, and
+placing nothing on a miss. Scatter from Equation (2.28) is added to the placed positions.
+
+Chapter 3. System Build and Estimation
+
+61
+
+Spacings are the positive differences of the sorted positions. This construction is how
+a miss becomes a gap near 2Xt and a double becomes a short gap, which is what the
+Kachman indices count [52, 53].
+
+3.2.2
+
+Mild red oak
+
+Table 3.3 gives red oak at 1.10 m/s, no slope, and a 6 Hz terrain disturbance. This is the
+easiest hardwood case that is still not a maize case. The cell is only slightly large for the
+seed.
+Table 3.3: Red oak, v = 1.10 m/s, level ground, terrain frequency 6 Hz. Energy is the mean per
+event of 0.08ω 2 + 0.012f 2 + 0.02P 2 in the units of the script.
+
+Mode
+
+Qf
+
+Ground 58.58
+PID
+60.89
+Vision
+68.51
+MPC
+77.11
+Both
+88.20
+
+ηE
+
+Energy
+
+21.65 19.78 20.13 52.38
+22.50 16.61 21.20 60.97
+12.52 18.97 17.85 60.70
+11.96 10.93 16.00 76.56
+5.59 6.22 12.88 87.00
+
+0.55
+0.60
+0.60
+1.40
+1.39
+
+Imult
+
+Imiss
+
+Cv
+
+Reading down the table is the answer to the three research questions for this scenario.
+The PID mode, which only rejects slip, moves the miss index from 19.8 to 16.6 percent
+and moves efficiency from 52.4 to 61.0 percent. It does nothing for doubles. The multiple
+index stays near 22 percent because the fixed 3 kPa vacuum and the slightly large cell are
+still there. Vision cuts the multiple index from 22.5 to 12.5 percent and raises quality of
+feed from 60.9 to 68.5 percent. Efficiency does not follow. It stays at 60.7 percent, because
+some of the seeds that are no longer doubled become stretched spacings and are counted
+as misses. The miss index rises from 16.6 to 19.0 percent. That rise is the interference the
+problem statement asked to be kept visible. On this mild case it cancels the productivity
+gain of vision and leaves the quality gain.
+The factor coordinator is the large step. With vision still off, quality of feed reaches
+77.1 percent, the miss index falls to 10.9 percent, and efficiency reaches 76.6 percent. The
+grid selects f = 9 Hz and P = 0. Zero vacuum is the map refusing the cereal habit.
+Nine hertz is the preferred agitation for a 20.5 mm seed, and with isolation the effective
+frequency stays under the 10 Hz anchor. Energy rises from 0.60 to 1.40 because the shaker
+is doing the work the vacuum is no longer doing. Stacking vision on top of that regime
+cuts the multiple index further, from 12.0 to 5.6 percent, and cuts the miss index as well,
+from 10.9 to 6.2 percent. Efficiency reaches 87.0 percent. On a regime the coordinator has
+
+Chapter 3. System Build and Estimation
+
+62
+
+already made flow, the constraint is active less often in a damaging way, and the two loops
+agree. Precision stays between 13 and 21 percent in every mode, inside the 30 percent
+band. Precision is not the term that separates these designs. Misses and doubles are.
+The same lot at 0.70 m/s, still level, still at 6 Hz, is close to the 1.10 m/s table. Grounddrive quality of feed is 58.0 percent and efficiency is 51.5 percent. Both-mode quality of
+feed is 88.2 percent and efficiency is 87.3 percent. Speed, inside this narrow band, is not
+the main effect. Liu and colleagues found a clear speed effect on maize meters at field
+speeds well above this band [32]. The model does not add a further speed penalty beyond
+the scale error, so it should not be cited as a prediction of high-speed hardwood planting.
+The machine was never specified for that speed.
+Quality of feed
+
+Multiple
+
+Miss
+
+100
+
+Index (%)
+
+80
+60
+40
+20
+0
+Ground
+
+PID
+
+Vision
+
+MPC
+
+Both
+
+Figure 3.2: Red oak on level ground at 1.10 m/s. Vision trades a lower multiple index against a
+slightly higher miss index. The stacked system lowers both.
+
+3.2.3
+
+Slope and harsh vibration on red oak
+
+Slope is where the electronic drive earns its keep and where vision adds little. At 1.10 m/s
+and 12 degrees, with terrain still at 6 Hz, ground-drive quality of feed falls to 46.3 percent
+and efficiency falls to 28.9 percent. The miss index is 32.8 percent. Slip has stretched
+the spacing and the probability map has added misses. The PID mode returns the row
+to the level-ground electronic result: quality of feed 60.6 percent, efficiency 60.5 percent,
+miss index 17.2 percent. Vision reaches 68.5 percent quality of feed. MPC reaches 77.3
+percent. Both reaches 88.2 percent quality of feed and 87.1 percent efficiency. Once slip
+is removed, the slope case and the level case are the same case. That is a property of the
+model, because slope enters only through slip. A real opener would also see a change of
+draft on a slope. The build logs draft and does not control it. The estimation therefore
+
+Chapter 3. System Build and Estimation
+
+63
+
+has nothing honest to add about draft.
+Harsh vibration is a different disturbance. Table 3.4 raises the terrain frequency to
+16 Hz on level ground at 1.10 m/s, still with red oak.
+Table 3.4: Red oak, v = 1.10 m/s, level ground, terrain frequency 16 Hz.
+
+Mode
+
+Qf
+
+Imult
+
+Imiss
+
+Cv
+
+ηE
+
+f (Hz)
+
+Ground 34.47
+PID
+36.94
+Vision
+41.12
+MPC
+67.16
+Both
+72.68
+
+20.94
+21.20
+13.24
+16.28
+9.70
+
+44.59
+41.86
+45.64
+16.56
+17.62
+
+22.64
+24.24
+21.89
+18.80
+16.11
+
+17.11
+21.77
+21.99
+64.46
+64.28
+
+0
+0
+0
+3
+3
+
+Shaft-speed tracking barely moves the miss index, from 44.6 to 41.9 percent. The seeds
+are being shaken out of the fill, and the shaft is not the cause. Vision lowers doubles from
+21.2 to 13.2 percent and raises misses from 41.9 to 45.6 percent. Efficiency stays near
+22 percent. Slowing a meter that is already missing because of vibration creates longer
+gaps. This is the clearest negative result for the first innovation used alone. It matches
+the design warning: the constraint is not a substitute for a bad factor regime.
+The coordinator drops the shaker command from the 9 Hz of the mild case to 3 Hz.
+With αiso = 0.55, a 16 Hz terrain contribution and a 3 Hz command give an effective
+frequency near
+
+q
+
+(0.55 · 16)2 + 32 ≈ 9.3 Hz, just under the harshness anchor. The miss
+
+index falls to 16.6 percent and efficiency rises to 64.5 percent. Energy per event falls to
+0.53, below the PID mode’s 0.60, because the optimiser has chosen the quiet command.
+Stacking vision raises quality of feed from 67.2 to 72.7 percent and cuts doubles from 16.3
+to 9.7 percent, but efficiency does not rise. It is 64.3 percent. The extra quality is real
+and the extra planting rate is not, because the constraint still stretches some spacings. A
+user who cares about Qf turns both loops on. A user who cares only about ηE under a
+16 Hz disturbance gets essentially the whole gain from the factor loop and the isolator.
+The 3 Hz choice is not a rule written for 16 Hz. It is the grid minimum of Equation (2.37). Neighbouring commands at 2 Hz and 4 Hz were available and lost. This is
+the behaviour required by requirement 8.
+
+3.2.4
+
+Pin oak and the multiple index
+
+Pin oak at 15 mm is the small-seed requirement. At 1.10 m/s, level, 6 Hz terrain, ground
+drive posts a multiple index of 33.7 percent, a miss index of 15.7 percent, and a quality of
+
+Chapter 3. System Build and Estimation
+
+64
+
+feed of 50.6 percent. The cell is simply large. PID tracking leaves the multiple index at
+34.3 percent and raises efficiency from 54.9 to 61.6 percent by removing slip. Vision cuts
+multiples to 24.3 percent and raises quality of feed to 60.6 percent. Efficiency moves only
+to 63.8 percent. The first innovation helps, and it does not repair a 9 mm mismatch by
+itself.
+The coordinator selects 10 Hz and again 0 kPa. Quality of feed rises to 70.0 percent
+and the multiple index falls to 19.4 percent. Both loops together reach a multiple index of
+10.3 percent, a miss index of 6.3 percent, a quality of feed of 83.4 percent, and an efficiency
+of 86.5 percent. The stack is worth more here than it was under harsh vibration. Small
+seeds double because of geometry and vacuum. Vision sees the irregular occupancy that
+goes with doubles, and the coordinator has removed the vacuum that was causing them.
+Each loop’s action is aimed at the same error, so they add.
+Ten hertz is at the top of the preferred-frequency curve for a 15 mm seed after the clip
+at 11 Hz. The cost is willing to sit next to the harshness anchor when the terrain itself
+is only 6 Hz and isolation is on. It is not willing to add 16 kPa, or 50 Hz, which is the
+vegetable-seed operating point [35]. The grid’s upper pressure is 5 kPa and the optimum
+is 0. Within the model, assist vacuum is the wrong tool for this cell and this lot.
+
+3.2.5
+
+Bur oak and the miss index
+
+Bur oak is the Wells failure mode, put into the same table as the other lots [16]. The
+mean diameter is 32 mm against a 24 mm cell. No controller grows the cell. The question
+is how much of the miss index is recovered by time and by agitation.
+At 0.70 m/s, level, 6 Hz, ground drive has a quality of feed of 34.5 percent, a miss index
+of 52.3 percent, and an efficiency of 14.8 percent. PID moves these to 37.2, 50.3, and 18.4.
+Vision moves quality of feed to 40.7 percent and efficiency to 16.9 percent, with the miss
+index still at 53.5 percent. Slowing the wheel without a better fill does not place large
+seeds. It waits longer between failures.
+The coordinator selects 8 Hz and 0 kPa. Quality of feed rises to 63.1 percent, the
+miss index falls to 30.0 percent, and efficiency rises to 45.6 percent. Both loops reach
+76.9 percent quality of feed, a miss index of 19.8 percent, a multiple index of 3.3 percent,
+and an efficiency of 57.9 percent. The residual miss index near 20 percent is the honest
+limit of a 24 mm cell on a 32 mm seed inside this map. The design does not claim a
+
+Chapter 3. System Build and Estimation
+
+65
+
+maize-grade meter on bur oak. It claims a large recovery relative to ground drive, and the
+table supports that claim inside the model: the miss index is cut by more than half, and
+efficiency rises from 15 percent to 58 percent.
+The harsher bur-oak scenario adds an 8 degree slope and a 12 Hz terrain frequency
+at 1.10 m/s. Ground drive collapses to a quality of feed of 20.7 percent, a miss index of
+66.5 percent, and an efficiency of 5.0 percent. PID recovers efficiency only to 11.9 percent.
+Vision, alone, sits at 9.8 percent efficiency with a miss index of 64.1 percent. MPC reaches
+61.3 percent quality of feed and 44.0 percent efficiency at 7 Hz and 0 kPa. Both reaches
+75.4 percent quality of feed, a miss index of 21.5 percent, and an efficiency of 55.1 percent.
+The first innovation is not useless in the stack. It is useless as a remedy for this disturbance
+by itself. That sentence is the practical output of the estimation for an implementer who
+might otherwise ship the camera and leave the shaker at the factory setting.
+
+Planting efficiency ηE (%)
+
+Ground drive
+
+Both loops
+
+100
+80
+60
+40
+20
+0
+Pin oak
+
+Red oak
+
+Bur oak
+
+Mixed
+
+Figure 3.3: Planting efficiency of ground drive against both loops. Pin oak and red oak are
+the mild electronic cases at 1.10 m/s. Bur oak and the mixed lot include slope and a terrain
+frequency of 12 Hz. The bur-oak bar remains the lowest of the stacked results, which is the
+large-seed limit of a 24 mm cell.
+
+3.2.6
+
+Mixed lot
+
+The mixed lot combines a 22 mm mean with a coefficient of variation of 0.32, an 8 degree
+slope, and a 12 Hz disturbance, at 1.10 m/s. It is the scenario in which a single fixed
+setup is least defensible. Ground drive scores 36.9 percent quality of feed, 24.0 percent
+multiples, 39.1 percent misses, and 20.1 percent efficiency. PID raises efficiency to 37.8
+percent by rejecting slip and leaves multiples at 24.2 percent. Vision raises quality of feed
+to 50.4 percent, cuts multiples to 14.9 percent, and lowers efficiency to 33.5 percent. Again
+the constraint improves the composition of errors and gives back part of the rate.
+
+Chapter 3. System Build and Estimation
+
+66
+
+MPC, at 8 Hz and 0 kPa, reaches 68.0 percent quality of feed and 65.2 percent efficiency.
+Both reaches 80.7 percent quality of feed, 7.6 percent multiples, 11.7 percent misses,
+precision 13.8 percent, and efficiency 72.3 percent. Twelve repeats of this one scenario,
+with different generator seeds, give a mean efficiency gain of the stacked system over
+ground drive of 50.8 percentage points, with a standard deviation of 0.89 points. The gain
+is stable across draws because 4,000 events is a long run. It is not stable across scenarios,
+and it should not be quoted as a universal 51-point improvement. On mild red oak the
+efficiency gain is 87.0 − 52.4 = 34.6 points. On harsh red oak it is 64.3 − 17.1 = 47.2
+points. On the harsh bur-oak case it is 55.1 − 5.0 = 50.1 points, from a very low base.
+The mixed-lot repeat only says that Monte Carlo noise is not the source of the ranking.
+
+3.2.7
+
+Energy and the price terms
+
+Energy in the tables is not joules on a named motor. It is the mean per event of 0.08ω 2 +
+0.012f 2 + 0.02P 2 , evaluated in the script so that a faster wheel, a faster shaker, and a
+higher vacuum all cost something. Because the optimum vacuum is zero in every MPC
+row, the vacuum term does not drive the comparison. The shaker term does. Mild red
+oak at 9 Hz costs about 1.39 per event in the both-mode, against 0.60 for PID. Harsh red
+oak at 3 Hz costs 0.53, which is less than PID, because the wheel speed is similar and the
+shaker is quiet. The prices inside J are what allow that quiet point to win when agitation
+would push feff over 10 Hz. If the prices were removed, the grid could still avoid 10 Hz
+through the harshness term in zm . The prices matter for ties. They are not the sole reason
+the harsh-case command falls.
+A deployer who is short of electrical power learns a specific lesson. The camera and the
+fuzzy loop are cheap in this energy proxy. The shaker is the cost of the second innovation,
+and it is a cost the optimiser already turns down when the frame is doing the shaking.
+Running the shaker at 9 Hz out of habit during a 16 Hz bout would pay the energy and,
+inside the model, would also pay in misses.
+
+3.2.8
+
+Where the estimation can mislead
+
+Several readings would be stronger than the evidence.
+The plant is the predictor. A coordinator that minimises J on Π will look good when
+the world is Π. The private randomness prevents a perfect score, and the tables show
+
+Chapter 3. System Build and Estimation
+
+67
+
+residual misses above 6 percent even in the best red-oak row, but a systematic error in
+the sign of a coefficient would move the real machine in the wrong direction while these
+tables stayed flattering. The coefficients most exposed to that risk are the 10 Hz anchor,
+which was observed on rapeseed [14, 13], and the isolator constant 0.55, which was not
+observed at all. A bench measurement of acorn fill against shaker frequency on this cell
+would replace both the anchor and the Gaussian width in Equation (2.21). Until that
+measurement exists, the ranking is a design calculation.
+The camera is not simulated as an image. Occupancy is a filtered state driven by the
+rule in the script, not by rendered acorns. Occlusion, dust, and strobe failure are absent.
+The fault logic specifies what the software should do when features stop. It does not
+estimate how often they stop. Borja’s accuracy on a clean plate, a fraction of a percent of
+frames wrong, is the optimistic reference [12]. A throat of wooden seeds is a harder image
+than a painted plate hole.
+Depth noise is an independent Gaussian. Real depth error is correlated along the row,
+because the soil is correlated. Correlated error would widen the distribution of local
+spacing less than the independent model if the opener rides over a long wave, and it would
+create bursts of misses if the opener dives. The index means might move less than the
+appearance of a planted row. The estimation reports means.
+Germination, rodent take, and the difference between a spacing and a surviving seedling
+are outside the indices by the scope statement [1, 2]. A high ηE can still be a poor
+plantation. The machine-level claim stops at placement.
+The ground-drive baseline uses P = 3 kPa because that is a plausible leftover cereal
+setting, not because a hardwood manufacturer recommends it. Part of the MPC gain is
+the removal of a harmful default. If the baseline is redefined as P = 0 and f = 0 with
+electronic speed already on, the remaining gain is agitation, isolation, and depth, plus
+vision. That comparison is the PID-versus-MPC gap in the tables, not the ground-versusboth gap. On mild red oak it is 87.0 − 61.0 = 26.0 efficiency points, still large, and it
+does not depend on accusing the ground drive of a bad vacuum. On that reading the PID
+row already has the bad vacuum. The MPC row removes it. The gain is still the factor
+decision.
+
+Chapter 3. System Build and Estimation
+
+3.2.9
+
+68
+
+Answers to the research questions
+
+The questions in Section 1.3 can now be answered in the only sense this manuscript
+supports: as statements about the model.
+The feed-speed loop with a vision constraint reduces doubles beyond shaft-speed tracking. On mild red oak the multiple index falls from 22.5 to 12.5 percent. On pin oak it falls
+from 34.3 to 24.3 percent. The same loop does not, by itself, reduce misses on bur oak
+or under a 16 Hz disturbance, and it can lower planting efficiency by stretching spacings.
+The first innovation is a quality intervention with a rate side effect. It should not be sold
+as a productivity controller.
+The factor coordinator improves the indices in the regimes where tracking has little to
+offer. Under 16 Hz terrain the efficiency index moves from 21.8 percent with PID to 64.5
+percent with the coordinator, at a lower shaker command. On harsh bur oak it moves
+from 11.9 percent to 44.0 percent before vision is added. The coordinator selects zero
+assist vacuum for every lot in the grid. Within the model, the right vacuum for this cell
+is none.
+The loops interfere when the factor regime is bad, and they reinforce when the regime
+is good. Interference shows up as a quality gain without an efficiency gain: vision versus
+PID on mild red oak, and both versus MPC under 16 Hz. Reinforcement shows up as a
+gain in both indices: both versus MPC on pin oak, on bur oak, and on the mixed lot. The
+architecture did not make interference impossible. It made interference visible, because the
+two indices are published separately and because the coordinator is not allowed to assume
+that vision will hide its mistakes. That visibility is the system result. An implementer
+can turn the constraint off under a measured high terrain frequency and leave it on for a
+mixed or small-seed lot, using the same programs.
+
+3.2.10
+
+What a bench would have to show
+
+A minimal bench, if one is built from Section 3.1, would need only enough instrumentation
+to recompute Table 3.3 and Table 3.4. A sticky belt or a grease belt under the tube, a
+variable-speed belt under the wheels, and a shaker under the frame would reproduce the
+five modes [31, 26]. The acceptance test is not a single threshold. It is the ranking.
+Vision should cut the multiple index relative to PID on red oak and on pin oak. Vision
+alone should not be required to raise efficiency under a frame vibration above 10 Hz. The
+
+Chapter 3. System Build and Estimation
+
+69
+
+coordinator should select a low frequency in that case and a higher frequency when the
+frame is quiet. Both together should beat PID on bur oak by a margin large enough to see
+in a few hundred seeds, not only in 4,000. If the bench reverses the sign of the frequency
+effect, the Gaussian in Equation (2.21) is the part to refit. The cascade structure, the
+deadline split, and the separation of Qf from ηE would remain the parts worth keeping.
+Until that belt is run, the numbers in this chapter are an estimate of a design, computed
+from a map that encodes the published failure modes of hardwood metering, of groundwheel slip, of high-frequency vibration, and of a vision loop that slows the input of seeds.
+They are large enough, and consistent enough across lots, to justify the bench. They are
+not themselves the bench.
+
+3.2.11
+
+The runs that were summarised
+
+Two red-oak runs and the slope run were described in prose so that the main tables would
+stay readable. They are recorded here at the same precision as Table 3.3, because a
+summary that cannot be checked against the script is not a result. Table 3.5 collects
+them. The both-mode frequency is 9 Hz and the vacuum is 0 in the slow and slope runs,
+and 3 Hz and 0 in the harsh run already discussed.
+Table 3.5: Remaining red-oak runs. Speed is in m/s, slope in degrees, terrain frequency in Hz.
+
+Case
+
+Mode
+
+Imiss
+
+Cv
+
+ηE
+
+0.70 m/s, 0◦ , 6 Hz
+
+Ground 58.02 21.53 20.45
+PID
+60.24 21.35 18.41
+Vision
+65.58 13.27 21.16
+MPC
+77.49 12.09 10.42
+Both
+88.17 5.84 5.99
+
+19.45
+21.44
+18.12
+16.11
+13.09
+
+51.45
+59.48
+57.41
+77.68
+87.31
+
+1.10 m/s, 12◦ , 6 Hz
+
+Ground
+PID
+Vision
+MPC
+Both
+
+17.57
+20.40
+18.11
+16.01
+12.57
+
+28.89
+60.49
+62.01
+75.82
+87.05
+
+Qf
+
+Imult
+
+46.34 20.87 32.79
+60.62 22.17 17.21
+68.46 13.43 18.11
+77.28 11.46 11.26
+88.22 5.61 6.17
+
+The slow run repeats the mild-run pattern at a lower shaft speed. Vision lowers the
+multiple index from 21.4 to 13.3 percent and lowers efficiency from 59.5 to 57.4 percent.
+The rate side effect is visible even when the machine is already going slowly. MPC then
+both restore efficiency, to 77.7 and 87.3 percent. Nothing in the slow run suggests that
+the stack depends on the 1.10 m/s condition.
+
+Chapter 3. System Build and Estimation
+
+70
+
+The slope run is the cleanest demonstration of requirement 2. Ground-drive efficiency
+is 28.9 percent with a miss index of 32.8 percent. Every electronic mode returns to within
+about one point of its level-ground efficiency at the same speed. The both-mode efficiency
+is 87.1 percent on the slope and 87.0 percent on the level. The model has no other slope
+channel. The table is what that modelling choice looks like when it is not smoothed into
+a sentence. A field trial in which electronic control failed to recover a slope would be
+evidence of a channel the model omitted, most likely opener draft, and not evidence that
+the arithmetic of Table 3.5 was mis-copied.
+
+3.2.12
+
+Reading the near-tie under harsh vibration
+
+Section 3.2 reported a 3 Hz command for red oak at 16 Hz terrain. The grid slice in
+Chapter 2 shows why that command should not be over-interpreted. At the nominal
+diameter the predicted costs at 3 Hz and at 9 Hz differ by about 0.0001. The drawn
+sample mean in the recorded run selected 3 Hz. Plant-side, with αiso = 0.55, a 3 Hz
+command and a 16 Hz terrain give feff ≈ 9.3 Hz, and a 9 Hz command would give about
+12.6 Hz. The plant therefore experiences a real difference between the two commands
+2
+even though the predictor, using the heavier weight 0.35 on fdist
+, scores them almost alike.
+
+The run that was printed used 3 Hz. A second run whose sample mean broke the tie the
+other way would print 9 Hz and would show a higher plant-side harshness. The efficiency
+gain over PID would remain, because both corners beat a command of 0 Hz, which is the
+PID and ground setting. The identity of the winning hertz would not remain. That is the
+correct confidence statement. The coordinator rejects the middle of the frequency range
+and rejects a non-zero vacuum. It does not, on this cost, identify a unique frequency once
+the terrain is already harsh.
+
+3.2.13
+
+A note on repeatability of the other scenarios
+
+The twelve-repeat standard deviation of 0.89 points was computed only for the mixed-lot
+efficiency gain. The other scenarios were single runs of 4,000 events. A binomial picture of
+a proportion near 0.6 with 4,000 trials has a standard error near
+
+q
+
+0.6 · 0.4/4000 ≈ 0.008,
+
+or 0.8 percentage points, before the dependence among successive spacings is considered.
+Dependence widens the error. Doubling the binomial picture is a cautious reading: differences of two points in the tables are inside noise, and differences of ten points are
+
+Chapter 3. System Build and Estimation
+
+71
+
+not. The vision-versus-PID multiple-index drop on mild red oak is about ten points. The
+both-versus-ground efficiency gaps are tens of points. The vision-versus-PID efficiency
+differences of one point are not a finding. They were described as “does not follow” and
+“stays”, which is the language that one point deserves.
+The script seed is part of the result. A reader who changes the seed will move the fourth
+digit of a long run and can move the harsh-case frequency across the tie. Publishing the
+seed, 20261029, and the repeat rule 20261029 + 17r, is what makes that movement a check
+rather than a contradiction. The file estimation_results.json stores the run that the
+tables were typed from.
+
+3.2.14
+
+Consolidated efficiency
+
+Table 3.6 puts every scenario’s planting efficiency on one page so that the ranking does not
+depend on which prose paragraph a reader happens to remember. The both-mode column
+is the stack. The ground column is the open-loop machine. The gap between them is the
+quantity the title of this manuscript refers to, and it is a model quantity.
+Table 3.6: Planting efficiency ηE in percent for every estimated scenario. Terrain frequency fdist
+is in hertz and slope is in degrees. Speed is in m/s.
+
+Lot
+
+Condition
+
+Red oak
+Red oak
+Red oak
+Red oak
+Pin oak
+Bur oak
+Bur oak
+Mixed
+
+0.70, 0◦ , 6 Hz
+1.10, 0◦ , 6 Hz
+1.10, 12◦ , 6 Hz
+1.10, 0◦ , 16 Hz
+1.10, 0◦ , 6 Hz
+0.70, 0◦ , 6 Hz
+1.10, 8◦ , 12 Hz
+1.10, 8◦ , 12 Hz
+
+Ground
+
+PID
+
+Vision
+
+MPC
+
+Both
+
+51.45
+52.38
+28.89
+17.11
+54.87
+14.76
+5.01
+20.12
+
+59.48
+60.97
+60.49
+21.77
+61.61
+18.35
+11.93
+37.75
+
+57.41
+60.70
+62.01
+21.99
+63.78
+16.85
+9.82
+33.52
+
+77.68
+76.56
+75.82
+64.46
+75.20
+45.62
+43.99
+65.19
+
+87.31
+87.00
+87.05
+64.28
+86.49
+57.86
+55.12
+72.25
+
+The column order is the order in which a builder would add the pieces. PID recovers
+the slope row and little else. Vision, added to PID, does not dominate that column: it
+wins on pin oak and on the slope, and it loses a point or more on the slow red oak, on both
+bur-oak rows, and on the mixed lot. MPC, added instead of vision, wins every row against
+PID by a wide margin, and the margin is widest where the ground drive has collapsed.
+Both, added last, wins every row against MPC except the harsh red-oak row, where it
+is 0.18 points lower, inside the repeatability note above. The architecture’s claim is not
+that the stack is uniformly better than its better half. The claim is that the better half
+
+Chapter 3. System Build and Estimation
+
+72
+
+is different in different rows, and that publishing both indices, of which this table shows
+only efficiency, keeps a builder from turning on a loop that the row does not need. On a
+harsh red-oak bout the factor loop is the one that pays. On a pin-oak bout the camera
+still earns its place, because the both-mode efficiency of 86.5 percent is eleven points above
+MPC. The table is the decision.
+
+Bibliography
+[1] Magnus Löf, Jorge Castro, Mattias Engman, Alexandro B. Leverkus, Palle Madsen,
+Jose A. Reque, Adrian Villalobos, and Emile S. Gardiner. Tamm review: Direct
+seeding to restore oak (Quercus spp.) forests and woodlands. Forest Ecology and
+Management, 448:474–489, 2019.
+[2] Steven C. Grossnickle. Why seedlings survive: influence of plant attributes. New
+Forests, 43:711–738, 2012.
+[3] John A. Stanturf, Brian J. Palik, and R. Kasten Dumroese. Contemporary forest restoration: A review emphasizing function. Forest Ecology and Management,
+331:292–323, 2014.
+[4] Food and Agriculture Organization of the United Nations. Global forest resources
+assessment 2020. Technical report, FAO, Rome, 2020.
+[5] Alabama Cooperative Extension System.
+tering on row-crop planters.
+
+Electric drives for seed me-
+
+https://www.aces.edu/blog/topics/farming/
+
+electric-drives-for-seed-metering-on-row-crop-planters/, 2024. Accessed
+29 October 2026.
+[6] Xiantao He, Youqiang Ding, Dongxing Zhang, Li Yang, Tao Cui, Jiantao Wei, Quanwei Liu, Bingxin Yan, and Dongyue Zhao. Design and evaluation of a PID electronic
+control system for seed meters for maize precision planting. Transactions of the Chinese Society of Agricultural Engineering, 33(17):28–33, 2017.
+[7] Xiaoshun Zhao, Hongpeng Zhao, Zehe Wang, Jincai Li, Huali Yu, and Qing Yan.
+Electronic control seed-metering system for precision seeding maize based on fuzzy
+PID. International Journal of Agricultural and Biological Engineering, 17(4), 2024.
+
+73
+
+Bibliography
+
+74
+
+[8] Arzu Yazgi and Adnan Degirmencioglu. Optimisation of the seed spacing uniformity
+performance of a vacuum-type precision seeder using response surface methodology.
+Biosystems Engineering, 97(3):347–356, 2007.
+[9] D. Karayel, Z. B. Barut, and A. Ozmerzi. Mathematical modelling of vacuum pressure
+on a precision seeder. Biosystems Engineering, 87(4):437–444, 2004.
+[10] R. C. Singh, G. Singh, and D. C. Saraswat. Optimisation of design and operational
+parameters of a pneumatic seed metering device for planting cottonseeds. Biosystems
+Engineering, 92(4):429–438, 2005.
+[11] Ismet Onal, Adnan Degirmencioglu, and Arzu Yazgi. An evaluation of seed spacing
+accuracy of a vacuum type precision metering unit based on theoretical considerations
+and experiments. Turkish Journal of Agriculture and Forestry, 36(2):133–144, 2012.
+[12] Adrian A. Borja, Rossana Marie Amongo, Jaderick P. Pabico, and Delfin C. Suministrado. Design and evaluation of a machine vision system and mechatronic drive for
+a pneumatic seed meter for corn. Philippine Journal of Agricultural and Biosystems
+Engineering, 17(1), 2021.
+[13] Wencheng Wu, Cheng Chang, Tao Li, Hongji Hu, Zhonglin Zhou, Wenhao Yang,
+Jinyue Guo, Peixu Zhu, Ju Li, Jianfeng Hu, Hong Cheng, Y. Tao, W. Zhou, Fei
+Deng, Y. Chen, W. Ren, and X. Lei. Seed-filling characteristics of a centralized
+seed-metering device for rapeseed caused by vibration. Agriculture, 12(7):965, 2022.
+[14] Le Zhang, Yafu Liu, Mingliang Wu, and Zhili Wu. Sowing performance of the seeder
+drill for the 2BYG-220 type combined rapeseed planter under vibration conditions.
+Applied Sciences, 14(12):5091, 2024.
+[15] Wei Liu, Jinhao Zhou, Tengfei Zhang, Pengcheng Zhang, M. Yao, J. Li, Z. Sun,
+G. Ma, X. Chen, and J. Hu. Key technologies in intelligent seeding machinery for
+cereals: Recent advances and future perspectives. Agriculture, 15(1):8, 2025.
+[16] L. G. Wells, T. W. Richards, T. D. Smith, and G. B. Day. Pneumatic metering of
+hardwood tree seeds. Applied Engineering in Agriculture, 6(2):239–243, 1990.
+[17] Gary Dinkel and Roy Kangas. New style acorn seeder. Tree Planters’ Notes, 42(3):16–
+17, 1991.
+
+Bibliography
+
+[18] NewForest Oy.
+
+75
+
+Seedgun sowing method.
+
+https://www.newforest.fi/en/
+
+seedgun-sowing-method/, 2024. Accessed 29 October 2026.
+[19] J. G. Ziegler and N. B. Nichols. Optimum settings for automatic controllers. Transactions of the ASME, 64:759–768, 1942.
+[20] Karl Johan Aström and Tore Hägglund. Advanced PID Control. ISA—The Instrumentation, Systems, and Automation Society, Research Triangle Park, 2006.
+[21] Katsuhiko Ogata. Modern Control Engineering. Prentice Hall, 5 edition, 2010.
+[22] Ministry of Industry and Information Technology of the People’s Republic of China.
+JB/T 10293-2013. Single seed planter (precision planter)—Specifications, 2013.
+[23] Giovani Prates Bisso Dambroz, Francisco de Assis de Carvalho Pinto, André Luiz
+de Freitas Coelho, Daniel Marçal de Queiroz, Nerílson Terra Santos, and Renato
+Adriane Alves Ruas. Development of a low-cost multi-hybrid variable rate system
+for a horizontal disk planter. Revista Brasileira de Engenharia Agrícola e Ambiental,
+29(9), 2025.
+[24] M. F. Kocher, Y. Lan, C. Chen, and J. A. Smith. Opto-electronic sensor system
+for rapid evaluation of planter seed spacing uniformity. Transactions of the ASAE,
+41(1):237–245, 1998.
+[25] Y. Lan, M. F. Kocher, and J. A. Smith. Opto-electronic sensor system for laboratory measurement of planter seed spacing with small seeds. Journal of Agricultural
+Engineering Research, 72(2):119–127, 1999.
+[26] O. Onal and I. Onal. Development of a computerized measurement system for in-row
+seed spacing accuracy. Turkish Journal of Agriculture and Forestry, 33:99–109, 2009.
+[27] Nobuyuki Otsu. A threshold selection method from gray-level histograms. IEEE
+Transactions on Systems, Man, and Cybernetics, 9(1):62–66, 1979.
+[28] Rafael C. Gonzalez and Richard E. Woods. Digital Image Processing. Pearson, 4
+edition, 2018.
+[29] John Canny. A computational approach to edge detection. IEEE Transactions on
+Pattern Analysis and Machine Intelligence, 8(6):679–698, 1986.
+
+Bibliography
+
+[30] Gary Bradski.
+
+76
+
+The OpenCV library.
+
+Dr. Dobb’s Journal of Software Tools,
+
+25(11):120–125, 2000.
+[31] J. W. Panning, M. F. Kocher, J. A. Smith, and S. D. Kachman. Laboratory and
+field testing of seed spacing uniformity for sugarbeet planters. Applied Engineering
+in Agriculture, 16(1):7–13, 2000.
+[32] Quanwei Liu, Xiantao He, Li Yang, Dongxing Zhang, Tao Cui, Z. Qu, et al. Effect of
+travel speed on seed spacing uniformity of corn seed meter. International Journal of
+Agricultural and Biological Engineering, 10(4):98–106, 2017.
+[33] Arzu Yazgi and Adnan Degirmencioglu. Optimization of the seed spacing uniformity
+of a vacuum type precision seeder using spherical materials. Journal of Agriculture
+Faculty of Ege University, 52(3), 2015.
+[34] P. A. Cundall and O. D. L. Strack. A discrete numerical model for granular assemblies.
+Géotechnique, 29(1):47–65, 1979.
+[35] Yanjun Li, Yunqiang Liu, Yichao Ning, Hongxin Wu, and Yaqian Zhao. Design and
+experiment of an air-suction drum-type seedling seeder for irregular-shaped vegetable
+seeds. Scientific Reports, 15, 2025.
+[36] Xiaolong Lei, Wencheng Wu, Cheng Chang, Tao Li, Zhonglin Zhou, Jinyue Guo,
+Peixu Zhu, Jianfeng Hu, Hong Cheng, W. Zhou, et al. Seeding performance caused
+by inclination angle in a centralized seed-metering device for rapeseed. Agriculture,
+12(4):590, 2022.
+[37] Xiaolong Lei, Hongji Hu, Wencheng Wu, H. N. Liu, L. Y. Liu, Wenhao Yang, Zhonglin
+Zhou, and Wanjun Ren. Seed motion characteristics and seeding performance of a
+centralised seed-metering system for rapeseed investigated by DEM simulation and
+bench testing. Biosystems Engineering, 203:22–33, 2021.
+[38] Hongji Hu, Zhonglin Zhou, Wencheng Wu, Wenhao Yang, Tao Li, Cheng Chang, Wanjun Ren, and Xiaolong Lei. Distribution characteristics and parameter optimisation
+of an air-assisted centralized seed-metering device for rapeseed using a CFD–DEM
+coupled simulation. Biosystems Engineering, 208:246–259, 2021.
+[39] M. R. Maleki, J. F. Jafari, M. H. Raufat, A. M. Mouazen, and J. De Baerdemaeker.
+Evaluation of seed distribution uniformity of a multi-flight auger as a grain drill
+metering device. Biosystems Engineering, 94(4):535–543, 2006.
+
+Bibliography
+
+77
+
+[40] Carlos E. García, David M. Prett, and Manfred Morari. Model predictive control:
+Theory and practice—a survey. Automatica, 25(3):335–348, 1989.
+[41] D. W. Clarke, C. Mohtadi, and P. S. Tuffs. Generalized predictive control—Part I.
+The basic algorithm. Automatica, 23(2):137–148, 1987.
+[42] Eduardo F. Camacho and Carlos Bordons. Model Predictive Control. Springer, London, 2 edition, 2007.
+[43] Jan M. Maciejowski. Predictive Control with Constraints. Prentice Hall, 2002.
+[44] James B. Rawlings, David Q. Mayne, and Moritz Diehl. Model Predictive Control:
+Theory, Computation, and Design. Nob Hill Publishing, 2 edition, 2017.
+[45] S. Joe Qin and Thomas A. Badgwell. A survey of industrial model predictive control
+technology. Control Engineering Practice, 11(7):733–764, 2003.
+[46] D. Q. Mayne, J. B. Rawlings, C. V. Rao, and P. O. M. Scokaert. Constrained model
+predictive control: Stability and optimality. Automatica, 36(6):789–814, 2000.
+[47] Alberto Bemporad, Manfred Morari, Vivek Dua, and Efstratios N. Pistikopoulos. The
+explicit linear quadratic regulator for constrained systems. Automatica, 38(1):3–20,
+2002.
+[48] Stephen Boyd and Lieven Vandenberghe. Convex Optimization. Cambridge University
+Press, 2004.
+[49] Lennart Ljung. System Identification: Theory for the User. Prentice Hall, 2 edition,
+1999.
+[50] R. E. Kalman. A new approach to linear filtering and prediction problems. Journal
+of Basic Engineering, 82(1):35–45, 1960.
+[51] Greg Welch and Gary Bishop. An introduction to the Kalman filter. Technical Report
+TR 95-041, University of North Carolina at Chapel Hill, 1995.
+[52] Stephen D. Kachman and J. A. Smith. Alternative measures of accuracy in plant
+spacing for planters using single seed metering. Transactions of the ASAE, 38(2):379–
+387, 1995.
+[53] International Organization for Standardization, Geneva. ISO 7256-1:1984. Sowing
+equipment—Test methods—Part 1: Single seed drills (precision drills), 1984.
+
+Bibliography
+
+78
+
+[54] Standardization Administration of China. GB/T 6973-2005. Testing methods of single
+seed drills (precision drills), 2005.
+[55] Sigurd Skogestad and Ian Postlethwaite. Multivariable Feedback Control: Analysis
+and Design. Wiley, 2 edition, 2005.
+[56] Karl Johan Aström and Richard M. Murray. Feedback Systems: An Introduction for
+Scientists and Engineers. Princeton University Press, Princeton, 2008.
+[57] Gene F. Franklin, J. David Powell, and Abbas Emami-Naeini. Feedback Control of
+Dynamic Systems. Pearson, 8 edition, 2019.
+[58] John V. Stafford. Implementing precision agriculture in the 21st century. Journal of
+Agricultural Engineering Research, 76(3):267–275, 2000.
+[59] Robin Gebbers and Viacheslav I. Adamchuk. Precision agriculture and food security.
+Science, 327(5967):828–831, 2010.
+[60] International Organization for Standardization, Geneva. ISO 11783-1:2017. Tractors
+and machinery for agriculture and forestry—Serial control and communications data
+network—Part 1: General standard for mobile data communication, 2017.
+[61] L. A. Zadeh. Fuzzy sets. Information and Control, 8(3):338–353, 1965.
+[62] E. H. Mamdani. Application of fuzzy algorithms for control of a simple dynamic plant.
+Proceedings of the Institution of Electrical Engineers, 121(12):1585–1588, 1974.
+[63] Tomohiro Takagi and Michio Sugeno. Fuzzy identification of systems and its applications to modelling and control. IEEE Transactions on Systems, Man, and Cybernetics,
+15(1):116–132, 1985.
+[64] Hassan K. Khalil. Nonlinear Systems. Prentice Hall, 3 edition, 2002.
+[65] Jorge Nocedal and Stephen J. Wright. Numerical Optimization. Springer, 2 edition,
+2006.
+
+

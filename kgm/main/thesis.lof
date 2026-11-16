@@ -1,0 +1,13 @@
+\babel@toc {english}{}\relax 
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Cascade dissolved-oxygen control as it is usually installed. The outer loop does not see the production calendar, and the blower drive does not see a surge constraint from the optimizer. Both limits are outside this diagram on purpose: they are the gap Chapter~\ref {ch:method} closes.}}{16}{figure.caption.5}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces The four bodies of work this chapter uses, and the brewery-specific gap they leave. Chapter~\ref {ch:method} puts a schedule-aware fan controller on one side of the gap and a physics-informed transfer sensor on the other.}}{21}{figure.caption.6}%
+\contentsline {figure}{\numberline {1.3}{\ignorespaces The true oxygen-transfer factor over the representative week. The drop at $126\,\mathrm {h}$ is the fermentation clean-in-place detergent reaching the aerobic tank. A controller that keeps $\alpha =0.55$ is wrong on this interval by about thirty percent.}}{23}{figure.caption.9}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Information pattern of the schedule-aware controller. The calendar and the soft sensor are inputs. The programmable controller remains the only device that talks to the drives.}}{33}{figure.caption.11}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Sketch of the centrifugal map against a nearly flat header pressure. The legal operating point is the intersection to the right of the surge margin. Speed is raised until that intersection supplies the airflow the oxygen balance requires.}}{36}{figure.caption.12}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Soft-sensor heads. Only $\alpha $, $K_La$, and the oxygen uptake are published to the fan controller. The dissolved-oxygen head is a training target. The residual block is the physics constraint, not an extra measurement.}}{43}{figure.caption.14}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Cleaning train. Shaded units are the fan duties. Anaerobic pretreatment is in the train so the aerobic fans see a polishing load rather than raw brewery waste.}}{63}{figure.caption.20}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Control levels. Set-points move downward. Health bits and measurements move upward. Only Level 1 energizes a fan.}}{63}{figure.caption.21}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Blower electricity over the representative week. The large gap is between constant speed and any loop that moves the fans. The gap between the two predictive laws is not visible at this scale and is discussed with the dissolved-oxygen minima instead.}}{69}{figure.caption.24}%

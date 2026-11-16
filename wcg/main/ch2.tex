@@ -1,0 +1,455 @@
+\chapter{Design of the Two Controllers}
+\label{ch:design}
+
+This chapter specifies the two innovations at the level of signals, equations, and timing. Section~\ref{sec:visiondesign} designs the vision-guided feed-speed controller. Section~\ref{sec:mpcdesign} designs the multi-factor coordinator and the stack that joins the two. The hardware that gives these signals a physical place is specified in Section~\ref{sec:build}, after the signals are known, so that the build follows the information flow rather than the other way around.
+
+\section{Vision-guided feed-speed control}
+\label{sec:visiondesign}
+
+\subsection{Role of the loop}
+
+The feed-speed controller is a cascade with a constraint. The outer input is ground speed $v$ and the spacing set-point $X_t$. The inner output is a motor voltage, or a speed-mode torque command, that turns the cell wheel. Between them sits a scalar $\sigma\in[0.72,1.08]$ that multiplies the kinematic speed. When the throat looks clear, $\sigma$ stays near 1 and the loop is an ordinary electronic meter \cite{he2017,zhao2024}. When the throat looks bridged, $\sigma$ falls and the wheel waits. The waiting is the innovation. A tracker without the constraint would treat the same situation as a brief shortfall of fill and would not change its behaviour at all, because the shaft would still be at the commanded speed.
+
+The loop does not detect species and does not draw boxes around seeds for an operator. It compresses each accepted frame into the features of Section~\ref{sec:features}. Those features are the only vision data the motor computer is allowed to see.
+
+\subsection{Sensing and timing}
+
+Two speed sensors are required by the problem set. A radar, or an encoder on an undriven wheel, supplies $v$. An encoder on the cell-wheel shaft supplies $\omega$. A driven ground wheel is logged and is not used in the control law, so that a later comparison with ground drive remains possible.
+
+The camera looks down at the hopper throat through a window that is wiped mechanically. The region of interest is fixed in the image, about 640 by 200 pixels after cropping, covering the last few centimetres before the cell mouth. The exposure is strobed for 0.2~ms so that motion at 1.2~m/s does not smear a seed by more than a fraction of a millimetre at the working distance. The vision processor runs the steps of Section~\ref{sec:features} and publishes a feature datagram at 20~Hz. The motor computer runs at 100~Hz. If a datagram is late, the motor computer holds the previous bridge index and increments a miss counter. After three missed datagrams, 150~ms, it decays the bridge index by half each further period and the constraint opens. The motor never blocks on a frame. This split is the direct answer to the 6~km/h reversal reported when one microcontroller did both jobs \cite{borja2021}.
+
+A photoelectric sensor in the seed tube is not inside the constraint. It is a logger. It counts releases so that an estimator can compare commanded rate with delivered rate. Using it as the bridge sensor would reintroduce the delay the camera is there to avoid \cite{kocher1998,lan1999}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners=2pt, align=center, minimum height=8mm, inner sep=3pt},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box] (cam) {Camera\\20~Hz};
+\node[box, right=8mm of cam] (feat) {Features\\$d,\rho,B$};
+\node[box, right=8mm of feat] (con) {Constraint\\$\sigma(B)$};
+\node[box, below=12mm of con] (fuzzy) {Fuzzy PID\\100~Hz};
+\node[box, left=8mm of fuzzy] (law) {Kinematic\\$\omega^{\star}$};
+\node[box, left=8mm of law] (v) {Speed $v$};
+\node[box, right=8mm of fuzzy] (mot) {Motor and\\cell wheel};
+\node[box, below=11mm of mot] (enc) {Encoder $\omega$};
+\draw[arr] (cam) -- (feat);
+\draw[arr] (feat) -- (con);
+\draw[arr] (con) -- (fuzzy);
+\draw[arr] (v) -- (law);
+\draw[arr] (law) -- (fuzzy);
+\draw[arr] (fuzzy) -- (mot);
+\draw[arr] (mot) -- (enc);
+\draw[arr] (enc.west) -- ++(-8mm,0) |- (fuzzy.south);
+\end{tikzpicture}
+\caption{Vision features constrain the speed command. The motor loop closes on the encoder and does not wait for the camera.}
+\label{fig:cascade}
+\end{figure}
+
+\subsection{Feature extraction}
+\label{sec:features}
+
+Each accepted gray frame is normalised by a running estimate of the empty-throat image, so that a slow change of dust does not move the threshold. Otsu's method then separates seed pixels from the background on the residual \cite{otsu1979,gonzalez2018}. Small components, below 20~mm$^2$ at the calibrated scale, are rejected as chips. The remaining components supply areas $A_j$ and perimeters. Equivalent diameters follow Equation~\eqref{eq:deq}. Occupancy is the seed-pixel area divided by the window area,
+\begin{equation}
+\rho = \frac{1}{A_{\mathrm{win}}}\sum_j A_j.
+\label{eq:rho}
+\end{equation}
+The diameter summary used by the constraint is the mean $\bar d$ of the components and the coefficient of variation $c_d$ of those diameters. Circularity of component $j$ is
+\begin{equation}
+\gamma_j = \frac{4\pi A_j}{P_{\mathrm{er},j}^2}\in(0,1].
+\label{eq:circ}
+\end{equation}
+An elongated acorn has a low $\gamma_j$. The bridge index combines occupancy, a circularity penalty, and oversize relative to the cell:
+\begin{equation}
+B = \rho\,(0.45 + 0.55\,\min(1, c_d/0.25))\,\Big(1 + \frac{\max(\bar d - d_c, 0)}{d_c}\Big).
+\label{eq:bridge}
+\end{equation}
+The thresholds inside Equation~\eqref{eq:bridge} are design choices. Occupancy alone would treat a full but flowing throat as a bridge. The circularity term raises the index when the lot is irregular. The oversize term raises it when the seeds in view are larger than the 24~mm cell, which is the bur-oak situation. $B$ is dimensionless. In the numerical model the relief starts at $B>0.42$.
+
+The same frame updates a one-pole filter that the constraint uses as its occupancy state,
+\begin{equation}
+\rho_{k+1} = 0.92\,\rho_k + 0.08\,\rho^{\mathrm{raw}}_k,
+\label{eq:rhofilter}
+\end{equation}
+so that a single specular frame cannot slam the wheel. When the constraint is active and the wheel has slowed, the raw occupancy target inside the filter is pulled toward 0.48, representing a throat that is being allowed to clear. When the constraint is idle, the filter simply tracks the measurement.
+
+\subsection{Kinematic command and the constraint}
+
+With the nominal fill $\hat\eta=1$ and $N_c=12$,
+\begin{equation}
+\omega^{\star} = \frac{2\pi v}{12\, X_t}.
+\label{eq:wstar2}
+\end{equation}
+At $v=1.10$~m/s and $X_t=0.25$~m, $\lambda^{\star}=4.40$~seeds/s and $\omega^{\star}=2.304$~rad/s, which is 22.0~r/min. At $v=0.70$~m/s the same spacing asks for 14.0~r/min. These are gentle shaft speeds. The motor is not being asked for maize peripheral speeds. It is being asked for a stable low speed under a changing load, which is a harder control problem than the raw number suggests, because stiction is a larger fraction of the torque.
+
+The constrained command is
+\begin{equation}
+\omega_{\mathrm{cmd}} = \sigma(B)\,\omega^{\star},
+\label{eq:wcmd}
+\end{equation}
+with
+\begin{equation}
+\sigma(B) =
+\begin{cases}
+1, & B \le 0.42,\\[4pt]
+1 - \min\big(0.22,\ 0.55\,(B-0.42)\big), & B > 0.42.
+\end{cases}
+\label{eq:sigma}
+\end{equation}
+The largest cut is 22 percent. A bridge that would mathematically demand a stop is not allowed to stop the machine. The wheel keeps turning, the tube keeps receiving whatever seeds are free, and the index is recomputed. The lower clip at 0.72 and the upper clip at 1.08 are applied after $\sigma$ and after the small tracking residual of the inner loop, so a noisy fuzzy action cannot wind the scale outside that band.
+
+Equation~\eqref{eq:sigma} is a static nonlinearity, not a second dynamic controller. Its stability effect is that it moves the setpoint. The inner loop is still asked to track a piecewise-constant speed. Setpoint moves are rate-limited at the equivalent of 8~rad/s$^2$ so that a newly detected bridge becomes a ramp rather than a step into the motor.
+
+\subsection{Motor model}
+
+The electrical and mechanical equations of a permanent-magnet direct-current motor, or of a current-controlled brushless motor reduced to the same form, are
+\begin{align}
+L\frac{\mathrm{d}i}{\mathrm{d}t} &= -Ri - K_e\omega + u, \label{eq:elec}\\
+J\frac{\mathrm{d}\omega}{\mathrm{d}t} &= K_t i - b\omega - \tau_{\mathrm{load}}. \label{eq:mech}
+\end{align}
+The load torque $\tau_{\mathrm{load}}$ contains bearing friction, the intermittent torque of a seed entering a cell, and a stiction term that is largest when the hopper is full. For the speed loop the electrical pole is neglected. It sits well above 100~Hz on a small drive, and the current loop of a servo amplifier already hides it. The design model used for tuning is Equation~\eqref{eq:motor1}, repeated here with the numbers used in the estimation:
+\begin{equation}
+0.18\,\dot\omega + \omega = u_{\omega},
+\label{eq:motornum}
+\end{equation}
+where $u_{\omega}$ is a speed command in the same units as $\omega$ after the inner current loop, and 0.18~s is the mechanical time constant under a representative hopper load. A 10~ms sample is twenty times faster than this pole, which is the usual rule for a discrete speed loop \cite{franklin2019,ogata2010}.
+
+Load torque is not measured. It appears as a disturbance. Integral action rejects a constant disturbance. A seed that wedges and then releases is a pulse disturbance, which integral action handles if the gains are not so high that the pulse becomes an oscillation. The fuzzy layer exists to lower the proportional gain when the error is large and the error is still growing, and to raise it when the error is small, which is the standard reason for scheduling on a plant whose friction changes \cite{zhao2024,astrom2006}.
+
+\subsection{Discrete fuzzy proportional--integral--derivative law}
+
+Let the sample index of the motor loop be $n$, with $T_m=0.01$~s. The tracking error and its backward difference are
+\begin{equation}
+e_n = \omega_{\mathrm{cmd},n} - \omega_n, \qquad \Delta e_n = e_n - e_{n-1}.
+\label{eq:err}
+\end{equation}
+The control law is
+\begin{equation}
+u_n = K_p(e_n,\Delta e_n)\, e_n + K_i(e_n,\Delta e_n)\, T_m\sum_{j=0}^{n} e_j + K_d(e_n,\Delta e_n)\,\frac{\Delta e_n}{T_m},
+\label{eq:pid}
+\end{equation}
+with the integrator clamped and with the sum frozen whenever $|e_n|>e_{\mathrm{sep}}$. The separation threshold used here is $e_{\mathrm{sep}}=0.8$~rad/s. Integral separation is the device He and colleagues used to keep a large step from overshooting, and it is retained for the same reason \cite{he2017}. Anti-windup is the clamp: the summed error is not updated when $u_n$ is on its rail.
+
+The gains are a nominal triple plus a bounded fuzzy increment,
+\begin{equation}
+K_p = K_{p0}+\Delta K_p,\quad
+K_i = K_{i0}+\Delta K_i,\quad
+K_d = K_{d0}+\Delta K_d,
+\label{eq:gainsplit}
+\end{equation}
+with $K_{p0}=2.4$, $K_{i0}=6.0$, and $K_{d0}=0.08$ on the normalised speed model of Equation~\eqref{eq:motornum}. The increments are the outputs of a Mamdani inference on two inputs \cite{mamdani1974,zadeh1965}. Each input is scaled into the linguistic range by
+\begin{equation}
+\tilde e = \mathrm{sat}(e_n/0.6),\qquad \widetilde{\Delta e}=\mathrm{sat}(\Delta e_n/0.15),
+\label{eq:scalee}
+\end{equation}
+where the saturation limits the argument to $[-1,1]$. The linguistic labels are negative big, negative small, zero, positive small, and positive big. Membership of the zero label is a triangle peaking at 0 with support $[-0.4,0.4]$. The small labels are triangles centred at $\pm 0.5$ with support of width 0.8. The big labels are trapezoids that reach membership 1 at $\pm 1$ and fall to 0 at $\pm 0.4$. The same shapes are used for both inputs. Figure~\ref{fig:member} draws the error membership. The increment memberships on the output universe $[-1,1]$ use the same five labels, and the inferred set is reduced to a number by the centroid.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.92\textwidth, height=5.6cm,
+  xlabel={Scaled error $\tilde e$},
+  ylabel={Membership},
+  xmin=-1.05, xmax=1.05, ymin=0, ymax=1.05,
+  legend style={font=\small, at={(0.5,1.02)}, anchor=south, legend columns=5},
+  tick label style={font=\small}
+]
+\addplot[thick] coordinates {(-1,1) (-0.4,0) (1,0)};
+\addlegendentry{NB}
+\addplot[thick, dashed] coordinates {(-0.9,0) (-0.5,1) (-0.1,0)};
+\addlegendentry{NS}
+\addplot[thick, dotted] coordinates {(-0.4,0) (0,1) (0.4,0)};
+\addlegendentry{Z}
+\addplot[thick, dashdotted] coordinates {(0.1,0) (0.5,1) (0.9,0)};
+\addlegendentry{PS}
+\addplot[thick] coordinates {(-1,0) (0.4,0) (1,1)};
+\addlegendentry{PB}
+\end{axis}
+\end{tikzpicture}
+\caption{Membership of the scaled speed error. The same partition is used for the error increment. Output increments use the centroid of the fired labels.}
+\label{fig:member}
+\end{figure}
+
+Table~\ref{tab:fuzzy} lists the rule for $\Delta K_p$. The rules for $\Delta K_i$ use the opposite corner emphasis: integral gain is allowed to rise only when both the error and the increment are near zero, and it is cut when the error is large, which keeps the separator and the fuzzy layer from fighting. The rules for $\Delta K_d$ raise derivative gain when the error and the increment have the same sign and a large magnitude, that is, when the shaft is running away from the command. Rules are written in the usual condensed form. ``Error is negative big and the increment is negative big implies $\Delta K_p$ positive big'' means the loop is below the command and still falling, so proportional action should strengthen.
+
+\begin{table}[htbp]
+\centering
+\caption{Rule table for the proportional increment $\Delta K_p$. Rows are the scaled error. Columns are the scaled error increment.}
+\label{tab:fuzzy}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+ & NB & NS & Z & PS & PB \\
+\midrule
+NB & PB & PB & PS & Z & NS \\
+NS & PB & PS & PS & Z & NS \\
+Z & PS & PS & Z & NS & NS \\
+PS & PS & Z & NS & NS & NB \\
+PB & Z & NS & NS & NB & NB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The centroid is scaled into the increments by $\Delta K_p \in [-0.8, 0.8]$, $\Delta K_i \in [-2, 2]$, and $\Delta K_d \in [-0.03, 0.03]$. These boxes are part of the design. At every corner, $K_p$ and $K_i$ stay positive, so the proportional--integral polynomial of Equation~\eqref{eq:pi-char} keeps positive coefficients on the design model. A pure derivative $K_d s$ is improper on Equation~\eqref{eq:motornum}. The implementation filters the difference with a first-order pole at 40~Hz, which keeps the high-frequency gain finite \cite{astrom2006}. The resulting claim is limited on purpose. Positive frozen gains and a filtered derivative make each frozen loop a standard stable speed servo on Equation~\eqref{eq:motornum}. They are not a Lyapunov certificate for the time-varying fuzzy system \cite{khalil2002}. The schedule is still reasonable because it moves with the tracking error, and the error of a 0.18~s plant does not cross the whole linguistic range in one 10~ms sample unless the setpoint jumps. Setpoint jumps are rate-limited, as already stated. A vertex check of the discrete spectral radius belongs to the implementation test of a future build. It is not reported as a completed numerical proof in this manuscript.
+
+\subsection{What the constraint does to a spacing sequence}
+
+A cell event occurs every time the wheel advances by $2\pi/N_c$. If the scale $\sigma$ is constant over the event, the distance the machine travels between events is
+\begin{equation}
+\Delta x = \frac{v}{\lambda} = \frac{X_t}{\sigma},
+\label{eq:deltax}
+\end{equation}
+because $\lambda=\sigma v/X_t$ when the fill is one seed per event. A scale of 0.85 stretches the geometric spacing by $1/0.85\approx 1.18$. Part of that stretch is the point of the constraint: a double that would have produced a 0.2$X_t$ gap is replaced by a later single. Part of the stretch is a new miss if the following event is empty for an unrelated reason. The estimation has to be able to show both parts. A controller that is scored only on doubles will always want the lowest $\sigma$. The efficiency index of Equation~\eqref{eq:eta} punishes the stretch.
+
+The photoelectric count provides a runtime estimate of fill after the fact,
+\begin{equation}
+\hat\eta_{n} = \frac{N_{\mathrm{tube}}(t_n)-N_{\mathrm{tube}}(t_n-T_{\eta})}{N_c\,(\theta(t_n)-\theta(t_n-T_{\eta}))/2\pi},
+\label{eq:etahat}
+\end{equation}
+with $T_{\eta}=2$~s. This estimate is logged. It is not allowed to divide Equation~\eqref{eq:wstar2} in the present design. Dividing by a noisy $\hat\eta$ rebuilds the kinematic command every two seconds and fights the constraint. A later revision can blend $\hat\eta$ into $\omega^{\star}$ with a time constant of tens of seconds, once a bench has shown that the estimate is calm. The requirement list does not demand that blend.
+
+\subsection{Worked numbers for a red-oak frame}
+
+Take a red-oak mean diameter of 20.5~mm, a lot coefficient of variation of 0.15, and a cell of 24~mm. Suppose the filtered occupancy is 0.62. Equation~\eqref{eq:bridge} gives
+\begin{equation}
+B = 0.62\,(0.45+0.55\cdot 0.15/0.25)\,(1+0) = 0.62\cdot 0.78 = 0.484,
+\end{equation}
+because $c_d/0.25=0.60$ and there is no oversize. The excess over 0.42 is 0.064, and $0.55\times 0.064=0.035$, which is below the 0.22 cap. The scale drops from 1 to 0.965. At 1.10~m/s the commanded shaft speed falls from 22.0~r/min to 21.2~r/min. The intervention is small because this frame is only mildly occupied and the seeds fit the cell. That is the correct behaviour. The constraint is not a permanent detune.
+
+Now take a bur-oak frame with $\bar d=32$~mm, $c_d=0.20$, and $\rho=0.70$. Then
+\begin{equation}
+B = 0.70\,(0.45+0.55\cdot 0.80)\,\big(1+(32-24)/24\big) = 0.70\cdot 0.89\cdot 1.333 = 0.830.
+\end{equation}
+The excess is 0.410, and $0.55\times 0.410=0.226$, which the cap cuts to 0.22. The scale is 0.78, and the shaft command falls from 22.0~r/min to 17.2~r/min. The wheel gives the large seeds more time. Whether that time becomes filled cells or merely larger gaps is decided by the vibrator as well as by the wheel, which is why the second loop exists. Vision alone, in the later tables, improves doubles more reliably than it improves misses.
+
+\subsection{Fault states inside the feed loop}
+
+Four fault states are defined so that the real-time program has somewhere to go.
+
+\begin{enumerate}
+\item \textbf{Vision hold.} A late datagram holds $B$. Tracking continues. A counter is incremented.
+\item \textbf{Vision decay.} After 150~ms, $B$ is halved each 50~ms until it lies below 0.42. The constraint opens. The operator lamp for vision is lit. The motor loop is unchanged.
+\item \textbf{Encoder loss.} If the shaft encoder misses two periods, the motor current is removed and the wheel stops. Coasting a cell wheel with an unknown speed is how doubles become a pile. This state is a stop, not a fallback to open voltage.
+\item \textbf{Speed-sensor loss.} If $v$ is stale for 200~ms, $\omega^{\star}$ is held at its last value for 1~s and then ramped to zero. Holding forever would keep planting after the tractor has stopped only if the failure mode is a stuck high reading, which is unsafe. Ramping down is the chosen failure direction.
+\end{enumerate}
+
+None of these states requires the factor coordinator. They are local to the feed computer. The factor computer is informed by a single health bit so that it can freeze $u$ when the wheel is stopped, rather than integrating a model that assumes events are still occurring.
+
+\section{Multi-factor model-predictive optimization}
+\label{sec:mpcdesign}
+
+\subsection{Role of the loop}
+
+The factor coordinator owns vibration frequency $f$, assist vacuum $P$, and opener depth $h$. It does not own the wheel speed. It runs at 5~Hz, which is once every 200~ms, and on this machine that is once every few cell events at the speeds of interest. Its job is to keep the triple $(f,P,h)$ at a point where the fast loop's constraint is rarely needed. A coordinator that needs the constraint to look good has chosen a bad regime. For that reason the prediction inside the coordinator is evaluated at $\sigma=1$ and with the vision flag clear. The vision loop may still act, and the estimation credits that action separately. The coordinator is not allowed to assume that the action will happen.
+
+This separation is also a software separation. The factor task can overrun a deadline without stretching a motor period. On an overrun the previous feasible triple is held. Holding a feasible input is the standard fallback of a predictive controller that misses a sample \cite{maciejowski2002,rawlings2017}.
+
+\subsection{Prediction model}
+\label{sec:predmodel}
+
+The model is a logistic map from a seed diameter and a factor triple to the probabilities of a miss and a double at one cell event. It is the map $\Pi$ of Equation~\eqref{eq:pi}, written so that it can be evaluated inside a grid search. Define the normalised size errors and the harshness of the motion that the seed mass actually feels:
+\begin{align}
+\delta_{+} &= \max(d-d_c,0)/d_c, &
+\delta_{-} &= \max(d_c-d,0)/d_c, \label{eq:delta}\\
+f^{\star}(d) &= \mathrm{clip}\big(4 + 5\, d_c/d,\ 3,\ 11\big), \label{eq:fstar}\\
+a(f,d) &= \exp\Big(-\big((f-f^{\star}(d))/2.6\big)^2\Big), \label{eq:agit}\\
+H(f_{\mathrm{eff}}) &= \max(f_{\mathrm{eff}}-10, 0)/10. \label{eq:harsh}
+\end{align}
+The preferred frequency $f^{\star}$ falls as the seed gets larger: a 32~mm seed prefers about 7.8~Hz before the clip, and a 15~mm seed prefers about 12~Hz before the clip, which then limits it to 11~Hz. The Gaussian $a$ is near 1 only when the command sits close to that preference. Harshness $H$ is zero at or below the 10~Hz anchor taken from the rapeseed vibration trials and rises linearly above it \cite{zhang2024vib}. The frequency that enters $H$ is not the command alone. Terrain and the shaker both reach the box,
+\begin{equation}
+f_{\mathrm{eff}} = \sqrt{\big(\alpha_{\mathrm{iso}} f_{\mathrm{dist}}\big)^2 + f^2}.
+\label{eq:feff}
+\end{equation}
+When the coordinator is off, the isolator is treated as passive and $\alpha_{\mathrm{iso}}=1$. When the coordinator is on, the mount described in Section~\ref{sec:build} is taken to attenuate the terrain contribution to $\alpha_{\mathrm{iso}}=0.55$. That number is an assumption of the model, not a measured transmissibility. It is applied consistently in the estimation, and the text that discusses energy will show what the assumption does: the optimiser can park $f_{\mathrm{eff}}$ just under 10~Hz by a combination of isolation and a modest command.
+
+Depth error, slip, and speed-scale error enter as further dimensionless terms,
+\begin{equation}
+\varepsilon_h = |h-h^{\star}|/h^{\star},\qquad
+o_{\sigma}=\max(\sigma-1.08,0),\qquad
+u_{\sigma}=\max(0.92-\sigma,0),
+\label{eq:errs}
+\end{equation}
+with $h^{\star}=30$~mm. The linear predictors are
+\begin{align}
+\begin{split}
+z_m ={}& -1.55 + 5.2\,\delta_{+} + 2.4\,H + 2.6\,s + 2.2\,o_{\sigma} + 1.4\,u_{\sigma} \\
+&+ 1.3\,\varepsilon_h - 1.7\,a\,(0.35+\delta_{+}) - 0.85\,\nu\, a,
+\end{split} \label{eq:zm}\\
+\begin{split}
+z_d ={}& -2.05 + 3.6\,\delta_{-} + 1.7\,(P/8)\,(0.4+\delta_{-}) \\
+&+ 1.1\,\frac{\max(6-f,0)}{6}\,\delta_{-} + 0.6\,o_{\sigma} - 0.9\,\nu - 0.5\,a.
+\end{split} \label{eq:zd}
+\end{align}
+Here $\nu\in\{0,1\}$ is the vision flag, which the coordinator sets to 0. The probabilities are
+\begin{equation}
+p_m = \ell(z_m),\qquad
+p_d = \ell(z_d)\,(1-p_m),\qquad
+p_s = 1-p_m-p_d,
+\label{eq:probs}
+\end{equation}
+with the logistic function $\ell(z)=(1+e^{-z})^{-1}$ evaluated on a clipped $z$ so that the implementation cannot overflow. Scatter of a qualified spacing is modelled as a standard deviation
+\begin{equation}
+\begin{split}
+\varsigma = X_t\Big(&0.07 + 0.045\,H + 0.035\,\varepsilon_h + 0.03\,|\sigma-1| \\
+&+ 0.02\,(1-0.6\nu) + 0.015\,|f-f^{\star}|/6\Big).
+\end{split}
+\label{eq:sigma_scatter}
+\end{equation}
+Equation~\eqref{eq:sigma_scatter} does not feed the logistic. It feeds the cost, as a stand-in for the precision term.
+
+Each coefficient has a stated job. The intercepts $-1.55$ and $-2.05$ set a mild baseline miss and double probability when every error term is zero and agitation is absent: $\ell(-1.55)\approx 0.175$ and $\ell(-2.05)\approx 0.114$ before the agitation credit, which is then modified by $a$. The large coefficient 5.2 on $\delta_{+}$ is the Wells effect, written as a steep miss penalty once the seed exceeds the cell \cite{wells1990}. The coefficient 3.6 on $\delta_{-}$ is the double penalty for a small seed in a large cell \cite{yazgi2007,onal2012}. The vacuum term is multiplied by $(0.4+\delta_{-})$ so that vacuum is almost harmless when the seed fills the cell and is harmful when the seed is small. The harshness coefficient 2.4 is the Zhang effect, scaled so that a disturbance well above 10~Hz moves the miss probability by tens of points if isolation is absent \cite{zhang2024vib}. None of these coefficients was fitted to a new data set. Replacing them with fitted values is future experimental work. Keeping them public is what makes Chapter~\ref{ch:estimate} repeatable.
+
+\subsection{A numerical evaluation of the map}
+
+The map should be evaluated once by hand so that the later tables have an anchor. Consider red oak at $d=20.5$~mm, $d_c=24$~mm, so $\delta_{+}=0$ and $\delta_{-}=3.5/24=0.1458$. The preferred frequency is
+\begin{equation}
+f^{\star} = 4 + 5\cdot(24/20.5) = 9.85~\text{Hz},
+\end{equation}
+inside the clip. With a command $f=9$~Hz,
+\begin{equation}
+a = \exp\big(-((9-9.85)/2.6)^2\big) = \exp(-0.107) = 0.899.
+\end{equation}
+Under the coordinator, a terrain frequency of 6~Hz and $\alpha_{\mathrm{iso}}=0.55$ give
+\begin{equation}
+f_{\mathrm{eff}} = \sqrt{(0.55\cdot 6)^2 + 9^2} = \sqrt{91.89} = 9.59~\text{Hz},
+\end{equation}
+so $H=0$. Take $\sigma=1$, $s=0.004$, $\varepsilon_h=0$, and $\nu=1$ for a feed-loop evaluation (the coordinator itself would set $\nu=0$). Then
+\begin{align}
+z_m &= -1.55 + 2.6\cdot 0.004 - 1.7\cdot 0.899\cdot 0.35 - 0.85\cdot 0.899 \nonumber\\
+&= -1.55 + 0.010 - 0.535 - 0.764 = -2.84,\\
+p_m &= \ell(-2.84) = 0.055.
+\end{align}
+The double predictor with $P=0$ is
+\begin{align}
+z_d &= -2.05 + 3.6\cdot 0.1458 - 0.9 - 0.5\cdot 0.899 \nonumber\\
+&= -2.05 + 0.525 - 0.9 - 0.450 = -2.87,\\
+p_d &= \ell(-2.87)\,(1-0.055) = 0.054\cdot 0.945 = 0.051.
+\end{align}
+About 89 percent of events at this single diameter are singles before spacing classification. The quality-of-feed index in a full Monte Carlo run is lower than this event-single rate, because spacing classification also punishes rate error, but the event rate shows that the stacked loops sit in a high-single region for a seed that fits the cell.
+
+The contrasting ground-drive evaluation uses $f=0$, $P=3$~kPa, $\nu=0$, $s=0.07$, $\sigma=0.93$, and $f_{\mathrm{eff}}=6$ so that $H=0$. Agitation $a$ is essentially zero because the command is many standard deviations from 9.85~Hz. Then $z_m=-1.55+2.6\cdot 0.07=-1.37$ and $p_m=\ell(-1.37)=0.203$. The double predictor picks up both the size term and the vacuum term,
+\begin{equation}
+z_d = -2.05 + 0.525 + 1.7\cdot(3/8)\cdot 0.546 + 1.1\cdot 0.146 = -1.02,
+\end{equation}
+so $\ell(z_d)=0.266$ and $p_d=0.266\cdot(1-0.203)=0.212$. The event-single probability is about 0.58. The ground-drive rows in Chapter~\ref{ch:estimate} land on a quality-of-feed index of the same order. The map is doing what it was constructed to do: a fitted cell without agitation and with a few kilopascals of vacuum doubles a slightly small seed, and wheel slip adds misses.
+
+\subsection{Cost and constraints}
+
+At a coordinator step the diameter distribution is represented by three points, the running mean $\bar d$, the high point $\bar d(1+c_d)$, and the low point $\bar d(1-c_d)$, with weights $1/2$, $1/4$, and $1/4$. The running mean is the vision mean when vision is healthy and a hopper-sample mean entered by the operator otherwise. Using three points rather than a full quadrature is a load decision. The factor computer must finish inside 200~ms with margin, and three evaluations of $\ell$ are cheap.
+
+The cost summed over the three points is
+\begin{equation}
+J(f,P,h) = \sum_{i=1}^{3} w_i\Big(9\, p_m^{(i)} + 6\, p_d^{(i)} + 4\,\varsigma^{(i)}/X_t + 0.004\, f + 0.01\, P\Big),
+\label{eq:cost}
+\end{equation}
+with $\sigma=1$, $\nu=0$, and the slip inside the prediction fixed at 0.02 because the electronic drive, not the coordinator, is responsible for slip. Depth is not searched. The depth servo is required to hold $h^{\star}$, and the prediction uses $h=h^{\star}$. Searching depth as well would only restate that the best depth error is zero. The servo's value appears in the estimation as a reduction of the depth noise, from a standard deviation of 6.5~mm with a passive opener to 1.2~mm with the servo. That reduction changes $\varepsilon_h$ in Equation~\eqref{eq:zm} and is part of the second innovation's hardware, not a third control algorithm.
+
+The searched set is the Cartesian product
+\begin{equation}
+f\in\{2,3,\ldots,12\}~\text{Hz by steps of 1},\qquad
+P\in\{0, 1, 2, 3.5, 5\}~\text{kPa}.
+\label{eq:grid}
+\end{equation}
+Eleven frequencies and five pressures give 55 costs. Each cost is three logistic evaluations. The search is exhaustive on this set, so the computed minimiser is exact on the set. Exhaustive search on 55 points is a model-predictive controller whose horizon is one statistical step and whose input set is a grid. It is not a long-horizon quadratic program. It is still receding-horizon control in the original sense: the first, and only, move of the solved problem is applied, and the problem is solved again at the next sample with updated $\bar d$ and $f_{\mathrm{dist}}$ \cite{garcia1989,clarke1987}. A one-step horizon is justified because the factor commands have no meaningful dynamics inside 200~ms other than actuator lag, and the lag is handled by a slew limit rather than by a multi-step model. Frequency may change by at most 2~Hz per sample. Vacuum may change by at most 1~kPa per sample. The opener servo has its own loop and is not slewed by this search.
+
+The prices 0.004 on frequency and 0.01 on vacuum are small next to a miss probability of 0.2, which is multiplied by 9. They matter when two grid points have almost the same predicted misses. In that flat region the optimiser prefers the quieter point. Under a harsh terrain disturbance the flat region is not where the action is: adding shaker frequency raises $f_{\mathrm{eff}}$ through Equation~\eqref{eq:feff} and can push $H$ above zero. The price and the harshness term then agree, and the command falls. The estimation shows this fall, from 9~Hz in a mild case to 3~Hz when $f_{\mathrm{dist}}=16$~Hz.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners=2pt, align=center, inner sep=3pt, minimum width=32mm},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box] (meas) {Measurements\\$\bar d, c_d, f_{\mathrm{dist}}$};
+\node[box, below=11mm of meas] (pred) {Logistic map\\$\nu=0$, $\sigma=1$};
+\node[box, below=11mm of pred] (grid) {55-point grid\\$\min J(f,P)$};
+\node[box, below=11mm of grid] (slew) {Slew limit\\hold last if late};
+\node[box, right=16mm of slew] (act) {Shaker, vacuum\\regulator, depth servo};
+\node[box, right=16mm of pred] (fast) {Feed loop\\uses $\nu=1$\\and its own $\sigma(B)$};
+\draw[arr] (meas) -- (pred);
+\draw[arr] (pred) -- (grid);
+\draw[arr] (grid) -- (slew);
+\draw[arr] (slew) -- (act);
+\draw[arr] (meas.east) -- ++(8mm,0) |- (fast.north);
+\draw[arr] (fast.south) -- ++(0,-28mm) -| (act.north);
+\end{tikzpicture}
+\caption{The factor search predicts the meter with vision off. The feed loop then applies the bridge constraint on top of the chosen factors. Neither loop waits for the other.}
+\label{fig:hierarchy}
+\end{figure}
+
+\subsection{Relation to a quadratic program}
+
+A reader who expects the classical quadratic program can recover it as an approximation. Let $x$ stack the three probabilities and the normalised scatter at the mean diameter, and let the grid be replaced by a box $u\in\mathcal U$. Linearising $\Pi$ about the previous command $u^{-}$ gives
+\begin{equation}
+x \approx x^{-} + G\,(u-u^{-}),
+\label{eq:lin}
+\end{equation}
+and the cost $9p_m+6p_d+4\varsigma/X_t$ plus a move penalty $(u-u^{-})^{\mathsf T} R (u-u^{-})$ is a convex quadratic if one ignores the logistic curvature, or if one keeps the curvature and accepts a sequential quadratic program \cite{nocedal2006,boyd2004}. Constraints are the box and the slew. That program is the form surveyed by Qin and Badgwell and analysed by Mayne and colleagues \cite{qin2003,mayne2000}. It was not the form implemented for the estimation, because the logistic is cheap to evaluate exactly and the input dimension is two once depth is removed. The grid avoids a linearisation error near $\delta_{+}=0$, where the $\max(\cdot,0)$ terms are not differentiable and a gradient method needs a subgradient convention.
+
+An explicit multi-parametric solution in the sense of Bemporad and colleagues would be attractive if the linear model were trusted, because the control law would become a lookup of critical regions \cite{bemporad2002}. With a non-smooth logistic and an input grid of 55 points, the lookup is the grid itself. Memory on the factor computer is not the binding constraint. Deadline margin is. Fifty-five evaluations leave the processor idle for most of the 200~ms period, which is the desired state of a safety-related task: busy for a short, bounded time, then waiting.
+
+Stability of a one-step constrained search on a static map is simpler than stability of a dynamic horizon. The applied $u$ is always one of the 55 feasible points, the slew limit makes the applied sequence Lipschitz in time, and the plant-side actuators are themselves stable servos. There is no hidden unstable mode in the coordinator. The quality of the closed loop is entirely a question of whether $J$ ranks the true probabilities in the right order. That is a model-quality question, and Chapter~\ref{ch:estimate} does not answer it experimentally. It answers the narrower question of how the indices move when the plant is the same map the coordinator optimises, with Monte Carlo variation of diameter, slip, and depth noise that the coordinator does not see seed by seed. Even in that favourable situation the coordinator is not given the per-seed diameter, only the lot statistics, so the comparison is not a tautology of perfect preview.
+
+\subsection{Information the coordinator is denied}
+
+The following quantities are measured somewhere on the machine and are intentionally not inputs to $J$.
+
+\begin{enumerate}
+\item The instantaneous bridge index $B$. If $J$ could see $B$, it would learn to leave a bridge in place and let $\sigma(B)$ clean it up, which shows up as good $p_d$ in a joint predictor and as a poor $\eta_{\mathrm{E}}$ on the machine.
+\item The tube count over the last second. That count is the outcome. Using it inside the same period double-counts the event the cost is predicting. A slow outer trim of the intercepts in Equations~\eqref{eq:zm} and \eqref{eq:zd}, with a time constant of a minute, is a reasonable adaptive extension \cite{ljung1999,kalman1960,welch1995}. It is not part of this design.
+\item Opener draft force. Draft is a useful depth-loop measurement and a poor miss predictor unless it is calibrated per soil. The depth loop closes on a potentiometer. Draft is logged for a future soil-specific correction.
+\end{enumerate}
+
+Denying information is part of the architecture. A hierarchical controller that passes every measurement to every layer becomes a single optimiser with a distributed implementation, and it fails as a single optimiser \cite{skogestad2005}. The bit that does pass upward is health: vision alive, encoder alive, wheel stopped. Health bits change modes. They do not enter $J$ as if they were diameters.
+
+\subsection{Stacking the loops}
+
+The stack at a moment when both loops are healthy is the following sequence. The description is the program order on two computers that share a small datagram and do not share a clock beyond a 1~ms time stamp.
+
+\begin{enumerate}
+\item The vision computer publishes $\bar d$, $c_d$, $\rho$, and $B$.
+\item The factor computer, if it is on a 200~ms boundary, reads $\bar d$, $c_d$, and the latest inertial estimate of $f_{\mathrm{dist}}$, evaluates $J$ on the grid with $\nu=0$, slew-limits the winner, and publishes $(f,P)$. The depth servo is continuously commanded to $h^{\star}$ and does not wait for this boundary.
+\item The motor computer reads $v$ and $B$, forms $\omega_{\mathrm{cmd}}$ from Equations~\eqref{eq:wstar2}--\eqref{eq:sigma}, and runs Equation~\eqref{eq:pid} at 100~Hz.
+\item The shaker amplifier and the vacuum regulator track $f$ and $P$ with their own current loops. Those loops are not redesigned here. They are required to reach a 2~Hz step in under 150~ms and a 1~kPa step in under 150~ms, which is the slew assumption made above.
+\end{enumerate}
+
+Interference, if it appears, will appear as a gain in $Q_{\mathrm{f}}$ that does not appear in $\eta_{\mathrm{E}}$, because $\sigma<1$ stretches spacings. The problem statement asked for that distinction to be preserved in the report. The estimation therefore publishes both indices for every case, including the cases where vision alone lowers efficiency relative to a pure speed loop. That outcome is a successful warning from the design, not a failure of the table.
+
+\subsection{Parameter summary}
+
+Table~\ref{tab:params} collects the numbers a reimplementation needs. Anything not in the table is a logging choice and does not change the indices.
+
+\begin{table}[htbp]
+\centering
+\caption{Design parameters used by both the controllers and the numerical estimation.}
+\label{tab:params}
+\begin{tabular}{@{}llr@{}}
+\toprule
+Symbol & Role & Value \\
+\midrule
+$X_t$ & Target spacing & 0.25~m \\
+$N_c$ & Cells on the wheel & 12 \\
+$d_c$ & Cell mouth & 24~mm \\
+$h^{\star}$ & Target depth & 30~mm \\
+$T_m$ & Motor period & 10~ms \\
+$T_v$ & Vision period & 50~ms \\
+$T_f$ & Factor period & 200~ms \\
+$\tau$ & Motor time constant & 0.18~s \\
+$B_{\mathrm{on}}$ & Constraint threshold & 0.42 \\
+$\sigma_{\min}$ & Deepest feed cut & 0.78 \\
+$K_{p0},K_{i0},K_{d0}$ & Nominal gains & 2.4,\ 6.0,\ 0.08 \\
+$\alpha_{\mathrm{iso}}$ & Terrain attenuation, coordinator on & 0.55 \\
+$f_{\mathrm{harsh}}$ & Harshness anchor & 10~Hz \\
+Grid & Frequency and vacuum & 11 by 5 points \\
+Weights & $p_m$, $p_d$, $\varsigma/X_t$ & 9,\ 6,\ 4 \\
+Prices & Per hertz and per kilopascal & 0.004,\ 0.01 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The two innovations are now fully specified as programs. The rest of this chapter records the discrete realization, one fully numerical inference, the flight of a seed after release, the schedulability argument, and a slice of the cost grid. The next chapter places the programs on a machine and runs them under the lots and disturbances of the problem set.
+
+\input{ch2extra}

@@ -1,0 +1,51 @@
+\subsection{Measures this thesis inherits, and measures it refuses}
+\label{sec:metrics}
+
+A detector paper reports a mean average precision. A counter reports an absolute error. The two numbers answer different questions, and the warehouse literature cited above is easy to misread when they are placed side by side. This subsection fixes the definitions that later chapters either use or explicitly decline.
+
+Intersection over union of a predicted box $B$ and a ground-truth box $G$ is
+\begin{equation}
+\operatorname{IoU}(B,G)
+= \frac{\lvert B\cap G\rvert}{\lvert B\cup G\rvert}.
+\label{eq:iou}
+\end{equation}
+A detection is a true positive at threshold $\tau$ when its class is correct and $\operatorname{IoU}\ge\tau$. Precision is the fraction of predictions that are true positives. Recall is the fraction of ground-truth objects that are matched. Average precision integrates precision over recall for one class, and mean average precision averages that integral over classes~\cite{lin2014coco,everingham2010pascal}. Mask average precision replaces the box overlap by the mask overlap and is the number quoted for YOLACT and for the warehouse segmenter of Zhang and Tan~\cite{bolya2019yolact,zhang2025warehouse}. At $\tau=0.5$ the metric forgives a boundary that is off by a wide margin. At $\tau=0.75$ it begins to punish the seam error that, for two stacked crates, is the difference between a count of one and a count of two. A paper that reports only the looser threshold can improve while the tally stays wrong.
+
+None of those averages is the objective in \Cref{def:task}. The tally is an integer per passage. The errors used in Chapter~\ref{ch:system} are therefore the errors of an integer. With $T$ trials, prediction $\hat{N}^{(t)}$ and truth $N^{(t)}$,
+\begin{equation}
+\begin{aligned}
+\mathrm{MAE}
+&= \frac{1}{T}\sum_{t=1}^{T}\lvert\hat{N}^{(t)}-N^{(t)}\rvert,\\
+\mathrm{RMSE}
+&= \left(\frac{1}{T}\sum_{t=1}^{T}\big(\hat{N}^{(t)}-N^{(t)}\big)^{2}\right)^{1/2},\\
+\mathrm{Bias}
+&= \frac{1}{T}\sum_{t=1}^{T}\big(\hat{N}^{(t)}-N^{(t)}\big),\\
+\mathrm{MAPE}
+&= \frac{1}{T}\sum_{t=1}^{T}\frac{\lvert\hat{N}^{(t)}-N^{(t)}\rvert}{N^{(t)}}.
+\end{aligned}
+\label{eq:count-metrics}
+\end{equation}
+The exact-match rate is the fraction of trials with $\hat{N}^{(t)}=N^{(t)}$. The ninetieth percentile of $\lvert\hat{N}-N\rvert$ describes the bad passage rather than the average passage. Bias is kept, despite being a smaller number than the mean absolute error whenever errors cancel, because a brewery that is short three crates and a brewery that is long three crates do not have the same problem. Density-map papers often report only a mean absolute error and a root mean square error on the crowd count~\cite{li2018csrnet,wang2020dmcount}. They can omit bias when the count is a single class of people. They should not omit it when the sign distinguishes hidden depth from invented cells.
+
+Color uses top-1 accuracy, the fraction of masks whose predicted prototype equals the reflectance class, and a confusion matrix. Accuracy without the matrix is how amber and yellow disappear into a mean. The matrix is reported at the harshest illuminant for that reason. A mean average precision on color is not computed, because the color head is not a detector. It is a classifier on a mask the detector has already proposed. Mixing the two into one average would let a gain in box overlap hide a swap of stock-keeping units.
+
+Two further metrics appear in the segmentation literature and are not the acceptance test here. The Dice coefficient between a mask and a ground-truth region~\cite{dice1945,milletari2016vnet} is a training loss and a boundary diagnostic. A high Dice on a merged pair of crates is a failure of counting that looks like a success of overlap, because the merged mask covers almost all of the plastic. Boundary F-scores of the kind used to argue for PointRend and for boundary patch refinement~\cite{kirillov2020pointrend,tang2021bpr} would be the right metric for a future refinement of the lip. They are not estimated, because this thesis does not claim a new boundary head.
+
+The split is the one \Cref{tab:gap} already drew. Segmentation metrics judge YOLO-vf-seg as a proposer of regions. Counting metrics judge PLC as a proposer of integers. Classification metrics judge ICPH as a proposer of names. A single headline number would require a filmed passage in which all three are scored on the same crates. That passage is outside the estimate. The definitions above are how the estimate stays comparable to the prior work without pretending to have repeated it.
+
+\begin{table}[t]
+\centering
+\caption{Which published number is allowed to stand in for which decision. The right-hand column is the quantity Chapter~\ref{ch:system} actually computes.}
+\label{tab:metrics-map}
+\small
+\begin{tabular}{@{}p{0.34\textwidth}p{0.28\textwidth}p{0.28\textwidth}@{}}
+\toprule
+Published number & What it decides & What this thesis uses instead \\
+\midrule
+Box or mask mAP at $\tau=0.5$~\cite{lin2014coco} & Ranking of detectors on varied objects & Not computed. A seam error can hide inside $\tau=0.5$. \\
+Inventory accuracy of an area ratio~\cite{hu2025arbca} & Fraction of stacks whose integer matches & Exact-match rate, plus MAE and bias \\
+mAP of a rotated box detector~\cite{wang2025rewyolo} & Localization under yaw & Origin residual in centimetres \\
+Angular illuminant error~\cite{barron2017ffcc,hu2017fc4} & Quality of a global gain & Top-1 type accuracy per mask \\
+\bottomrule
+\end{tabular}
+\end{table}

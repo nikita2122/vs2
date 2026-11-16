@@ -1,0 +1,73 @@
+% auto-generated case-study numbers
+
+\begin{table}[htbp]\centering
+\caption{Steady operating point of the sales-gravity lager on the plant model.}
+\label{tab:steady}
+\begin{tabular}{lr}\toprule
+Quantity & Value \\\midrule
+Beer-valve lift & 0.704 \\
+Water-valve lift & 0.711 \\
+Final-valve lift & 0.840 \\
+Carbon-dioxide dose (g/s) & 7.507 \\
+Original extract ($^\circ$P) & 11.613 \\
+Alcohol (\% v/v) & 4.833 \\
+Dissolved CO$_2$ (g/L) & 5.200 \\
+Dissolved oxygen (ppb) & 9.22 \\
+Beer flow (m$^3$/h) & 13.962 \\
+Water flow (m$^3$/h) & 6.055 \\
+Product flow (m$^3$/h) & 20.000 \\
+Beer velocity (m/s) & 1.134 \\
+Water velocity (m/s) & 0.762 \\
+Product velocity (m/s) & 1.078 \\
+Mix pressure (bar a) & 2.855 \\
+CO$_2$ equilibrium pressure (bar a) & 1.905 \\
+Pressure margin (bar) & 0.950 \\
+Final-valve vena contracta (bar a) & 2.279 \\
+Blend-line Reynolds number & 40058 \\
+Darcy friction factor & 0.0218 \\
+Mother-beer mass fraction & 0.7000 \\
+\bottomrule\end{tabular}\end{table}
+
+\begin{table}[htbp]\centering
+\caption{Steady gain matrix and relative-gain array at the lager point. Outputs are beer flow (m$^3$/h), water flow (m$^3$/h) and mix pressure (bar). Inputs are the three valve lifts.}
+\label{tab:rga}
+\begin{tabular}{lccc}\toprule
+ & Beer lift & Water lift & Final lift \\\midrule
+Beer flow & 48.05 & -3.21 & 7.64 \\
+Water flow & -2.59 & 23.09 & 2.64 \\
+Mix pressure & 2.09 & 0.89 & -2.14 \\
+\midrule
+$\Lambda$ beer flow & 0.87 & -0.00 & 0.13 \\
+$\Lambda$ water flow & -0.00 & 0.95 & 0.05 \\
+$\Lambda$ mix pressure & 0.13 & 0.05 & 0.82 \\
+\bottomrule\end{tabular}\end{table}
+
+\begin{table}[htbp]\centering
+\caption{Commissioning estimates. Standard errors are from the linearised least-squares covariance.}
+\label{tab:est}
+\begin{tabular}{lrrr}\toprule
+Parameter & True & Estimate & Std. error \\\midrule
+$K_{v,h}$ (m$^3$/h) & 32.00 & 32.02 & 0.08 \\
+$K_{v,w}$ (m$^3$/h) & 12.00 & 12.00 & 0.01 \\
+$K_{v,f}$ (m$^3$/h) & 64.00 & 63.99 & 0.12 \\
+Header bias (bar) & 0.100 & 0.098 & 0.006 \\
+Effective loss $C_L$ & 18.85 & 18.37 & -- \\
+Solubility scale $\kappa_\zeta$ & 0.930 & 0.930 & -- \\
+\bottomrule\end{tabular}\end{table}
+
+\begin{table}[htbp]\centering
+\caption{Closed-loop estimation of beer quality after each upset. IAE is integrated from the upset to the end of the run. Settling time is the time after the upset until original-extract error remains inside $0.05\,^\circ$P.}
+\label{tab:kpi}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrr}\toprule
+Case & Controller & IAE OE & IAE ABV & IAE CO$_2$ & Settle (s) & Travel & Min. margin \\\midrule
+S1 grade change & Ratio-PI & 31.30 & 13.48 & 11.81 & 129 & 7.091 & 0.87 \\
+S1 grade change & 3V-NMPC & 32.29 & 13.90 & 8.10 & 129 & 1.612 & 0.78 \\
+S1 grade change & 3V-NMPC + PIP-Twin & 10.75 & 4.63 & 2.06 & 16 & 1.675 & 0.95 \\
+S2 supply upset & Ratio-PI & 12.38 & 21.44 & 2.83 & 139 & 0.833 & 0.86 \\
+S2 supply upset & 3V-NMPC & 39.34 & 9.96 & 5.06 & 139 & 0.454 & 0.91 \\
+S2 supply upset & 3V-NMPC + PIP-Twin & 20.04 & 17.80 & 1.27 & 139 & 0.414 & 0.90 \\
+S3 oxygen and stiction & Ratio-PI & 3.97 & 1.73 & 1.07 & 107 & 0.203 & 0.86 \\
+S3 oxygen and stiction & 3V-NMPC & 19.28 & 8.41 & 6.06 & 116 & 0.349 & 0.96 \\
+S3 oxygen and stiction & 3V-NMPC + PIP-Twin & 1.29 & 0.56 & 0.95 & $<$1 & 0.634 & 0.91 \\
+\bottomrule\end{tabular}}\end{table}

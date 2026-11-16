@@ -1,0 +1,265 @@
+  Research for Solving Loss of Valve Authority and
+  Analyser Delay in High-Gravity Beer Blending by
+   Using Coordinated Delay-Compensated Active
+           Disturbance Rejection Control
+                                                                 Thesis draft
+                                                          Automatic control, 2026
+
+
+   Abstract—Two limits remain after the inlet valves of a high-              This paper contributes the pair that addresses both limits:
+gravity blender have been given the correct flow gain. If the             a valve-authority coordinator that chooses the header setpoint
+blend-header pressure is held at its design value while the beer          from a stem cost, and a delay-compensated extract controller
+supply falls, the beer valve runs out of stroke and the production
+rate is lost. If the original-extract loop is closed on the analyser, a   whose fast feedback is a mass balance and whose slow
+transport delay of about ten seconds forces the loop to be slower         feedback is a bias driven by a consistent innovation. The inlet
+than the brand changes it is asked to follow. This paper uses the         flow loops that use the installed valve gain are the companion
+outlet valve to track a header-pressure setpoint that keeps the           paper. The campaign below is the joint controller.
+three stems near their design openings, and it closes the extract
+loop on a mass-balance soft sensor whose bias is corrected by               II. A HEADER SETPOINT WITH THE STEMS INSIDE THE
+the delayed analyser. The bias update must subtract the bias                                          STROKE
+itself. Without that subtraction a transient freezes as a permanent
+offset. On a 560 s campaign the coordinated controller holds the             For a linear valve the stem required at a trial header pressure
+beer flow through a rise to 9 m3/h at a reduced supply, with stems        follows from the IEC equation [7], [8],
+near 0.70, where both fixed-header baselines sit on the open stop.                                        s
+                                                                                                       Q    ρ/1000
+  Index Terms—valve authority, active disturbance rejection                                      x=                  .                   (1)
+                                                                                                       Kv     ∆p
+control, soft sensor, transport delay, high-gravity blending
+                                                                          Given the beer-flow setpoint, the water-flow setpoint RQ⋆h and
+                        I. I NTRODUCTION                                  the measured supplies, (1) returns three stems at each trial
+                                                                          header pressure. The scalar cost
+   A high-gravity blending skid dilutes fermented beer with
+deaerated water to a sales gravity, typically from about 16 °P               J(pm ) = ψ(xh , 0.58) + ψ(xw , 0.55) + 0.25 ψ(xb , 0.38),
+to 12 °P [1], [2]. The quality variables are the beer flow, which          ψ(x, x◦ ) = (x − x◦ )2 + 15 max(0, x − 0.82)2
+sets the production rate, and the original extract. The header                          + 15 max(0, 0.25 − x)2
+pressure is not a quality variable. It is the means by which the                                                                       (2)
+two inlet valves keep a usable pressure drop.                             penalises departure from the design stems and penalises the
+   Holding that pressure at the design value 2.40 bar is the              neighbourhood of the seat and the stop much more heavily.
+usual choice, and it is the wrong choice after the beer supply            The outlet stem is weighted by 0.25 because it is the residual
+falls. At a beer supply of 3.05 bar the beer drop would be                actuator: it should travel so that the inlet valves do not. The
+only 0.65 bar. Equation (1) then asks the beer valve for a stem           trial pressure is kept inside
+near the stop in order to pass the design flow, and for a stem
+                                                                                     pd + 0.40 ≤ pm ≤ min(ph , pw ) − 0.40,             (3)
+beyond the stop in order to pass 9 m3/h. No observer can invent
+the missing capacity. The outlet valve can lower the header               so that every valve retains at least 0.40 bar of drop. The
+and give the drop back, provided it is sized with spare stroke            minimiser is the best of one hundred uniform grid points. The
+and provided its setpoint is computed from the flows that are             grid has no derivative to fail when a drop crosses zero, and at
+actually demanded.                                                        a 10 ms cycle it is cheaper than the flow observer.
+   The second limit is the analyser. Original extract at the mix             At the design point the grid returns 2.395 bar against the
+point is an algebraic function of the two flows and of the                design header 2.40 bar. After the beer supply falls to 3.05 bar,
+mother-beer extract. The certified measurement is one pipe                with the design flows still demanded, it returns 1.71 bar. The
+length downstream, here 14 m, plus an instrument lag [3], [4].            beer drop is then 1.34 bar rather than 0.65 bar, and the beer
+At the design speed the delay is 9.87 s. A loop closed on that            stem returns toward 0.65 rather than running past 0.90. At
+measurement must be detuned for the delay [5], [6]. A brand               9 m3/h, ratio 0.434 and the same low supply, a header of
+change cannot wait for it.                                                1.45 bar places all three stems at approximately 0.70, 0.69
+            measured
+                                                    ⋆
+                                        dead zone pm outlet                   It is available every sample. It does not know that the true
+             ph , pw     minimise J     and 4 s lag                           mother beer may have moved. The analyser is a delay τd =
+                                                    observer
+                                                                              L/vb , limited to [3, 30] seconds, followed by a lag Ta = 1.2 s.
+Fig. 1. The outlet path. The setpoint is the header pressure that keeps the   The delay is a shift register indexed by the current speed. At
+inlet stems near their design openings.
+                                                                              the design speed τd = 9.87 s. At 12.91 m3/h in the 50 mm
+                                                                              outlet it falls to 7.67 s.
+and 0.70. A frozen header of 2.40 bar has no solution inside                     The bias that reconciles P̂ with the analyser is
+the beer stroke at that rate.                                                                  1                                    
+                                                                                       ḃP =       Pmeas (t) − P̂ (t − τd − Ta ) − bP ,     (6)
+   The raw minimiser is not applied as a step. A dead zone of                                  Tb
+0.04 bar ignores the grid grain. Outside it, the setpoint lags by             with Tb = 28 s and bP limited to ±1.5◦ P. The extract
+4 s. Four seconds is slower than the inlet flow loops, whose                  controller sees Pc = P̂ + bP , not the raw analyser. The
+bandwidth is 0.85 radians per second, so those loops see a                    equilibrium of (6) is bP = P −P̂ when the signals are constant.
+header trajectory they can reject as a disturbance [9], [10].                 Subtracting bP inside the innovation is the whole of the
+  III. O UTLET CONTROL THAT STAYS SLOWER THAN THE                             consistency argument. An update that uses Pmeas − P̂ (t − τd )
+                             FLOW LOOPS
+                                                                              and does not subtract bP is not observable. If a transient has
+                                                                              left bP at 0.2◦ P, the controller drives P̂ to the setpoint minus
+   The header plant has the same first-order shape as an inlet                0.2, the analyser then agrees with the delayed soft sensor,
+valve, with a negative gain. The installed header gain at the                 and the innovation is zero. The beer stays 0.2◦ P light forever.
+design point is Gbp = ∂pm /∂xb = −4.585 bar per unit stem,                    Subtracting bP makes that situation an innovation of −0.2◦ P,
+and the observer coefficient is b0,p = Gbp /τv = −1.910 with                  and the bias returns to zero. When the mother beer really has
+τv = 2.4 s. The negative sign opens the outlet when the header                changed, P − P̂ remains and bP converges to it. This is the
+is above its setpoint. The observer is the standard first-order               same consistency condition as the model-error channel of a
+extended-state observer [11], [12], and the same invariance                   Smith predictor [13]–[15].
+correction used on the inlet loops is applied when b0,p changes.                 The extract loop itself is a first-order active disturbance
+   The base bandwidths are ωc,p = 0.20 and ωo,p = 0.80                        rejection controller on the ratio R. At the design ratio
+radians per second, about four times slower than the flow                     ∂P/∂R = −8.884◦ P, the design model has time constant
+loops. Matching the flow-loop bandwidth produces a limit                      2.2 s, and b0,R = −8.884/2.2 = −4.038. The coefficient
+cycle of period about 4 s. The mechanism is the stick band.                   is recomputed from the current ratio, so at the sales brand
+A header setpoint a few hundredths of a bar away from                         11.2 °P, where R = 0.434 and ∂P/∂R = −7.74◦ P, it
+2.40 bar integrates until the command exceeds the stick release               moves to about −3.52. The bandwidths are ωc,R = 0.12 and
+of 0.014. The outlet stem slips, both inlet flows move, both                  ωo,R = 0.48, seven times slower than the flow loops and about
+flow loops correct, and with the three loops in one band the                  twice as fast as the analyser-only baseline, which must stay
+correction arrives with the wrong phase. The dead zone exists                 at 0.055 and 0.22 to remain stable. The extra speed exists
+so that the grid does not provoke that first slip.                            only because Pc is not delayed. With the ratio held fixed,
+   The bandwidth is raised only while a measured inlet stem                   a hidden rise of the mother beer from 16.0 to 16.6 °P is an
+leaves [0.32, 0.74],                                                          extract change of (11.2/16) × 0.6 = 0.42◦ P at the mix point.
+ σ = max(0, xh − 0.74, 0.32 − xh , xw − 0.74, 0.32 − xw ),                    Equation (5) does not contain it. Equation (6) is the only path
+                                                                              by which it enters Pc .
+ α = 1 + 1.2 sat[0,1] (σ/0.12),
+                                                                   (4)                 V. E VIDENCE FROM THE JOINT CAMPAIGN
+with ωc,p = 0.20α and ωo,p capped at 1.6. The factor α                           The coordinator and the soft sensor are estimated together
+is lagged by 2 s. At the design window α = 1. At a stem                       with the installed-gain inlet loops of the companion paper.
+of 0.86, α = 2.2 and the header loop approaches half the                      The baselines are ratio proportional–integral control and fixed-
+flow-loop bandwidth, still slower than the flow loops, but fast               gain active disturbance rejection, both with the header setpoint
+enough to restore the drop before the inlet valve spends a long               frozen at 2.40 bar and with extract feedback taken from the
+interval at the stop. If α sits at its ceiling for long intervals, the        analyser. Table I gives the integrals on the windows that belong
+outlet valve is too small and the remedy is Kv,b , not a larger               to this paper.
+schedule. The outlet coefficient used here, Kv,b = 19.5, was                     On the brand change, from 12.0 °P to 11.2 °P in 25 s, the
+chosen by sizing the design stem at 0.38 so that the high-rate                proposed extract integral is half the analyser-based observer
+point still has a solution.                                                   and a quarter of the proportional–integral loop. The proposed
+    IV. A SOFT SENSOR WHOSE BIAS CAN BE REMOVED                               loop re-enters ±0.05◦ P about 64 s after the ramp ends. Neither
+                                                                              baseline has settled when the throughput ramp begins. The
+   At the mix point the original extract predicted from the
+                                                                              peak proposed error during the ramp is 0.51 °P, which is the
+design mother-beer extract Ph◦ = 16◦ P and the filtered flows
+                                                                              cost of keeping the extract loop slower than the flow loops.
+is                                                                               On the throughput window the beer-flow integrals separate
+                            ρh Qh Ph◦
+                   P̂ =                 .                  (5)                the coordinator from a composition loop that is allowed to
+                         ρh Qh + ρw Qw
+                              TABLE I                                only to about 0.68. Both baselines hold 2.40 bar, and the
+ E XTRACT IAE (◦ P · s) AND BEER - FLOW IAE. PID AND LADRC HOLD      proportional–integral beer stem reaches 0.91. Outlet travel on
+                      THE HEADER AT 2.40 BAR .
+                                                                     the window is 1.02 against 0.41 and 0.12. That travel is the
+                      Extract                  Beer flow             coordinator buying back the drop.
+    Window     PID    LADRC     Prop.   PID     LADRC      Prop.        From 130 s to 210 s the water supply oscillates with ampli-
+                                                                     tude 0.28 bar and period 26 s. Peak extract errors are 0.109,
+    Brand      76.2      39.6   19.2    8.73       11.3    5.08
+    Rate       77.3      6.25   3.68    74.9       69.3    4.83      0.140 and 0.086◦ P. Time spent outside ±0.05◦ P is 30 s, 32 s
+    Drift      147       18.0   17.4    65.8       73.9    3.99      and 7.8 s. The oscillation enters the water-valve gain on the
+    Wear        216      7.22   6.05     121        135    4.60      sample it occurs, lagged into b0 by the 2.5 s gain filter of the
+                                                                     companion paper. The header loop moves as well, because the
+                                                                     cost (2) sees a changing water supply, but the outlet motion is
+abandon the rate. Both baselines reach a beer stem near 0.98         a slow modulation of travel 0.55 on the window, not a copy
+and stay there. At 360 s the fixed-gain observer holds the           of the 26 s sine. The dead zone and the 4 s lag are what keep
+extract at 11.16 °P against a setpoint of 11.20 °P, while the        it slow.
+beer flow is 7.96 m3/h against 9 m3/h. The proposed beer flow           The high-rate stems can be checked without the closed loop.
+at the same instant is 8.90 m3/h, the header is near 1.45 bar,       After the brand change, R = (ρh /ρw )(16.0/11.2−1) = 0.434.
+and the three stems are near 0.70. The extra outlet travel of        A beer flow of 9.00 m3/h then asks for 3.91 m3/h of water
+the full run, 3.44 against 1.41 and 0.61, is this motion. It is      and 12.91 m3/h at the outlet. At a header of 1.45 bar and a
+three slow moves, at the supply step, at the throughput ramp         beer supply of 3.05 bar the drops are 1.60 bar, 2.75 bar and
+and at the loss of Kv , not a chatter band.                          0.90 bar, and (1) returns stems 0.70, 0.69 and 0.70. All three
+   On the hidden drift of the mother beer the two observer-          lie in the window where (4) leaves the header bandwidth at its
+based extract integrals are close, 18.0 and 17.4, because both       base value. The same flows at a frozen header of 2.40 bar ask
+eventually see the analyser. The proposed beer-flow integral         the beer valve for a stem above one. The closed loop of the
+on that window remains 3.99, against 73.9, because the drift         campaign settles on this static picture: at 360 s the proposed
+trim does not have to be performed with the beer valve already       stems are near 0.70 and the beer flow is 8.90 m3/h.
+on the stop. At 520 s the proposed extract is 11.33 °P against          One further consistency check belongs to the bias. At the
+11.20 °P. The residual is the 28 s bias lag still finishing, not a   sales brand the sensitivity of blend extract to mother-beer
+frozen offset. A shorter bias time reduces the residual and, on      extract is P/Ph = 11.2/16 = 0.700. The hidden rise of
+this plant, overshoots the setpoint.                                 0.6◦ P is therefore 0.42◦ P at the mix point if the ratio is
+ VI. BANDWIDTH ORDER , AND THE WINDOWS THAT TEST                     not yet trimmed. A bias time of 28 s is about three times
+                                IT
+                                                                     the design delay. It is slow enough not to overshoot and
+                                                                     fast enough that the residual at 520 s, 0.13 °P, is still closing.
+   The four bandwidths are an order, not four independent            The proportional–integral loop, already on the beer-valve stop,
+tunings. Inlet flow loops run at ωc = 0.85 and ωo = 2.5.             finishes the drift window near 13.3 °P. An extract specification
+The header base values are 0.20 and 0.80, with a scheduled           that ignored the production rate would rank the frozen-gain
+ceiling of 0.44 and 1.6. The extract loop on Pc runs at 0.12         observer, which ends the campaign at 11.16 °P and 7.38 m3/h,
+and 0.48. The analyser-only baseline is held at 0.055 and 0.22,      ahead of a controller that is still closing a 0.13 °P residual at
+the highest pair that stays stable when the feedback is the raw      the demanded rate. A blending specification ranks them the
+measurement. The inequalities ωc,R < ωc,p < ωc,flow are the          other way.
+design. They were not the first values tried. A header observer
+at ωc,p = 0.55, close to the flow loops, is stable on a unit-gain         VII. F ULL - RUN BALANCE OF ERROR AND TRAVEL
+test and unstable on the sticky valve: the first slip grows into a
+cycle of period about 4 s, with the header swinging by several          Table II is the 560 s integral, not a selected window. The
+tenths of a bar, before any external disturbance is applied.         proposed extract integral is 64 percent of the frozen-gain
+Slowing the header loop and ignoring setpoint changes inside         observer and about one tenth of the proportional–integral loop.
+0.04 bar removes the cycle. The same plant then holds the            The beer-flow integral is about one eighth of either baseline.
+design extract for a 50 s noise-only interval with zero valve        Dividing by the length of the run, the proposed mean absolute
+travel.                                                              errors are 52.4/560 = 0.094◦ P and 37.5/560 = 0.067 m3 h−1 .
+   The supply step and the water oscillation are the windows         The frozen-gain means are 0.145◦ P and 0.57 m3 h−1 . The
+in which this separation is visible before the throughput ramp       proportional–integral means are 0.94◦ P and 0.51 m3 h−1 . The
+spends the stroke. From 50 s to 130 s the extract integrals          two baseline flow means are similar because both lose the
+are 4.03, 5.53 and 3.36◦ P · s. Settling to ±0.05◦ P takes 72 s      beer valve for the same physical reason, a header that was not
+for proportional–integral control and 46 s for the coordinated       allowed to fall. Their extract means differ because the observer
+controller. The frozen-gain observer does not stay inside the        still trims water from the analyser, while the proportional–
+band. The proposed header leaves 2.40 bar within a few               integral loop, once the beer flow is stuck, trims water from a
+seconds and settles near 1.8 bar, and the beer stem opens            ratio that no longer describes the plant.
+                                 TABLE II                                    During the 20 s throughput ramp the index L/vb (t) is not
+F ULL - RUN INDICES , 0 S TO 560 S . T RAVEL IS THE INTEGRATED ABSOLUTE   identical to the travel time of the fluid element now leaving the
+                               STEM SPEED .
+                                                                          pipe, because that element entered when the speed was lower.
+         Index                        PID    LADRC      Prop.             The difference is a fraction of a second. Beside Ta = 1.2 s and
+         Extract IAE (◦ P · s)        524        81.4    52.4
+                                                                          Tb = 28 s it does not move the innovation enough to justify
+         Beer-flow IAE                286         316    37.5             integrating 1/v along the pipe. After the ramp settles, current
+         Time outside ±0.05◦ P (s)    384         333     271             speed and travel time coincide, and the index is exact.
+         Beer-valve travel            2.99       5.93    7.02
+         Water-valve travel           2.33       3.86    5.14
+                                                                             The proportional–integral baseline that this sequence is
+         Outlet-valve travel          0.61       1.41    3.44             compared with is a velocity form with the same command
+                                                                          limits and the same stick model. Its beer gain is 0.272 with
+                                                                          integral time 2.4 s, its water gain is 0.516 with the same
+   The steady window before the supply step is the noise floor.           integral time, its header gain is 0.150 with integral time 8 s
+All three controllers integrate about 0.005◦ P·s of extract error         and a setpoint fixed at 2.40 bar, and its extract gain on the
+and 0.007 m3 h−1 s of flow error, and the valve travel on that            ratio is −0.0088 with integral time 22 s. The header gain is
+interval is zero. The extra travel in Table II is therefore not a         positive: a high header opens the outlet. The extract gain is
+loop that chatters inside the stick band. It is the outlet stroke         negative because ∂P/∂R < 0. The frozen-gain observer uses
+spent at the supply step, at the throughput ramp and at the loss          the flow and header bandwidths of the proposed controller and
+of Kv . A quiet loop that finishes at the wrong flow is not the           differs in the three places this paper and its companion name:
+better design [16], [17]. The first 50 s are the check that the           frozen b0 , fixed header setpoint, analyser feedback. Retuning
+dead zone, the 4 s lag and the base header bandwidth really               those baselines on the disturbed plant would compare tuning
+do leave a sticky valve alone when nothing has happened.                  effort, which is a different question.
+   The same table is not a flavour result. A correct original
+                                                                                                     IX. C ONCLUSION
+extract does not restore the foam and ester differences that
+high-gravity fermentation itself introduces [2], [18]. The co-               Loss of valve authority and analyser delay are separate
+ordinator and the soft sensor keep the extract and the flow at            faults, and they need separate signals. The outlet valve, driven
+the values the brand and the production plan specify. They do             to a header setpoint that minimises a stem cost, returns the
+not enlarge the set of mother beers the brewery can ferment,              pressure drop the inlet valves lose when a supply falls. The
+and they do not remove the need for the installed-gain inlet              mass-balance soft sensor lets the extract loop run at a cascade
+loops of the companion paper. A correct header setpoint with              bandwidth, and the delayed analyser corrects only a bias,
+a wrong b0 still mis-scales the flow command. A correct soft              provided the bias is subtracted inside its own innovation.
+sensor with the beer valve on the stop still cannot deliver the           Together with the installed-gain inlet loops of the companion
+rate.                                                                     paper, the pair keeps a beer flow of 9 m3/h inside the stroke at
+                                                                          a beer supply of 3.05 bar and brings a brand change back to
+                 VIII. O NE SAMPLE , IN ORDER                             the tolerance band before either analyser-based baseline has
+    The controller is a fixed sequence at ∆t = 10 ms, which               settled. The outlet travel is the price of the first result, and the
+is the sequence a function block would execute. Read the                  bias lag is the price of the second.
+filtered flows, stems and pressures. Compute τd = L/vb and
+                                                                                                        R EFERENCES
+take the shift-register index nearest τd /∆t. At the design
+speed that index is 987 samples; at 12.91 m3/h it is 767                   [1] W. Kunze, Technology Brewing and Malting. Berlin: VLB Berlin, 2014.
+                                                                           [2] G. G. Stewart, “High-gravity brewing and distilling—past experiences
+samples. Update bP from (6) using the soft sensor delayed                      and future prospects,” Journal of the American Society of Brewing
+by τd + Ta , not by τd alone, because the analyser lag shifts                  Chemists, vol. 68, no. 1, pp. 1–9, 2010.
+the measurement as well as smoothing it. Step the extract                  [3] R. C. Baker, Flow Measurement Handbook, 2nd ed.                Cambridge:
+                                                                               Cambridge University Press, 2016.
+observer and form Q⋆w = RQ⋆h . Step the two inlet observers                [4] MEBAK, Wort, Beer, Beer-based Beverages: Collection of Brewing
+of the companion paper. Evaluate J on the hundred-point                        Analysis Methods. Freising: MEBAK, 2013.
+grid, pass the minimiser through the 0.04 bar dead zone and                [5] S. Skogestad, “Simple analytic rules for model reduction and PID
+                                                                               controller tuning,” Journal of Process Control, vol. 13, no. 4, pp. 291–
+the 4 s setpoint lag, update α from (4), and step the header                   309, 2003.
+observer. Lag the three stem commands by 0.40 s and return                 [6] J. E. Normey-Rico and E. F. Camacho, “Dead-time compensators: a
+those lagged commands both to the positioners and to the                       survey,” Control Engineering Practice, vol. 16, no. 4, pp. 407–428, 2008.
+                                                                           [7] International Electrotechnical Commission, “IEC 60534-2-1: Industrial-
+observers as the applied input of the next sample.                             process control valves — part 2-1: Flow capacity — sizing equations
+    The extract loop is stepped before the flow loops so that the              for fluid flow under installed conditions,” 2011.
+water setpoint of this sample already contains the latest ratio.           [8] Fisher Controls International, Control Valve Handbook, 4th ed. Mar-
+                                                                               shalltown: Fisher Controls International, 2005.
+The header loop is stepped after the inlet commands so that                [9] D. E. Seborg, T. F. Edgar, D. A. Mellichamp, and F. J. Doyle III, Process
+it sees their effect through the plant, one sample later. A one-               Dynamics and Control, 4th ed. Hoboken: John Wiley & Sons, 2016.
+sample delay at 10 ms is negligible beside a 2.4 s positioner.            [10] W. L. Luyben, Process Modeling, Simulation, and Control for Chemical
+                                                                               Engineers, 2nd ed. New York: McGraw-Hill, 1990.
+Closing the algebraic loops inside one sample, by iterating the           [11] J. Han, “From PID to active disturbance rejection control,” IEEE
+observers to convergence, changed nothing measurable.                          Transactions on Industrial Electronics, vol. 56, no. 3, pp. 900–906, 2009.
+[12] Z. Gao, “Scaling and bandwidth-parameterization based controller tun-
+     ing,” in Proceedings of the American Control Conference, Denver, CO,
+     2003, pp. 4989–4996.
+[13] O. J. M. Smith, “Closer control of loops with dead time,” Chemical
+     Engineering Progress, vol. 53, no. 5, pp. 217–219, 1957.
+[14] Q. Zheng and Z. Gao, “Predictive active disturbance rejection control
+     for processes with time delay,” ISA Transactions, vol. 53, no. 4, pp.
+     873–881, 2014.
+[15] S. Zhao and Z. Gao, “Modified active disturbance rejection control for
+     time-delay systems,” ISA Transactions, vol. 53, no. 4, pp. 882–888,
+     2014.
+[16] W. L. Bialkowski, “Dreams versus reality: a view from both sides of
+     the gap,” Pulp & Paper Canada, vol. 94, no. 11, pp. 19–27, 1993.
+[17] T. Hägglund, “A control-loop performance monitor,” Control Engineer-
+     ing Practice, vol. 3, no. 11, pp. 1543–1551, 1995.
+[18] D. E. Briggs, C. A. Boulton, P. A. Brookes, and R. Stevens, Brewing:
+     Science and Practice. Cambridge: Woodhead Publishing, 2004.
+

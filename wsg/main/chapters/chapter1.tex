@@ -1,0 +1,346 @@
+\chapter{Research of previous work}
+\label{ch:review}
+
+The blending step that closes a high-gravity brewery is a small plant with a large economic weight. A few seconds of wrong ratio put beer of the wrong strength into a bright-beer tank, and a valve that spends its life against the seat wears out and starts to stick. The actuators on the line studied here are ordinary linear control valves, and the fast measurements are liquid speeds and pressures. Everything that follows is an attempt to use those measurements well. This chapter sets out what is already known, in three parts. Section~\ref{sec:lit-tech1} reviews the control of coupled valve flows and the disturbance-rejection theory that the first technique builds on. Section~\ref{sec:lit-tech2} reviews delay compensation, inferential sensing and header-pressure coordination, which the second technique builds on. Section~\ref{sec:problem} states the blending problem in a form that those two techniques can be designed against.
+
+\section{Research on coupled valve flow and disturbance decoupling}
+\label{sec:lit-tech1}
+
+\subsection{High-gravity beer and the dilution step}
+
+High-gravity brewing is the practice of fermenting wort at an original extract above the extract of the beer that will be sold, and of restoring the sales gravity later by adding water \cite{stewart2010highgravity,kunze2014brewing,briggs2004brewing}. Stewart's account of the method puts the usual high-gravity range at \SIrange{15}{20}{\plato}, against a sales beer that may lie anywhere from a light lager near \SI{10}{\plato} to a full-bodied beer near \SI{13}{\plato} \cite{stewart2010highgravity}. The water added at the end of the process is carbon-filtered and stripped of oxygen, because oxygen picked up at this point shortens shelf life. The same idea appears in grain-whisky fermentation, where worts of \SIrange{18}{21}{\plato} are diluted after distillation rather than before it \cite{stewart2010highgravity,stewart1997recent}.
+
+The brewing literature is mainly about yeast and flavour, and it is worth recording what it does and does not settle. High-gravity wort stresses yeast: vacuoles enlarge, the cell surface changes, and the uptake of maltotriose, the largest fermentable sugar, becomes incomplete \cite{stewart2010highgravity,boulton2001yeast,casey1984highgravity}. Foam stability falls, and the ester profile of the finished beer can drift away from the profile of a beer brewed at sales gravity \cite{stewart2010highgravity,briggs2004brewing}. Those are biological constraints. They fix the mother beer that the blender is allowed to receive. They do not say how the blender should move its valves when the supply pressure changes.
+
+What the process books do fix is the dilution arithmetic \cite{kunze2014brewing,mebak2013wort,ebcanalytica}. Original extract is a mass fraction. If a mass flow $\dot{m}_h$ of high-gravity beer at original extract $P_h$ is mixed with a mass flow $\dot{m}_w$ of water, the original extract of the mixture is
+\begin{equation}
+\label{eq:plato-mass}
+P = \frac{\dot{m}_h\, P_h}{\dot{m}_h + \dot{m}_w},
+\end{equation}
+because the water contributes no original extract. Volumetric flow meters and speed sensors report $Q = \dot{m}/\rho$, so the same balance written in the measured speeds is
+\begin{equation}
+\label{eq:plato-vol}
+P = \frac{\rho_h v_h A_h\, P_h}{\rho_h v_h A_h + \rho_w v_w A_w}.
+\end{equation}
+Equation~\eqref{eq:plato-vol} is the soft sensor of Chapter~\ref{ch:design}. It is not an extra instrument. It is the mass balance evaluated on the speeds the skid already measures. The laboratory and the in-line analyser report the same quantity by density and sound velocity, on a sample that has travelled the length of the pipe after the mix point \cite{mebak2013wort,ebcanalytica,baker2016flow}.
+
+Industrial skids close this balance with a ratio controller \cite{shinskey1996process,liptak2006handbook,seborg2016process}. Two flow loops track setpoints linked by $Q_w^\star = R\, Q_h^\star$, and a slow outer loop trims $R$ from the analyser. The ratio is applied to the setpoints rather than to the measured beer flow, which avoids a positive feedback from beer-flow noise into the water setpoint \cite{shinskey1996process}. That structure is the right cascade. Its weakness on this plant is the gain inside each flow loop, not the decision to use a ratio.
+
+\subsection{The linear valve and the installed pressure drop}
+
+A control valve for clean beer or deaerated water on a sanitary skid is typically a globe or a diaphragm valve with a linear inherent characteristic and a pneumatic positioner \cite{fisher2005valve,iec60534general,iec60534}. The inherent characteristic is the flow curve measured at a constant pressure drop. For a linear valve the fraction of the rated flow equals the stem fraction $x\in[0,1]$,
+\begin{equation}
+\label{eq:inherent}
+f(x) = x.
+\end{equation}
+The sizing equation used for incompressible liquids in IEC~60534-2-1 relates the volumetric flow in cubic metres per hour to the pressure drop in bar and to the specific gravity \cite{iec60534,fisher2005valve},
+\begin{equation}
+\label{eq:kv}
+Q = K_v\, x\, \sqrt{\frac{\Delta p}{\rho/1000}}.
+\end{equation}
+Here $K_v$ is the metric flow coefficient, the flow of water in \si{\cubic\metre\per\hour} that the fully open valve passes at a pressure drop of \SI{1}{\barg}. The square-root dependence is the whole difficulty. A controller tuned at one pressure drop is mistuned at another, in proportion to the square root of the ratio of the drops.
+
+The drop across an inlet valve is not an independent input. It is the difference between a supply pressure, set by a tank head or a pump, and the header pressure $p_m$, which is common to both inlet valves and is itself set by the outlet valve. For the beer valve,
+\begin{equation}
+\label{eq:dp-beer}
+\Delta p_h = p_h - p_m.
+\end{equation}
+Differentiating \eqref{eq:kv} at fixed stem position gives the pressure sensitivity
+\begin{equation}
+\label{eq:pressure-sensitivity}
+\frac{\partial Q_h}{\partial p_m} = -\frac{Q_h}{2(p_h-p_m)}.
+\end{equation}
+A rise in header pressure reduces beer flow and water flow together, and it increases the flow through the outlet valve. The three valves therefore meet a single algebraic constraint. On a liquid-full line the accumulation in the header pipe is negligible on the time scale of a positioner, so
+\begin{equation}
+\label{eq:node}
+Q_h(x_h,p_h,p_m) + Q_w(x_w,p_w,p_m) - Q_b(x_b,p_m,p_d) = 0.
+\end{equation}
+Equation~\eqref{eq:node} defines $p_m$ as an implicit function of the three stems and the three boundary pressures. The gain that a flow controller actually sees is not the partial derivative at frozen $p_m$. It is the total derivative along \eqref{eq:node}.
+
+Let $S_h = Q_h/(2\Delta p_h)$, $S_w = Q_w/(2\Delta p_w)$ and $S_b = Q_b/(2\Delta p_b)$, all positive. Implicit differentiation of \eqref{eq:node} produces the installed gains used in Chapter~\ref{ch:design}. The diagonal beer gain is smaller than the partial gain $Q_h/x_h$ by the factor $(S_w+S_b)/(S_h+S_w+S_b)$, because part of any extra beer flow is absorbed by a rise in $p_m$. This is the installed characteristic discussed in the valve handbooks \cite{fisher2005valve,iec60534}. Figure~\ref{fig:installed} sketches the distinction. The inherent line is straight. The installed line bends, and it moves when the supply pressure moves.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=5.2cm,y=4.2cm,>=Stealth]
+  \draw[->] (0,0) -- (1.15,0) node[below] {stem fraction $x$};
+  \draw[->] (0,0) -- (0,1.15) node[left] {relative flow};
+  \draw[thick] (0,0) -- (1,1) node[right] {inherent};
+  \draw[thick, dashed] plot[smooth] coordinates {(0,0) (0.25,0.18) (0.5,0.42) (0.75,0.72) (1,1)};
+  \node[right] at (1,0.92) {installed};
+  \draw[thick, dotted] plot[smooth] coordinates {(0,0) (0.3,0.12) (0.6,0.28) (0.85,0.48) (1,0.62)};
+  \node[right] at (1,0.55) {installed, lower $\Delta p$};
+  \draw[decorate, decoration={brace, amplitude=4pt}] (0.32,0.05) -- (0.72,0.05);
+\end{tikzpicture}
+\caption{Inherent and installed flow curves of a linear valve. The preferred operating window is the middle of the stroke, where the installed gain is finite and a small stick band is a small fraction of the flow.}
+\label{fig:installed}
+\end{figure}
+
+Bristol's relative-gain array is the standard scalar summary of this interaction \cite{bristol1966rga,skogestad2005multivariable}. For a two-by-two gain matrix $G$ the diagonal relative gain is
+\begin{equation}
+\label{eq:rga}
+\lambda_{11} = \frac{1}{1 - \dfrac{G_{12}G_{21}}{G_{11}G_{22}}}.
+\end{equation}
+A value near one means that a decentralised controller, one loop per valve, does not fight its neighbour in the steady state. A value far from one means that a decoupler, or a truly multivariable controller, is required \cite{skogestad2005multivariable,seborg2016process}. The calculation in Section~\ref{sec:problem} gives $\lambda_{11}=1.11$ at the design point of this skid. The interaction is real, and it is visible in the off-diagonal gains, but it is not large enough to justify inverting $G$. Inverting a matrix that is uncertain by the amount of a sticky valve amplifies that uncertainty \cite{skogestad2005multivariable,morari1989robust}. The appropriate decentralised action is to put the correct diagonal installed gain into each loop and to let feedback remove the off-diagonal remainder. That is the classical Bristol recommendation, and it is the structural choice of the first technique.
+
+\subsection{What a fixed-gain flow loop cannot absorb}
+
+Process-control practice tunes the flow loops with a proportional--integral controller \cite{ziegler1942optimum,rivera1986imc,skogestad2003simc,astrom2006advanced}. For a first-order valve, the SIMC rules of Skogestad give a proportional gain inversely proportional to the process gain and an integral time equal to the valve time constant, provided the closed-loop time constant is chosen a little slower than the positioner \cite{skogestad2003simc}. The rules are explicit, and they are the baseline in Chapter~\ref{ch:estimate}. They have two limits that matter here.
+
+The first limit is the gain schedule hidden inside \eqref{eq:kv}. SIMC is derived at one linearisation. When $p_h$ falls, $\Delta p_h$ falls and the process gain falls with the square root. A proportional gain that was correct becomes too small, the loop slows down, and the stem runs toward the open stop in an attempt to recover the flow. Once the stem is above about $0.9$, the remaining travel produces little extra flow and the positioner works in the region where seal friction is the least repeatable \cite{fisher2005valve,choudhury2005modelling}. Bialkowski's survey of industrial loops put the fraction of loops that perform well below one third, and named valve friction as a principal cause \cite{bialkowski1993dreams}. H\"agglund's performance monitor detects the same oscillation from the controller output alone \cite{hagglund1995monitor}. The quantitative stiction models of Choudhury, Thornhill and Shah, and the later detection methods collected by Jelali and Huang, describe a stick band and a slip jump \cite{choudhury2005modelling,choudhury2008stiction,jelali2010stiction}. A positioner reduces the apparent band, but it does not remove it. A controller that continually nudges a valve inside the band produces no flow change and then a jump.
+
+The second limit is dynamic coupling during the transient. Even if $\lambda_{11}$ is near one, a fast move of the water valve changes $p_m$ before the beer loop has finished its own correction. Ratio control on setpoints keeps the commands in proportion. It does not keep the delivered flows in proportion during that window \cite{shinskey1996process,luyben1990process}. The extract error is exactly the error in that proportion, through \eqref{eq:plato-vol}.
+
+Model predictive control can be written for the same plant, and the industrial record of predictive control on constrained multivariable processes is strong \cite{qin2003mpc,bequette2003process,ogunnaike1994process,stephanopoulos1984chemical}. A predictive controller needs a model that is kept up to date, a horizon long enough to cover the analyser delay, and a quadratic program inside the cycle time of a flow loop. On a skid whose fast loops are flow loops with a one-second time scale, that machinery is difficult to justify when the dominant uncertainty is a pressure that is already measured. The disturbance-rejection route uses the measurement directly and leaves the unmeasured remainder to an observer.
+
+\subsection{From disturbance accommodation to the extended state}
+
+The idea of estimating a disturbance and cancelling it is older than active disturbance rejection. Johnson's disturbance-accommodating control augments the plant with a model of a disturbance that is generated by a known exosystem, and then estimates that state \cite{johnson1971accommodation}. The internal-model principle of Francis and Wonham gives the corresponding structural result: a regulator that rejects a disturbance asymptotically must contain a model of the dynamics that generate it \cite{francis1976internal}. Ohishi and co-workers built the same idea into a disturbance observer for a motor, subtracting an estimated load torque from the current command \cite{ohishi1987microprocessor}. Schrijver and van Dijk later showed the equivalence of several of these observers for rigid mechanical plants and gave design conditions \cite{schrijver2002disturbance}. Chen, Yang, Guo and Li reviewed the whole family and separated the methods by what they assume about the disturbance channel \cite{chen2016dobc,li2014dobc}.
+
+Active disturbance rejection, introduced by Han and put into bandwidth form by Gao, makes a sharper modelling choice \cite{han1998adrc,han2008book,han2009pid,gao2003scaling,gao2006paradigm}. Every effect that is not the chosen nominal chain of integrators is collected into one signal, the total disturbance, and that signal is treated as an extra state. For a first-order loop the plant is written
+\begin{equation}
+\label{eq:first-order-total}
+\dot{y} = f(y,d,t) + b\, u,
+\end{equation}
+where $u$ is the valve command, $y$ is the measured flow or pressure, $b$ is a gain, and $f$ contains valve friction, density error, coupling, and the mismatch $b_{\mathrm{true}}-b$. The extended state is $x_2=f$, with $\dot{x}_2=h$ treated as unknown but bounded. The linear extended state observer of Gao is
+\begin{align}
+\dot{z}_1 &= z_2 + b_0 u + 2\omega_o (y-z_1), \label{eq:leso1}\\
+\dot{z}_2 &= \omega_o^2 (y-z_1), \label{eq:leso2}
+\end{align}
+and the control that cancels $z_2$ and assigns the bandwidth $\omega_c$ is
+\begin{equation}
+\label{eq:ladrc-u}
+u = \frac{\omega_c(r-z_1) - z_2}{b_0}.
+\end{equation}
+The two numbers $\omega_c$ and $\omega_o$ replace the three PID numbers, which is the practical content of the bandwidth parameterisation \cite{gao2003scaling}. Herbst's simulation study showed that a practitioner can obtain, with those two numbers, the kind of transient that a carefully tuned PID gives, and a better recovery after a load step \cite{herbst2013simulative}. Plant trials in thermal power stations have since made the same comparison on steam temperature and on the transition from an existing PID \cite{sun2016tuning,wu2021transition}.
+
+The theoretical support is now substantial. Guo and Zhao proved convergence of the extended state observer for a class of nonlinear uncertain systems, and collected the theory in monograph form \cite{guo2011convergence,guo2016book}. Huang and Xue set out the methodology and the separation between the observer time scale and the controller time scale \cite{huang2014methodology}. Xue and Huang gave performance bounds for uncertain linear plants \cite{xue2015performance}. Zheng, Gao and Gao validated the observer experimentally and showed that the estimate $z_2$ tracks a real load when $\omega_o$ is high enough and the sampling rate is several times $\omega_o$ \cite{zheng2012validation}. Sira-Ram\'irez and co-workers connected the same observer to differential flatness and demonstrated it on a permanent-magnet motor \cite{sira2017adrc,sira2014pmsm}. Gao's later essay argued that disturbance rejection, rather than model following, is the central job of a feedback loop in industry \cite{gao2014centrality}. Madonski and co-workers rewrote the two-degree-of-freedom form as a single error-driven block that fits an industrial function-block diagram \cite{madonski2019error}.
+
+Two limitations of the plain observer matter for a valve.
+
+The gain $b_0$ is a design choice, and a bad choice is expensive. If $b_0$ is far from the true $b$, the quantity $z_2$ must carry $(b-b_0)u$ as well as the physical disturbance. Fu and Tan showed how to fold known plant information into the observer so that $z_2$ carries only the unknown part, and they gave tuning rules for that case \cite{fu2016tuning}. Tan and Fu showed that linear active disturbance rejection for a first-order or second-order plant is an internal-model controller with a particular filter, which explains both its robustness and the noise penalty of a high $\omega_o$ \cite{tan2016imc,rivera1986imc}. On the blending skid the dominant known part is \eqref{eq:kv} evaluated at the measured pressures. Leaving that part inside $f$ forces $\omega_o$ up, and the higher observer gain passes flow-meter noise into the stem command. Putting it into $b_0(t)$ is exactly the use of known plant information that Fu and Tan recommend, specialised to a valve whose gain is a measured pressure.
+
+The second limitation is noise. A linear observer of bandwidth $\omega_o$ differentiates, in effect, with a gain that grows as $\omega_o^2$ for the disturbance channel. Madonski and Herman surveyed the modifications that reduce this cost \cite{madonski2015survey}. \L{}akomy and Madonski cascade two observers so that a high bandwidth can be used without the full noise gain of a single high-gain observer \cite{lakomy2021cascade}. Khalil and Praly reviewed the same trade-off for high-gain observers in nonlinear output feedback \cite{khalil2014highgain,khalil2002nonlinear}, and Freidovich and Khalil quantified the performance recovery of feedback-linearising designs based on such observers \cite{freidovich2008performance}. Xue, Bai and co-workers adapted the observer gain on an engine air--fuel loop, where the disturbance spectrum is not stationary \cite{xue2015airfuel}. The blending valves do not need a cascade observer if $b_0$ is relieved of the pressure term, because $\omega_o$ can then stay a few times $\omega_c$ rather than an order of magnitude above it. The noise analysis is still the reason for that restraint, and it is the reason the outlet-valve bandwidth in the second technique is scheduled rather than fixed at the highest stable value.
+
+Disturbance decoupling, as distinct from disturbance estimation, subtracts a measured disturbance through a feedforward channel \cite{zheng2009decoupling,luyben1990process}. Zheng, Chen and Gao gave a practical form that does not require the plant inverse to be exact, because the feedback path removes the residual \cite{zheng2009decoupling}. Supply pressure and header pressure on this skid are measured. They are the natural feedforward channels. The first technique is that feedforward, realised by making $b_0$ the installed gain, together with an observer for what the feedforward cannot see.
+
+\subsection{The gap that the first technique addresses}
+
+The pieces reviewed above do not, by themselves, give a flow controller for this blender. Valve handbooks give \eqref{eq:kv} and warn about the installed gain \cite{fisher2005valve,iec60534}. Ratio-control texts give the setpoint structure \cite{shinskey1996process,liptak2006handbook}. Disturbance-rejection theory gives \eqref{eq:leso1}--\eqref{eq:ladrc-u} and the advice to use a known gain when one exists \cite{fu2016tuning,gao2003scaling}. Decoupling theory says that a measured pressure should be cancelled in feedforward and that a relative gain near one should not be inverted \cite{zheng2009decoupling,bristol1966rga}. None of these sources writes the installed gain of two coupled sanitary valves, obtained by implicit differentiation of the blend-node balance, into the $b_0$ of a linear extended state observer. That is the first technique. It is a decentralised controller on purpose. The off-diagonal gains are estimated, not inverted.
+
+\section{Research on delay, soft sensing and header coordination}
+\label{sec:lit-tech2}
+
+\subsection{The analyser delay}
+
+The extract that \eqref{eq:plato-vol} defines exists at the mix point. The certified measurement exists at the analyser, a pipe length $L$ downstream. At a blend speed $v_b$ the transport delay is
+\begin{equation}
+\label{eq:delay}
+\tau_d = \frac{L}{v_b},
+\end{equation}
+and it changes when the throughput changes. An analyser based on density and sound velocity adds its own lag, of the order of one second on a modern instrument and longer if a bypass loop is used \cite{baker2016flow,mebak2013wort}. The sum on the line in this thesis is a little over ten seconds at the design speed. Ten seconds is short by the standard of a distillation analyser and long by the standard of a flow loop.
+
+Smith's predictor is the classical remedy \cite{smith1957closer}. A model of the delay-free plant is simulated in parallel, the controller is designed as if the delay were absent, and the model error, including the disturbance, is fed back through the delay so that the loop corrects it. Normey-Rico and Camacho surveyed the fifty years of modifications that followed: the filtered Smith predictor, predictors for integrating and unstable plants, and the discrete implementations used in distributed control systems \cite{normey2008survey,normey2007book}. The predictor is only as good as the delay-free model. On a blender that model is \eqref{eq:plato-vol}, which is algebraic once the speeds are known, so the usual worry about an uncertain high-order model is much smaller here than it is for a distillation column.
+
+Active disturbance rejection does not remove a delay by itself. The observer in \eqref{eq:leso1} compares $u$ and $y$ at the same instant. If $y$ is delayed and $u$ is not, the observer attributes the delay to $f$ and the estimate is late by $\tau_d$. Zhao and Gao delay the copy of $u$ that enters the observer, so that the observer sees a consistent pair and can run at a higher $\omega_o$ \cite{zhao2014delay}. The delay remains in the feedback path, and they note that tracking then has to be helped by feedforward. Zheng and Gao go further and build a predictive observer that uses an approximate delay-free model, with a stability improvement over both a disturbance-observer dead-time compensator and a filtered Smith predictor on reactor and boiler examples \cite{zheng2014predictive}. Both papers assume the delay is known approximately. On this skid it is known, because $v_b$ is measured and $L$ is a pipe length: $\tau_d$ in \eqref{eq:delay} is a measured variable delay, not a constant to be identified.
+
+\subsection{Inferential control and the mass balance}
+
+When the primary measurement is late, industrial practice closes a fast loop on a secondary measurement and uses the primary measurement to update a bias \cite{seborg2016process,stephanopoulos1984chemical,luyben1990process}. Distillation columns have used tray temperature this way for decades. The secondary measurement must move when the primary variable moves, and the bias update must be slow enough that the delay does not make it oscillate.
+
+For beer blending the secondary measurement is not a proxy. It is the mass balance \eqref{eq:plato-vol} itself. The speeds are the same speeds the flow loops already use. The densities are known to a few parts per thousand for a given mother beer and for deaerated water at a controlled temperature \cite{kunze2014brewing}. The one quantity in \eqref{eq:plato-vol} that the skid does not measure on line, in the basic instrument set, is $P_h$, the original extract of the mother beer. It is known from the fermentation record and it drifts when a new tank is brought on. A bias on \eqref{eq:plato-vol}, identified from the analyser, is precisely an estimate of that drift, expressed in degrees Plato at the blend.
+
+A bias update of the form $\dot{b} = (P_{\mathrm{meas}} - \hat{P}(t-\tau_d))/T_b$ looks harmless and is not. If the controller regulates $\hat{P}+b$ and the innovation does not depend on $b$, any transient error that entered $b$ is frozen and becomes a permanent extract offset. The innovation has to be
+\begin{equation}
+\label{eq:innov-preview}
+e_b = P_{\mathrm{meas}}(t) - \big(\hat{P}(t-\tau_d) + b(t)\big),
+\end{equation}
+so that a wrong bias is visible even after the plant has settled. This is the same consistency condition that makes a Smith predictor's model-error channel return to zero \cite{smith1957closer,normey2008survey}. Chapter~\ref{ch:design} writes the observer in that form. The literature on inferential control states the architecture \cite{seborg2016process,liptak2006handbook}. It does not write \eqref{eq:innov-preview} for a variable transport delay that is computed from a measured beer speed, with the delay-free prediction taken from \eqref{eq:plato-vol}.
+
+Kalman's filter and Luenberger's observer are the general tools for combining a fast model with a slow measurement \cite{kalman1960new,luenberger1971introduction}. A Kalman filter would be the right estimator if the extract dynamics were a stochastic linear system with a known covariance. Here the fast part is an algebraic balance and the slow part is a pure delay plus a first-order instrument lag. A single bias state with the innovation \eqref{eq:innov-preview} is the Luenberger observer for that structure. Adding the machinery of a Kalman filter would not remove the delay, and it would hide the one tuning number $T_b$.
+
+\subsection{Header pressure as a means of keeping valve authority}
+
+The outlet valve is often described as a back-pressure regulator. Its job, in the usual piping and instrumentation diagram, is to hold $p_m$ at a value that keeps the carbonation or the downstream tank happy \cite{kunze2014brewing,liptak2006handbook,isa51}. That description is incomplete on a line whose inlet valves are linear and whose supply pressures move.
+
+From \eqref{eq:kv}, the stem required to pass a demanded beer flow is
+\begin{equation}
+\label{eq:stem-required}
+x_h = \frac{Q_h^\star}{K_{v,h}\sqrt{(p_h-p_m)/(\rho_h/1000)}}.
+\end{equation}
+If $p_m$ is held constant while $p_h$ falls, $x_h$ rises. The valve handbook's recommended window for a throttling valve is roughly the middle half of the stroke, where the inherent gain is the installed gain one designed for, and where a stick band of one or two percent of stroke is a small flow error \cite{fisher2005valve,iec60534general}. Outside that window the valve is either too close to the seat, and small stem errors become large flow errors, or too close to the stop, and the flow loop has no remaining authority. Equation~\eqref{eq:stem-required} says that $p_m$ is the variable that puts $x_h$ back in the window, because $p_h$ is a disturbance and $Q_h^\star$ is a production setpoint. The outlet valve is the actuator for $p_m$. Using it only to hold a constant pressure spends the one degree of freedom that protects the inlet valves.
+
+This coordination has to be slow relative to the flow loops, or the three valves will fight. The general principle is time-scale separation, the same separation that justifies cascade control and singular-perturbation arguments \cite{seborg2016process,khalil2002nonlinear,slotine1991applied,astrom2008feedback}. Flow loops see a valve time constant of a few seconds and can be given a bandwidth near one radian per second. The header loop should sit several times slower, so that a flow loop treats a header move as a disturbance it is fast enough to reject. Scheduling the slow bandwidth upward when a stem nevertheless leaves the window is the same idea as the adaptive observer gain of Xue and co-workers \cite{xue2015airfuel}: spend bandwidth when the disturbance is large, and withhold it when the only thing a higher gain would do is pass noise and excite stiction \cite{lakomy2021cascade,choudhury2005modelling}.
+
+A proportional--integral pressure loop can implement a constant setpoint, and SIMC will tune it \cite{skogestad2003simc}. It will not compute the setpoint from \eqref{eq:stem-required}, and it will wind up if the outlet valve sits in a stick band while the inlet valve runs out of travel. The extended state observer avoids the wind-up of an integrator that is blind to the fact that the valve has not moved, because the observer is driven by the measured pressure and by the command that was actually sent \cite{han2009pid,astrom2006advanced}. That property is useful here, and it is not a substitute for the setpoint calculation.
+
+\subsection{The gap that the second technique addresses}
+
+Delay compensation, inferential control and pressure control are each mature \cite{normey2008survey,zheng2014predictive,zhao2014delay,seborg2016process}. The blending skid needs them as one loop. The outlet valve must follow a header setpoint that is computed so the inlet stems stay in the linear window, with a bandwidth that rises only when a stem leaves that window. The extract controller must run on \eqref{eq:plato-vol} corrected by \eqref{eq:innov-preview}, with $\tau_d$ taken from the measured outlet speed, and it must stay slower than the flow loops. A fixed-gain active-disturbance-rejection controller on the analyser, of the kind Zhao and Gao would detune for a ten-second delay \cite{zhao2014delay}, leaves both the authority problem and the delay in place. The second technique is the combination that removes them.
+
+\section{Problem set}
+\label{sec:problem}
+
+\subsection{The plant and the measurements}
+
+Figure~\ref{fig:pid} is the line. High-gravity beer and deaerated water enter through linear valves. They meet in a short header. The blend leaves through a third linear valve toward the bright-beer tank or the carbonation unit. There is no blend tank. The dynamic elements that a controller can feel are the three positioners, the stick band of each valve, the filters on the transmitters, and the transport delay to the extract analyser.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  >=Stealth, node distance=7mm and 11mm,
+  box/.style={draw, rounded corners, minimum height=8mm, inner sep=3pt, font=\small, align=center},
+  v/.style={draw, circle, minimum size=7mm, inner sep=0pt, font=\scriptsize},
+  sens/.style={draw, minimum width=8mm, minimum height=5mm, inner sep=1pt, font=\scriptsize}
+]
+  \node[box] (bt) {high-gravity\\beer};
+  \node[v, right=of bt] (vh) {LV-1};
+  \node[sens, right=of vh] (fh) {$v_h$};
+  \node[box, below=14mm of bt] (wt) {dilution\\water};
+  \node[v, right=of wt] (vw) {LV-2};
+  \node[sens, right=of vw] (fw) {$v_w$};
+  \node[box, right=16mm of fh] (hdr) {header};
+  \node[v, right=of hdr] (vb) {LV-3};
+  \node[sens, right=of vb] (fb) {$v_b$};
+  \node[box, right=of fb] (bbt) {final beer};
+  \node[sens, below=8mm of fb] (an) {$P$, delayed};
+  \draw[->] (bt) -- (vh) -- (fh) -- (hdr);
+  \draw[->] (wt) -- (vw) -- (fw) -- (hdr);
+  \draw[->] (hdr) -- (vb) -- (fb) -- (bbt);
+  \draw[->] (fb.south) -- (an.north);
+  \node[font=\scriptsize, above=1mm of bt] {$p_h$};
+  \node[font=\scriptsize, below=1mm of wt] {$p_w$};
+  \node[font=\scriptsize, above=1mm of hdr] {$p_m$};
+  \node[font=\scriptsize, below=1mm of vb] {$p_d$};
+\end{tikzpicture}
+\caption{Blending line. LV-1 is the high-gravity beer valve, LV-2 the dilution-water valve and LV-3 the outlet valve. Speeds and pressures are the fast measurements. Original extract is measured after the transport delay.}
+\label{fig:pid}
+\end{figure}
+
+The design point used throughout the thesis is a mid-size skid. Table~\ref{tab:design} collects it. The beer and outlet pipes have an internal diameter of \SI{50}{mm}. The water pipe has an internal diameter of \SI{38}{mm}. Speeds follow from $v=Q/A$ with $Q$ in cubic metres per second. They sit in the range breweries use to limit oxygen pick-up and shear, about \SIrange{0.6}{1.5}{\metre\per\second}.
+
+\begin{table}[htbp]
+\centering
+\caption{Design point of the blending line.}
+\label{tab:design}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Quantity & Beer & Water & Outlet \\
+\midrule
+Flow (\si{\cubic\metre\per\hour}) & 7.50 & 2.533 & 10.033 \\
+Speed (\si{\metre\per\second}) & 1.061 & 0.620 & 1.419 \\
+Supply or downstream pressure (\si{\barg}) & 4.00 & 4.20 & 0.55 \\
+Stem fraction & 0.58 & 0.55 & 0.38 \\
+$K_v$ (\si{\cubic\metre\per\hour}) & 10.284 & 3.430 & 19.495 \\
+Density (\si{\kilogram\per\cubic\metre}) & 1012 & 999 & 1008.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The header pressure at this point is \SI{2.40}{\barg}. The mother beer has original extract \SI{16.0}{\plato} and the sales target is \SI{12.0}{\plato}. Substituting the densities into the steady form of \eqref{eq:plato-mass} gives the volumetric ratio
+\begin{equation}
+\label{eq:R0}
+R = \frac{Q_w}{Q_h} = \frac{\rho_h}{\rho_w}\left(\frac{P_h}{P^\star}-1\right) = 0.3377.
+\end{equation}
+The outlet pipe run to the analyser is \SI{14}{m}, so the transport delay at the design speed is $14/1.419 = \SI{9.86}{s}$. The analyser lag used later is \SI{1.2}{s}. Positioners are modelled as first-order lags of \SI{2.4}{s} with a stick band of $1.4$ percent of stroke, consistent with a healthy positioner rather than a neglected valve \cite{choudhury2005modelling,fisher2005valve}.
+
+The fast measurements are $v_h$, $v_w$, $v_b$, the stem positions returned by the positioners, and the pressures $p_h$, $p_w$, $p_m$ and $p_d$. Speeds and areas give the volumetric flows. The analyser measurement $P_{\mathrm{meas}}$ arrives with delay $\tau_d+T_a$. The mother-beer extract $P_h$ is a recorded value, not a live transmitter, and it may be wrong by several tenths of a degree Plato when the tank changes.
+
+\subsection{Installed gains and the relative-gain array at the design point}
+
+Evaluating the sensitivities of Section~\ref{sec:lit-tech1} at Table~\ref{tab:design} gives
+\begin{equation}
+S_h = 2.344,\qquad S_w = 0.703,\qquad S_b = 2.711
+\end{equation}
+in cubic metres per hour per bar. The total derivatives of flow with respect to stem fraction, along the pressure manifold \eqref{eq:node}, are
+\begin{equation}
+\label{eq:Gdesign}
+\begin{aligned}
+G_{hh} &= 7.668, & G_{hw} &= -1.874,\\
+G_{wh} &= -1.580, & G_{ww} &= 4.042,
+\end{aligned}
+\end{equation}
+in cubic metres per hour per unit stem, and the header gain is
+\begin{equation}
+G_{bp} = \frac{\partial p_m}{\partial x_b} = -4.585\ \text{bar per unit stem}.
+\end{equation}
+The beer--water relative gain is
+\begin{equation}
+\lambda_{11} = \left(1 - \frac{G_{hw}G_{wh}}{G_{hh}G_{ww}}\right)^{-1} = 1.106.
+\end{equation}
+Opening the water valve does steal beer flow: $G_{hw}$ is negative and about a quarter of $G_{hh}$. The relative gain says the theft is not severe enough to invert. A decentralised controller that uses $G_{hh}$ and $G_{ww}$, rather than the larger partial gains at frozen header pressure, already accounts for the steady sharing of the header. The sign of $G_{bp}$ is the action of the outlet loop. Opening LV-3 lowers $p_m$.
+
+The local gain from the ratio $R$ to the original extract, at constant beer flow, follows by differentiating \eqref{eq:plato-vol}:
+\begin{equation}
+\label{eq:dPdR}
+\frac{\partial P}{\partial R} = -\frac{\rho_h P_h\, \rho_w}{(\rho_h + \rho_w R)^2} = -8.884\ \degP.
+\end{equation}
+A ratio error of $0.006$ is an extract error of about \SI{0.05}{\plato}. That is the tolerance the loops are judged against. It is the tolerance quoted for in-line high-gravity blending and it matches the repeatability expected of a beer analysis in the brewing methods \cite{mebak2013wort,ebcanalytica,stewart2010highgravity}.
+
+\subsection{Disturbances the controller must reject}
+
+The disturbances are the ones a blender actually meets.
+
+\begin{enumerate}
+\item A step down in beer supply pressure, from \SI{4.00}{\barg} to \SI{3.05}{\barg}, as a tank head falls or a pump changes speed. At fixed $p_m$ the beer-valve gain falls by $\sqrt{0.65/1.60} = 0.64$, and the stem demanded by \eqref{eq:stem-required} rises from $0.58$ toward the stop.
+\item An oscillation of the water supply pressure, amplitude \SI{0.28}{\barg} and period \SI{26}{s}, from a shared water header.
+\item A brand change, $P^\star$ ramped from \SI{12.0}{\plato} to \SI{11.2}{\plato}. The ratio must move from $0.338$ to $0.434$.
+\item A throughput increase, $Q_h^\star$ ramped from \SI{7.50}{\cubic\metre\per\hour} to \SI{9.00}{\cubic\metre\per\hour}, with the ratio held. Both inlet valves and the outlet valve must pass about twenty percent more flow.
+\item An unmeasured drift of $P_h$ from \SI{16.0}{\plato} to \SI{16.6}{\plato}. The soft sensor, if it keeps the old value, is biased, and only the analyser can see it.
+\item A ten percent loss of beer-valve $K_v$, as trim wears or a seat begins to foul. The installed gain changes and the stem must open to hold the same flow.
+\end{enumerate}
+
+Disturbance 1 and disturbance 4 together are the authority test. Disturbance 5 is the soft-sensor test. Disturbance 3 is the delay test: a controller that waits for the analyser cannot finish the brand change on the time scale of the ramp.
+
+\subsection{Statement of the control problem}
+
+The controlled variables are the beer flow $Q_h$, or equivalently the beer speed $v_h$, and the original extract $P$. The water flow is not an independent quality variable. It is the means of setting $P$ through $R$, and of keeping the ratio during a throughput change. The header pressure is not a quality variable either. It is the means of keeping $x_h$ and $x_w$ inside an interval $[0.30,0.78]$ whenever the boundary pressures allow it.
+
+The requirements are the following.
+
+\begin{enumerate}
+\item After a supply-pressure step, $P$ returns to and stays inside $\pm 0.05\degP$, and $Q_h$ returns to its setpoint. The beer stem does not remain against the open stop.
+\item During the water-pressure oscillation the peak extract error stays below the error of a fixed-gain loop.
+\item After the brand-change ramp, $P$ enters the $\pm 0.05\degP$ band and the ratio reaches the value implied by \eqref{eq:R0} at the new setpoint.
+\item During the throughput ramp, $Q_h$ tracks $Q_h^\star$ with a small integrated error, including the case in which the beer supply pressure is still low.
+\item After the mother-beer extract has drifted, the bias update removes the offset without a large overshoot of $P$.
+\item After the loss of $K_v$, the beer flow is recovered by stem movement, and the extract loop does not interpret the transient as a permanent composition error.
+\item Stem commands are not noisy enough to keep a valve in continuous motion inside its stick band. Valve travel is reported as well as extract error, because a quiet inaccurate loop is not a success and a noisy accurate loop will not be left in service \cite{bialkowski1993dreams,hagglund1995monitor}.
+\end{enumerate}
+
+The manipulated variables are the three stem commands $u_h$, $u_w$ and $u_b$, each in $[0,1]$, and the ratio command $R$ inside the extract controller. No other actuator is available. In particular there is no variable-speed pump in the problem as posed: the supply pressures are disturbances, not controls.
+
+\begin{assumption}
+\label{as:algebraic}
+On the time scale of the positioners the header is algebraic. Equation~\eqref{eq:node} is solved for $p_m$ at every instant from the current stems and boundary pressures. Acoustic dynamics and pipe elasticity are neglected.
+\end{assumption}
+
+\begin{assumption}
+\label{as:linear-valve}
+Each valve has a linear inherent characteristic, a known $K_v$ at the start of a run, and a positioner that is a first-order lag of known time constant, subject to a stick band. The ten percent $K_v$ loss of disturbance 6 is not announced to the controller.
+\end{assumption}
+
+\begin{assumption}
+\label{as:delay-known}
+The analyser delay is $\tau_d = L/v_b$ plus a known instrument lag. The length $L$ is known. The speed $v_b$ is measured.
+\end{assumption}
+
+\begin{assumption}
+\label{as:ph}
+The controller's copy of $P_h$ is constant and equal to the design value. The true $P_h$ may drift. Densities used in \eqref{eq:kv} are the design densities.
+\end{assumption}
+
+Under these assumptions the plant from the three commands to the two quality variables is a set of three first-order actuators, an algebraic pressure node, a static extract map, and a delay. The uncertainty sits in $K_v$, in $P_h$, in the stick band, and in the boundary pressures. Active disturbance rejection is suited to that split because the pressures are measured and the rest can be carried by $z_2$ \cite{gao2014centrality,fu2016tuning}.
+
+\subsection{What the two techniques are required to add}
+
+The first technique addresses the inlet valves. It must compute $b_0$ for each flow loop from the installed gains \eqref{eq:Gdesign}, using the measured pressures and the measured flows, so that a change in supply pressure changes the controller gain immediately rather than after $z_2$ has observed the flow error. It must not invert the off-diagonal gains. It must remain decentralised, with one observer per valve, so that it can be implemented as two function blocks \cite{madonski2019error,herbst2013simulative}.
+
+The second technique addresses the outlet valve and the extract. It must compute a header setpoint that minimises the departure of the three stems from the design stems in Table~\ref{tab:design}, subject to a minimum drop across every valve. It must track that setpoint with a linear observer whose bandwidth rises only when a stem leaves the linear window. It must regulate $P$ by manipulating $R$, using \eqref{eq:plato-vol} as the delay-free feedback and \eqref{eq:innov-preview} as the analyser correction, with $\tau_d$ from Assumption~\ref{as:delay-known}.
+
+The two techniques share the measurements and they must be separated in bandwidth. Flow loops are the fastest, the header loop is slower, and the extract loop is slower again, because it drives the water-flow setpoint. Chapter~\ref{ch:design} writes both designs. Chapter~\ref{ch:estimate} builds the plant that these assumptions describe and estimates the designs against a SIMC ratio controller \cite{skogestad2003simc,shinskey1996process} and against linear active disturbance rejection that uses the design-point gains and the raw analyser \cite{gao2003scaling,zhao2014delay}.
+
+The partial gain at frozen header pressure would have been $Q_h/x_h = 7.50/0.58 = 12.93\ \si{\cubic\metre\per\hour}$ per unit stem, almost twice $G_{hh}$. A flow controller tuned on that partial gain commands too little stem when the header is free to move, and then overshoots when the header does not move as the tuning assumed. The installed gain is the smaller and the correct one. The numerical factor $(S_w+S_b)/D = (0.703+2.711)/(2.344+0.703+2.711) = 0.593$ converts the partial gain into $G_{hh}$ and should be recomputed whenever the three flows or the three drops change, which is every sample in the first technique.
+
+A supply step makes the same arithmetic urgent. With $p_h$ fallen to \SI{3.05}{\barg} and $p_m$ held at \SI{2.40}{\barg}, $\Delta p_h$ falls from \SI{1.60}{\barg} to \SI{0.65}{\barg}. The square-root gain falls by $\sqrt{0.65/1.60}=0.637$. The stem that restores \SI{7.50}{\cubic\metre\per\hour} rises from $0.58$ to about $0.91$, which is the edge of the stop region in Figure~\ref{fig:installed}. No retuning of a proportional gain that happens after the stem has arrived there can restore the flow that the stop has already taken away. The header pressure has to move first, which is why the second technique exists, and the flow-loop gain has to move with the pressure, which is why the first technique writes $G_{hh}(t)$ into $b_0$ rather than into a lookup table that an operator edits between brands.
+
+\typeout{END CHAPTER 1 ON PAGE \thepage}

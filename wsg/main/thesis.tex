@@ -1,0 +1,108 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm, headheight=14pt}
+\usepackage{setspace}
+\setstretch{1.85}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{siunitx}
+\sisetup{detect-all, range-phrase=--, range-units=single}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{placeins}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,fit,backgrounds,decorations.pathreplacing}
+\usepackage[hidelinks]{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+
+\sisetup{per-mode=symbol}
+\DeclareSIUnit{\plato}{\textdegree P}
+\DeclareSIUnit{\barg}{bar}
+
+\captionsetup{font=small, labelfont=bf, skip=6pt}
+\setlist[enumerate]{itemsep=2pt, topsep=4pt}
+\setlist[itemize]{itemsep=2pt, topsep=4pt}
+
+\newtheorem{assumption}{Assumption}[chapter]
+\newtheorem{remark}{Remark}[chapter]
+
+\newcommand{\degP}{^{\circ}\mathrm{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ud}{\mathrm{d}}
+\newcommand{\ee}{\mathrm{e}}
+
+\title{%
+Research for Improving the Blending Accuracy of High-Gravity Beer\\
+under Supply-Pressure Disturbance by Using Decoupled\\
+Active Disturbance Rejection Control}
+\author{Thesis draft\\[0.6em]\large Automatic control}
+\date{2026}
+
+\begin{document}
+\pagenumbering{roman}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent
+High-gravity brewing ferments a concentrated beer and then blends it, in line, with deaerated dilution water to the original extract required by the brand. On the blending skid considered in this thesis the actuators are three linear control valves: one on the high-gravity beer, one on the dilution water, and one on the outlet of the blend header. The measurements that are actually available for fast control are the liquid speeds in the three lines and the supply and header pressures. The original-extract analyser sits downstream of the mix point, behind a transport delay of about ten seconds.
+
+Two control difficulties follow from that arrangement. The beer valve and the water valve are coupled by the header pressure, and the flow gain of each linear valve changes with the square root of the pressure drop, so a fixed-gain controller loses authority when a supply pressure falls. The extract loop, if it is closed on the analyser alone, is too slow to keep the blend inside the usual brewing tolerance of $\pm 0.05\degP$ during a recipe change or a supply disturbance.
+
+This thesis proposes two techniques inside the active-disturbance-rejection framework. The first, pressure-manifold decoupled linear active disturbance rejection control, puts the installed interacting gain of each inlet valve into the observer as a known, measured coefficient. Supply pressure, header pressure and the steady coupling through the blend node are thereby removed from the total disturbance, while the small off-diagonal remainder, the relative-gain array element being only $1.11$, is left for the extended state observer. The second, valve-authority coordinated delay-compensated active disturbance rejection control, moves the outlet valve so that both inlet stems stay inside the linear portion of their stroke, and it closes the extract loop on a mass-balance soft sensor whose bias is corrected by the delayed analyser.
+
+A first-principles numerical model of the skid, with valve stiction, sensor noise and the analyser lag, is used to estimate the two techniques against ratio proportional--integral control and against linear active disturbance rejection control with fixed nominal gains. Over a \SI{560}{s} campaign of supply steps, water-pressure oscillation, a brand change, a throughput increase, an unmeasured drift of the mother-beer extract and a loss of beer-valve capacity, the proposed pair reduces the integrated absolute extract error from \SI{81.4}{\plato\second} to \SI{52.4}{\plato\second} and the integrated absolute beer-flow error from \SI{316}{\cubic\metre\per\hour\second} to \SI{37.5}{\cubic\metre\per\hour\second}. The inlet stems remain away from the fully open seat in the cases where the fixed-gain designs saturate.
+\end{abstract}
+
+\chapter*{Principal symbols}
+\addcontentsline{toc}{chapter}{Principal symbols}
+\noindent
+The symbols below are the ones used throughout the thesis. A symbol that is local to a derivation is defined where it appears. Pressures are gauge pressures unless an absolute pressure is stated.
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$Q_h,Q_w,Q_b$ & Volumetric flow of high-gravity beer, dilution water and final beer \\
+$v_h,v_w,v_b$ & Mean liquid speed in the three lines \\
+$A_h,A_w,A_b$ & Internal cross-sectional area of the three pipes \\
+$p_h,p_w$ & Supply pressure of beer and of dilution water \\
+$p_m$ & Blend-header pressure \\
+$p_d$ & Pressure downstream of the outlet valve \\
+$x_h,x_w,x_b$ & Stem fractions of the three linear valves, in $[0,1]$ \\
+$K_{v,h},K_{v,w},K_{v,b}$ & Metric flow coefficients of the three valves \\
+$\rho_h,\rho_w,\rho_b$ & Densities of beer, water and the blend \\
+$P_h$ & Original extract of the high-gravity beer \\
+$P$ & Original extract of the blend \\
+$P^\star$ & Original-extract setpoint \\
+$R$ & Mass-consistent volumetric ratio $Q_w/Q_h$ \\
+$\tau_v$ & Time constant of a valve positioner and actuator \\
+$\tau_d$ & Transport delay from the mix point to the analyser \\
+$b_0$ & Gain coefficient used by a linear extended state observer \\
+$\omega_c,\omega_o$ & Controller bandwidth and observer bandwidth \\
+$z_1,z_2$ & Extended-state estimates of the output and of the total disturbance \\
+$\lambda_{11}$ & Diagonal element of the relative-gain array \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\clearpage
+\pagenumbering{arabic}
+
+\input{chapters/chapter1}
+\input{chapters/chapter2}
+\input{chapters/chapter3}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

@@ -1,0 +1,69 @@
+\subsection{Footprint of a pixel on the crate face}
+\label{sec:footprint}
+
+The timing budget and the snap radius should be checked against the size of a pixel, otherwise the centimetre noise in the observation model is an unattached number. Take the installation of Section~\ref{sec:gate}: standoff $Z=2.5\,\mathrm{m}$, face width of interest $1.6\,\mathrm{m}$ for four crates, and a sensor used in landscape orientation. A horizontal field of view of $50^{\circ}$ covers
+\begin{equation}
+2\,Z\tan(25^{\circ}) = 2\cdot 2.5\cdot 0.466 = 2.33\,\mathrm{m}
+\label{eq:fov}
+\end{equation}
+at the front plane, which leaves margin around a $1.6\,\mathrm{m}$ face for a truck that is not perfectly centered. Across $1280$ horizontal pixels the footprint is
+\begin{equation}
+\frac{2.33}{1280} = 1.8\,\mathrm{mm}
+\label{eq:footprint}
+\end{equation}
+per pixel at the center of the field. The vertical footprint is comparable near the camera height and larger toward the top and bottom rows, where the ray is oblique. A center error of one pixel is negligible beside the $3.5\,\mathrm{cm}$ localization noise of the model and beside the $20\,\mathrm{cm}$ half-cell of \Cref{prop:snap}. The lattice is not limited by sensor resolution at this standoff. It is limited by which crates are detected and by whether the homography scale is right.
+
+The same footprint converts the exposure specification into pixels of smear. At $1.5\,\mathrm{m\,s^{-1}}$ and $2\,\mathrm{ms}$ the load moves $3\,\mathrm{mm}$, about two pixels. At $5\,\mathrm{m\,s^{-1}}$ and $2\,\mathrm{ms}$ it moves $10\,\mathrm{mm}$, about six pixels. Six pixels of horizontal smear on a vertical lip, which is the lip the vertical-feature gate is trying to see, is a loss of contrast rather than a displacement of the center by a full cell. The $2\,\mathrm{ms}$ exposure is the specification that keeps smear in that regime. A camera that cannot reach it at the illumination of the dock has to add light. The design does not respond to a dark dock by lengthening the shutter, because the snap radius is a counting requirement and the brightness is a procurement requirement.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[x=0.72cm,y=0.72cm,font=\small]
+  \draw[thick] (0,0) -- (14,0);
+  \draw[dashed] (2,0) -- (2,6.2) node[above] {\footnotesize truck path};
+  \draw[dashed] (8.2,0) -- (8.2,6.2);
+  \node[align=center] at (5.1,5.6) {\footnotesize front-face plane};
+  \draw[{Stealth}-{Stealth}] (2,5.1) -- (8.2,5.1) node[midway, above] {$2.5\,\mathrm{m}$};
+  \draw[fill=black!80] (10.6,2.4) rectangle (11.7,3.1);
+  \draw[-{Stealth}, thick] (10.6,2.75) -- (8.2,2.75);
+  \node[align=center] at (11.15,3.55) {\footnotesize camera\\[-1pt]\footnotesize $1.4\,\mathrm{m}$};
+  \draw[{Stealth}-{Stealth}] (12.3,0) -- (12.3,2.75) node[midway, right] {\footnotesize $1.4\,\mathrm{m}$};
+  \draw[fill=orange!30] (4.3,0.4) rectangle (5.9,3.6);
+  \node[align=center] at (5.1,2.0) {\footnotesize stack};
+  \node[align=center] at (5.1,-0.55) {\footnotesize gate floor};
+\end{tikzpicture}
+\caption{Plan-and-elevation sketch of the gate, not to a common scale. The camera is fixed, the face plane is the calibration plane of $H$, and the standoff is the $Z$ used in~\eqref{eq:fov}. The truck path is perpendicular to the optical axis at the moment PLC is meant to run.}
+\label{fig:gate}
+\end{figure}
+
+\subsection{From pixels to a booked line}
+\label{sec:booked-line}
+
+The pieces are scattered through the derivations. One passage, with the numbers of the worked example, shows the order in which the computer applies them. The trigger opens. Five frames are buffered. On each frame YOLO-vf-seg emits masks. ICPH scores each mask. Suppose the first frame has the lowest blur and the highest median margin, and that its ten true front crates produced nine detections, as in the instrument's draw. The nine centers are multiplied by $H$ and snapped. The origin residual is a few centimetres, inside the half-cell, so the passage is not refused. The gap rule adds the restored miss and the one phantom cell of \Cref{fig:grid}. The depth reading returns $2$, which matches the truth in this particular draw. The total booked is $11\times 2=22$ against a truth of $20$. The completed-cell count is $2$ if both the restored cell and the phantom were absent from the raw snap, and the record shows that $2$. The color head names the nine detected faces. The two cells that were not detected inherit by~\eqref{eq:per-color}. If one of the nine was an amber face scored as yellow with a margin below the weekly tenth percentile, that face is listed as uncertain and is not forced into either color's tally, while the total stays $22$.
+
+The operator who sees this record can do three different things, and the record is built so that they stay different. A total of $22$ with two completed cells and a small residual is a geometric inference, to be trusted to the extent the building trusts PLC-single's bias of under one crate on average. An uncertain amber is a color question, to be confirmed from the image or from the pallet ticket, without reopening the total. A depth field that says ``default'' rather than ``from the pallet record'' is a rank question. Collapsing all three into a red flag would send every stepped stack to a person. Separating them sends the person the question the model cannot answer.
+
+The same passage under the counters that were rejected reads as follows. The mask tally books $9$ and is short by $11$, because it ignores depth and one miss. Mask times depth books $18$ and is short by $2$. The span books $24$, the full rectangle times depth, and is long by $4$. PLC-passage, given the instrument's five detection counts of $9,10,10,10,10$, books $28$ and is long by $8$. The booked line of the specified system is the least wrong of those integers on this draw, and it is still wrong by two crates. The worked passage is not a demonstration that the error has been removed. It is a demonstration that the record contains the integer and the reason the integer might be high.
+
+\subsection{Sensitivity to the depth reading}
+\label{sec:depth-sensitivity}
+
+The depth model fixes a ten percent chance of being off by one. The tables do not vary that chance, and a reader will want the direction of the dependence. Condition on the front estimate $\lvert\mathcal{F}\rvert$ being some integer $m$, and on the truth $N=d\,m_{\star}$. When $\hat{d}=d$, the counting error is $d(m-m_{\star})$, the front error scaled by depth. When $\hat{d}=d+1$, the error gains an extra $m$. When $\hat{d}=d-1$, it loses $m$. At the stated probability $0.10$ of a wrong reading, split equally between the two directions and ignoring the clip at the ends of $\{1,2,3\}$, the expected contribution of depth noise alone is of order $0.1\,m$ in absolute error and near zero in bias, because the two directions cancel in the signed mean and add in the absolute mean. On a front of about ten cells, depth noise contributes on the order of one crate of mean absolute error. That is a substantial part of PLC-single's $3.01$, and it is a part no lattice rule can remove.
+
+Two consequences follow for the building, both outside the Monte Carlo grid and both readable from the scaling. Halving the depth error rate, from $0.10$ to $0.05$, is worth on the order of half a crate of mean absolute error if the front estimate stays as it is. That is comparable to the entire gap between the span and PLC-single. A better depth source can therefore matter as much as the geometric refinement this thesis spent a section on. Improving the front estimate without improving $\hat{d}$ still matters, because front errors are multiplied by $d$, which is why PLC-single's advantage over the span grows from depth $1$ to depth $3$ in \Cref{tab:bydepth} even though the rule itself does not see $d$. The design priority that follows is: obtain $\hat{d}$ from the pallet record whenever the record exists, and spend the vision effort on the front face. Spending the vision effort on inventing $\hat{d}$ from the side image would put a high-variance estimate into the factor that multiplies every other error.
+
+\subsection{What the estimate constrains in the build}
+\label{sec:constraints}
+
+The specification in Section~\ref{sec:build} was written to be consistent with the tables, and the consistencies are checkable.
+
+The camera's white balance is locked because gray-world and shades-of-gray, including any global gain that behaves like them on a uniform face, destroy the type. The lock is not a preference for manual color. It is \Cref{fig:color-curve}.
+
+PLC runs on one frame because the five-frame union at vote one has bias $+5.33$. A software default that fused frames would contradict \Cref{tab:count}.
+
+The total is multiplied by a depth reading because the mask tally without that multiplication has bias $-13.53$. A vision-only total is the front count.
+
+The record shows completed cells and the minimum margin because PLC-single's remaining error is a small positive bias from cells the rule inferred, and ICPH's remaining error is a swap of amber and yellow rather than a uniform sprinkling of mistakes. A record that showed only $\hat{N}$ would hide both.
+
+The color head is not the place the implementation looks for speed, because $9760$ parameters do not move the budget in \Cref{tab:timing}. The segmenter is that place.
+
+None of these constraints is a field result. Each one is a decision that would be wasteful to relitigate inside the same observation model. A field trial can overturn any of them. Until it does, they are the decisions the estimate is for.

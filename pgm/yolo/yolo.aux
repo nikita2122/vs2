@@ -1,0 +1,144 @@
+\relax 
+\citation{ren2015faster}
+\citation{redmon2016yolo}
+\@writefile{toc}{\contentsline {section}{\numberline {1}What the detector is asked to return}{1}{}\protected@file@percent }
+\citation{redmon2016yolo}
+\citation{redmon2018yolov3}
+\citation{redmon2017yolo9000}
+\citation{ge2021yolox}
+\@writefile{toc}{\contentsline {section}{\numberline {2}The grid, the box, and the score}{2}{}\protected@file@percent }
+\newlabel{sec:grid}{{2}{2}{}{section.2}{}}
+\newlabel{eq:conf}{{1}{2}{}{equation.1}{}}
+\newlabel{eq:iou}{{2}{2}{}{equation.2}{}}
+\newlabel{eq:iou-shift}{{3}{2}{}{equation.3}{}}
+\citation{redmon2018yolov3}
+\citation{zhang2022bytetrack}
+\citation{he2016resnet}
+\citation{redmon2018yolov3}
+\citation{wang2020cspnet}
+\citation{lin2017fpn}
+\citation{liu2018panet}
+\citation{bochkovskiy2020yolov4}
+\citation{hou2021coordatt}
+\citation{ge2021yolox}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Backbone, neck, and head}{3}{}\protected@file@percent }
+\newlabel{sec:net}{{3}{3}{}{section.3}{}}
+\citation{redmon2016yolo}
+\citation{redmon2017yolo9000}
+\citation{redmon2018yolov3}
+\citation{bochkovskiy2020yolov4,zheng2020diou}
+\citation{ge2021yolox}
+\citation{li2022yolov6}
+\citation{wang2023yolov7}
+\citation{jocher2023yolov8}
+\citation{wang2024yolov9,wang2024yolov10}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces One frame, then the link to the previous frame. The loop on the right is the tracker. The thesis booking path stops at the masks and does not take that loop.}}{4}{}\protected@file@percent }
+\newlabel{fig:pipe}{{1}{4}{}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}From the first YOLO to the crate segmenter}{4}{}\protected@file@percent }
+\newlabel{sec:line}{{4}{4}{}{section.4}{}}
+\citation{lin2014coco}
+\citation{girshick2015fast}
+\citation{bodla2017softnms}
+\citation{wang2024yolov10}
+\citation{kirillov2020pointrend}
+\citation{he2017mask}
+\citation{bolya2019yolact}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Suppression, and when two crates become one box}{5}{}\protected@file@percent }
+\newlabel{sec:nms}{{5}{5}{}{section.5}{}}
+\citation{bewley2016sort,kuhn1955hungarian}
+\citation{wojke2017deepsort}
+\citation{zhou2020centertrack}
+\citation{zhang2021fairmot}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Masks, centers, and the hand-off to a tracker}{6}{}\protected@file@percent }
+\newlabel{sec:mask}{{6}{6}{}{section.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}What a track is}{6}{}\protected@file@percent }
+\newlabel{sec:track}{{7}{6}{}{section.7}{}}
+\citation{milan2016mot16}
+\citation{bernardin2008clear}
+\citation{ristani2016id}
+\citation{luiten2021hota}
+\citation{kalman1960}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Predicting the next image}{7}{}\protected@file@percent }
+\newlabel{sec:kalman}{{8}{7}{}{section.8}{}}
+\newlabel{eq:predict}{{4}{7}{}{equation.4}{}}
+\newlabel{eq:pcov}{{5}{7}{}{equation.5}{}}
+\newlabel{eq:update}{{6}{8}{}{equation.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Assigning detections to tracks}{8}{}\protected@file@percent }
+\newlabel{sec:assign}{{9}{8}{}{section.9}{}}
+\citation{kuhn1955hungarian}
+\citation{wojke2017deepsort}
+\newlabel{eq:cost}{{7}{9}{}{equation.7}{}}
+\newlabel{eq:costm}{{8}{9}{}{equation.8}{}}
+\citation{zhang2022bytetrack}
+\citation{aharon2022botsort}
+\citation{cao2023ocsort}
+\citation{zhou2020centertrack,zhang2021fairmot}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Appearance, low scores, and camera motion}{10}{}\protected@file@percent }
+\newlabel{sec:modern}{{10}{10}{}{section.10}{}}
+\citation{bewley2016sort}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Association methods as they apply to a stack of similar faces. The remarks are consequences of the methods, not scores on a crate dataset.}}{11}{}\protected@file@percent }
+\newlabel{tab:trackers}{{1}{11}{}{table.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {11}How far the stack moves between two frames}{11}{}\protected@file@percent }
+\newlabel{sec:passage}{{11}{11}{}{section.11}{}}
+\newlabel{eq:dx}{{9}{11}{}{equation.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Motion of one face between consecutive frames at $15\,\mathrm  {Hz}$, computed from the gate specification. The IoU column compares a box to the same box shifted by that motion, with no Kalman prediction.}}{12}{}\protected@file@percent }
+\newlabel{tab:motion}{{2}{12}{}{table.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {12}One speed for the whole face}{13}{}\protected@file@percent }
+\newlabel{sec:rigid}{{12}{13}{}{section.12}{}}
+\newlabel{eq:inliers}{{10}{13}{}{equation.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {13}Five frames of one crate}{13}{}\protected@file@percent }
+\citation{redmon2016yolo}
+\citation{zheng2020diou,bochkovskiy2020yolov4}
+\@writefile{toc}{\contentsline {section}{\numberline {14}The loss that places the box}{14}{}\protected@file@percent }
+\newlabel{eq:ciou}{{11}{14}{}{equation.11}{}}
+\newlabel{eq:var}{{12}{14}{}{equation.12}{}}
+\citation{li2020gfl}
+\citation{zhou2020centertrack}
+\@writefile{toc}{\contentsline {section}{\numberline {15}What tracking must not be asked to count}{15}{}\protected@file@percent }
+\newlabel{sec:count}{{15}{15}{}{section.15}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {16}A short implementation order}{16}{}\protected@file@percent }
+\citation{bolme2010mosse,henriques2015kcf}
+\citation{bertinetto2016siamfc}
+\@writefile{toc}{\contentsline {section}{\numberline {17}A template tracker is a different tool}{17}{}\protected@file@percent }
+\bibcite{redmon2016yolo}{1}
+\bibcite{redmon2017yolo9000}{2}
+\bibcite{redmon2018yolov3}{3}
+\bibcite{bochkovskiy2020yolov4}{4}
+\bibcite{ge2021yolox}{5}
+\bibcite{li2022yolov6}{6}
+\bibcite{wang2023yolov7}{7}
+\bibcite{jocher2023yolov8}{8}
+\bibcite{wang2024yolov9}{9}
+\bibcite{wang2024yolov10}{10}
+\@writefile{toc}{\contentsline {section}{\numberline {18}Closing}{18}{}\protected@file@percent }
+\bibcite{lin2014coco}{11}
+\bibcite{lin2017fpn}{12}
+\bibcite{he2016resnet}{13}
+\bibcite{wang2020cspnet}{14}
+\bibcite{liu2018panet}{15}
+\bibcite{hou2021coordatt}{16}
+\bibcite{zheng2020diou}{17}
+\bibcite{li2020gfl}{18}
+\bibcite{ren2015faster}{19}
+\bibcite{girshick2015fast}{20}
+\bibcite{bodla2017softnms}{21}
+\bibcite{he2017mask}{22}
+\bibcite{bolya2019yolact}{23}
+\bibcite{kirillov2020pointrend}{24}
+\bibcite{bewley2016sort}{25}
+\bibcite{wojke2017deepsort}{26}
+\bibcite{zhang2022bytetrack}{27}
+\bibcite{aharon2022botsort}{28}
+\bibcite{cao2023ocsort}{29}
+\bibcite{zhou2020centertrack}{30}
+\bibcite{zhang2021fairmot}{31}
+\bibcite{kalman1960}{32}
+\bibcite{kuhn1955hungarian}{33}
+\bibcite{bernardin2008clear}{34}
+\bibcite{ristani2016id}{35}
+\bibcite{luiten2021hota}{36}
+\bibcite{milan2016mot16}{37}
+\bibcite{bolme2010mosse}{38}
+\bibcite{henriques2015kcf}{39}
+\bibcite{bertinetto2016siamfc}{40}
+\gdef \@abspage@last{20}

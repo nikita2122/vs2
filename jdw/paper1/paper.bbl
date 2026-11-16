@@ -1,0 +1,98 @@
+\begin{thebibliography}{14}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Stewart(2010)]{stewart2010}
+Graham~G. Stewart.
+\newblock High-gravity brewing and distilling---past experiences and future
+  prospects.
+\newblock \emph{Journal of the American Society of Brewing Chemists},
+  68\penalty0 (1):\penalty0 1--9, 2010.
+\newblock \doi{10.1094/ASBCJ-2009-1214-01}.
+
+\bibitem[Kunze(2019)]{kunze2019}
+Wolfgang Kunze.
+\newblock \emph{Technology Brewing and Malting}.
+\newblock VLB Berlin, Berlin, 6 edition, 2019.
+
+\bibitem[{Centec GmbH}(2024)]{centec2024}
+{Centec GmbH}.
+\newblock High gravity blending.
+\newblock \url{https://www.centec.de/process-systems/brewery/blender/}, 2024.
+\newblock Technical data sheet, accessed 29 October 2026.
+
+\bibitem[{corosys Prozesssysteme GmbH}(2024)]{corosysweb}
+{corosys Prozesssysteme GmbH}.
+\newblock Blending and carbonisation systems for breweries.
+\newblock
+  \url{https://bbt.corosys.com/en/portrait/professional-articles/blending-carbonisation-plants-breweries.php},
+  2024.
+\newblock Professional article, accessed 29 October 2026.
+
+\bibitem[Bristol(1966)]{bristol1966}
+Edgar~H. Bristol.
+\newblock On a new measure of interaction for multivariable process control.
+\newblock \emph{IEEE Transactions on Automatic Control}, 11\penalty0
+  (1):\penalty0 133--134, 1966.
+\newblock \doi{10.1109/TAC.1966.1098266}.
+
+\bibitem[Shinskey(1996)]{shinskey1996}
+F.~Greg Shinskey.
+\newblock \emph{Process Control Systems: Application, Design, and Tuning}.
+\newblock McGraw-Hill, New York, 4 edition, 1996.
+
+\bibitem[Speers and MacIntosh(2013)]{speers2013}
+R.~A. Speers and A.~J. MacIntosh.
+\newblock Carbon dioxide solubility in beer.
+\newblock \emph{Journal of the American Society of Brewing Chemists},
+  71\penalty0 (4):\penalty0 242--247, 2013.
+\newblock \doi{10.1094/ASBCJ-2013-1008-01}.
+
+\bibitem[Rammert and Pahl(1991)]{rammert1991}
+M.~Rammert and M.~H. Pahl.
+\newblock Die {L\"oslichkeit} von {Kohlendioxid} in {Getr\"anken}.
+\newblock \emph{Brauwelt}, 132:\penalty0 488--499, 1991.
+
+\bibitem[Qin and Badgwell(2003)]{qin2003}
+S.~Joe Qin and Thomas~A. Badgwell.
+\newblock A survey of industrial model predictive control technology.
+\newblock \emph{Control Engineering Practice}, 11\penalty0 (7):\penalty0
+  733--764, 2003.
+\newblock \doi{10.1016/S0967-0661(02)00186-7}.
+
+\bibitem[Rawlings et~al.(2017)Rawlings, Mayne, and Diehl]{rawlings2017}
+James~B. Rawlings, David~Q. Mayne, and Moritz Diehl.
+\newblock \emph{Model Predictive Control: Theory, Computation, and Design}.
+\newblock Nob Hill Publishing, Madison, 2 edition, 2017.
+
+\bibitem[Int(2011)]{iec60534}
+\emph{{IEC} 60534-2-1: Industrial-Process Control Valves---Part 2-1: Flow
+  Capacity---Sizing Equations for Fluid Flow under Installed Conditions}.
+\newblock International Electrotechnical Commission, Geneva, 2011.
+
+\bibitem[Diehl et~al.(2005)Diehl, Bock, and Schl{\"o}der]{diehl2005}
+Moritz Diehl, Hans~Georg Bock, and Johannes~P. Schl{\"o}der.
+\newblock A real-time iteration scheme for nonlinear optimization in optimal
+  feedback control.
+\newblock \emph{SIAM Journal on Control and Optimization}, 43\penalty0
+  (5):\penalty0 1714--1736, 2005.
+\newblock \doi{10.1137/S0363012902400713}.
+
+\bibitem[Mayne et~al.(2000)Mayne, Rawlings, Rao, and Scokaert]{mayne2000}
+D.~Q. Mayne, J.~B. Rawlings, C.~V. Rao, and P.~O.~M. Scokaert.
+\newblock Constrained model predictive control: Stability and optimality.
+\newblock \emph{Automatica}, 36\penalty0 (6):\penalty0 789--814, 2000.
+\newblock \doi{10.1016/S0005-1098(99)00214-9}.
+
+\bibitem[Skogestad(2003)]{skogestad2003}
+Sigurd Skogestad.
+\newblock Simple analytic rules for model reduction and {PID} controller
+  tuning.
+\newblock \emph{Journal of Process Control}, 13\penalty0 (4):\penalty0
+  291--309, 2003.
+\newblock \doi{10.1016/S0959-1524(02)00062-8}.
+
+\end{thebibliography}

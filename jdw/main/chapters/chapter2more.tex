@@ -1,0 +1,132 @@
+\subsection{A hand solution of the lager network}
+\label{sec:hand}
+
+The optimiser's steady point can be checked with a calculator, and the check is worth writing down because it is the same arithmetic every shooting node repeats. Take the lifts of \eqref{eq:usteady} and the mother-beer density \SI{1011.9}{\kilogram\per\cubic\metre}. The equal-percentage factor at beer lift $0.704$ is
+\begin{equation}
+\Phi(0.704) = 50^{-0.296} = \mathrm{e}^{-0.296\ln 50} = \mathrm{e}^{-1.158} = 0.314.
+\end{equation}
+The effective capacity is $32\times 0.314 = 10.05$ cubic metres per hour. The mix pressure solved by the scalar residual is \SI{2.855}{bar}, so the beer-valve drop is $4.80-2.855=\SI{1.945}{bar}$. With specific gravity $1.012$,
+\begin{equation}
+Q_h = 10.05\sqrt{1.945/1.012} = 10.05\times 1.386 = \SI{13.93}{\cubic\metre\per\hour}.
+\end{equation}
+The network solution is \SI{13.962}{\cubic\metre\per\hour}. The difference is the difference between this one-pass density and the density the scalar solver uses after the contraction and the blend have been updated. It is two tenths of a percent. The same arithmetic on the water valve, $\Phi(0.711)=0.323$, effective capacity $3.87$, drop $5.30-2.855=\SI{2.445}{bar}$, specific gravity essentially $1$, gives
+\begin{equation}
+Q_w = 3.87\sqrt{2.445} = \SI{6.05}{\cubic\metre\per\hour},
+\end{equation}
+against the solved \SI{6.055}{\cubic\metre\per\hour}.
+
+The blend-line velocity at \SI{20}{\cubic\metre\per\hour} in an \SI{81}{\milli\metre} bore is
+\begin{equation}
+v_f = \frac{20/3600}{\pi(0.0405)^{2}} = \SI{1.078}{\metre\per\second},
+\end{equation}
+which is the value in Table~\ref{tab:steady}. The Reynolds number with $\rho\approx\SI{1009}{\kilogram\per\cubic\metre}$ and $\mu=\SI{2.2}{\milli\pascal\second}$ is $4.0\times 10^{4}$. Haaland's formula at $\varepsilon=\SI{2}{\micro\metre}$ returns $f=0.0218$. Then
+\begin{equation}
+f\frac{L}{D} = 0.0218\times\frac{18}{0.081} = 4.85,
+\qquad
+C_L = 4.85 + 14 = 18.85,
+\end{equation}
+and the line drop is
+\begin{equation}
+\Delta p_{\mathrm{line}} = 18.85\times\frac{1009\times 1.078^{2}}{2}\times 10^{-5} = \SI{0.111}{bar}.
+\end{equation}
+The pressure immediately upstream of the final valve is therefore about \SI{2.74}{bar}. The final-valve drop down to the tank at \SI{2.40}{bar} is about \SI{0.34}{bar}. With $F_L=0.86$,
+\begin{equation}
+p_{\mathrm{vc},f} = 2.74 - \frac{0.34}{0.86^{2}} = 2.74 - 0.46 = \SI{2.28}{bar},
+\end{equation}
+which matches the solved vena contracta of \SI{2.279}{bar}. Equilibrium at \SI{5.20}{\gram\per\litre} and $\zeta=\SI{2.730}{\gram\per\litre\per\bar}$ is \SI{1.905}{bar}. The margin at the narrowest point in the final valve is \SI{0.37}{bar}, and the margin at the mix node is \SI{0.95}{bar}. A designer who stops at the mix-node margin and never computes \eqref{eq:pvc} will believe the skid has a bar of room when the valve throat has a third of that.
+
+The carbon-dioxide check was already done in Section~\ref{sec:build} and closes to \SI{7.51}{\gram\per\second}. The hand solution and the program are the same model. The program is used because a grade change evaluates the residual hundreds of times, not because the residual is obscure.
+
+\subsection{The mixer as a discrete linear system}
+\label{sec:discrete}
+
+Once the flows are known, each composition channel is a linear filter. Let $\alpha = Q_f\Delta t/V$ with $\Delta t=\SI{2}{\second}$ and $V=\SI{0.08}{\cubic\metre}$ at the design flow, so $\alpha = 2/14.4 = 0.139$. The exact discretisation of a single well-mixed volume is
+\begin{equation}
+\label{eq:exactdisc}
+x_{k+1} = \mathrm{e}^{-\alpha}\,x_k + \big(1-\mathrm{e}^{-\alpha}\big)\,x_{\mathrm{in}},
+\end{equation}
+and the Euler step used in the shooting code is the first-order form $x_{k+1}=(1-\alpha)x_k+\alpha x_{\mathrm{in}}$. At this $\alpha$ the two gains on the old state are $\mathrm{e}^{-\alpha}=0.870$ and $1-\alpha=0.861$. The relative difference is one percent. Over a six-step horizon the compounded difference in a step response is a few hundredths of the step, which is smaller than the analyser noise on original extract. Euler is kept because its derivative with respect to the flow, which changes $\alpha$, is obvious to the shooting code. A production build can switch to \eqref{eq:exactdisc} without touching the cost.
+
+The four channels $A_w$, $E_r$, $c$ and $c_{\mathrm{DO}}$ share $\alpha$ and do not share $x_{\mathrm{in}}$. Alcohol and extract see a mass-weighted inlet. Carbon dioxide and oxygen see a volume-weighted inlet plus, for carbon dioxide, the dose divided by $Q_f$. The state transition is therefore diagonal. The output map is not. Original extract and alcohol are nonlinear functions of $A_w$, $E_r$ and $\rho$, and $p_{\mathrm{eq}}$ is a nonlinear function of those and of $c$. That is why a linear model predictive controller built on $G$ in \eqref{eq:G} can coordinate the valves and still miss the brand: $G$ does not contain Balling's denominator. The nonlinear shooting exists for the output map, not because the mixer is a difficult dynamic system.
+
+A linear controller is still the right tool for the diagnosis in \eqref{eq:RGAnum}. It is the wrong tool for the setpoint. The numerical size of the mistake was computed in Section~\ref{sec:problem}: a dilution proportional to original extract misses the true original extract by \SI{0.19}{\degree}P. Any linear gain from flow ratio to original extract that was identified at one brand will carry an offset of that order at the next brand. Integral action removes the offset after the analyser delay. The nonlinear map removes it in the prediction.
+
+\subsection{What one tolerance costs, in the units of the stage cost}
+\label{sec:weights}
+
+The denominators in \eqref{eq:stage} are the tolerances, so the numerical weight of each channel is a statement about which miss the brewery will trade. It is worth evaluating the cost at a few concrete errors so the weights are not an unexamined vector.
+
+One tolerance of original extract, with every other error zero, costs $1$. One tolerance of alcohol costs $1$. One tolerance of carbon dioxide costs $1$. A flow error of \SI{0.5}{\cubic\metre\per\hour}, which is \SI{2.5}{\percent} of the design flow, costs $0.35$. A valve move of $0.1$ lift from the previous command costs $0.4\,(0.1)^{2}/0.01 = 0.4$. A mix pressure \SI{0.1}{bar} inside the forbidden side of the margin costs $6\times 0.01 = 0.06$, and \SI{0.5}{bar} inside it costs $1.5$. The pressure penalty therefore overtakes a quality tolerance only when the violation is several tenths of a bar. Small numerical noise in $p_m$ does not dominate the brand. A flashing valve does.
+
+Apply the same arithmetic to the infeasible mother beer of Section~\ref{sec:s2}. The extract-only point misses alcohol by \SI{0.207}{\percent} by volume, which is $0.207/0.03 = 6.9$ tolerances and a cost of about $48$. The alcohol-only point misses original extract by \SI{0.493}{\degree}P, which is $9.9$ tolerances and a cost of about $97$. The weighted point misses extract by \SI{0.167}{\degree}P and alcohol by \SI{0.137}{\percent} by volume, a cost of $(3.34)^{2}+(4.57)^{2}\approx 32$. The predictive controller is not applying a hidden preference for extract. It is applying the squares of the published tolerances. A brewery that considers a tenth of a percent of alcohol more serious than a tenth of a degree Plato changes two numbers in \eqref{eq:stage} and recommissions nothing else.
+
+The flow weight is deliberately smaller than a quality tolerance. On this skid a shortfall of one cubic metre per hour is a scheduling inconvenience, and a shortfall of one degree Plato is a beer that cannot be released. If the skid were the filler and the shortfall were a missed production slot of a high-volume brand, the flow weight would rise. The formulation already has a place for that number.
+
+\subsection{One shooting step, in order}
+\label{sec:onestep}
+
+A single evaluation of the horizon at the warm start, which is ``hold the lager command'', during the first sample of the light-brand grade change, does the following.
+
+The mother-beer analysis is unchanged. The setpoint has become \SI{9.687}{\degree}P, \SI{4.000}{\percent} by volume, \SI{5.00}{\gram\per\litre} and \SI{20}{\cubic\metre\per\hour}. The mixer state is still the lager composition, because the valves have not moved. Both blocks of $\mathbf{z}$ are \eqref{eq:usteady}. The network solve returns the lager flows. The mixer step moves the state by $\alpha$ toward an inlet that is still the lager blend, so the predicted original extract stays near \SI{11.61}{\degree}P. The stage cost on extract alone is $((11.61-9.69)/0.05)^{2} \approx 1.5\times 10^{3}$ per step, and six steps cost about $10^{4}$. That number is the signal the solver follows. It is large because the beer in the vessel is still the previous brand, which is a fact, and because the command has not yet been asked to change, which is the degree of freedom.
+
+The solver then shortens the beer lift and lengthens the water lift, subject to the rate limit of $0.16$ lift per four-second sample and to the slower rate inside the prediction. The new flows change $x_{\mathrm{in}}$ through \eqref{eq:dilute}. The predicted extract falls on the time constant \eqref{eq:tau}. Carbon dioxide is recomputed with the new water fraction and the new dose; the dose rises slightly because more water has to be carbonated even though the target concentration has fallen. The pressure residual is re-solved at every node so that the final valve opens as the total flow and the mix density change, instead of letting the pressure loop discover the interaction one sample later. The first block of the improved $\mathbf{z}$ is applied. The next sample repeats the procedure from the new mixer state and the new previous command.
+
+Nothing in that sequence requires the outlet analyser. The analyser arrives \SI{12}{\second} later and trims whatever the flow integration got wrong. On the commissioned model that trim is at the level of the sensor noise. On the nominal model the trim cannot remove a bias that the model interprets as a correct steady state, which is the tail of \SI{0.19}{\degree}P in Section~\ref{sec:s1}.
+
+\subsection{The production solver}
+\label{sec:rti}
+
+The case-study program is a single-shooting nonlinear program in eight variables with bound constraints and a smooth cost, apart from the hinges in the soft penalties. Those hinges are squared, so the cost is continuously differentiable and the second derivative jumps. A sequential quadratic solver handles that. The iteration limit of six is a real-time budget, not an optimality certificate. Warm-starting from the previous sample is what makes six iterations enough when the brand is not changing, and what makes the first sample of a grade change the expensive one.
+
+The production form replaces those six iterations by one quadratic program per sample, which is the real-time iteration \citep{diehl2005,gros2020}. Linearise the shooting map at the previous solution $(\mathbf{z},\mathbf{x})$, build the quadratic model of \eqref{eq:stage}, solve it, and apply the first block before the next preparation phase has finished. The preparation of the derivatives can overlap the sample. IPOPT is a reliable way to solve the quadratic model and also the full nonlinear program during commissioning, when there is no sample clock \citep{wachter2006}. CasADi is a reliable way to obtain the derivatives of the network residual and of Balling's map without hand-written Jacobians \citep{andersson2019}. The thesis does not depend on either package being present in the case-study script. It depends on the shooting problem being the one those packages would be given.
+
+Two implementation constraints follow. The scalar pressure solve has to be differentiated through, or replaced by a residual that the nonlinear program carries as an equality. Brent's method on a scalar is easy to run and awkward to differentiate. A production code lifts $p_m$ into the decision vector and writes $Q_f^{\mathrm{valve}}-Q_f^{\mathrm{mass}}=0$ as a constraint at each node. The local derivative of that residual with respect to $p_m$ is negative and bounded away from zero whenever both inlet valves have a positive drop, which they do inside the lift bounds of \eqref{eq:ineq}. The constraint qualification is then the ordinary one for a hydraulic network with a free internal pressure. The second constraint is that the rate limit and the interlocks are enforced in the programmable controller even if the quadratic program returns a point on the wrong side of them. Section~\ref{sec:twin} already assigned that duty to the PLC. The solver is not a safety system.
+
+\subsection{Why roughness and minor loss share one column}
+\label{sec:confound}
+
+The line drop \eqref{eq:darcy} depends on $\varepsilon$ only through $f(\varepsilon)$ and on $K$ directly. At a fixed Reynolds number the map $(\varepsilon,K)\mapsto C_L$ is the only map the flows can see, because $C_L$ is the only combination that enters $\Delta p_{\mathrm{line}}$. Differentiating Haaland's formula, $f$ is a slowly increasing function of $\varepsilon/D$. A positive step in $\varepsilon$ and a negative step in $K$ can be chosen so that $C_L$ does not change. The two corresponding columns of the residual Jacobian are then scalar multiples of each other, the Gram matrix $J^{\mathsf T}J$ is singular, and the formal standard error \eqref{eq:cov} diverges. That is what Table~\ref{tab:est} records, in the decision to publish $C_L$ and to withhold a roughness.
+
+The multiplicity is not removed by collecting more points at the same Reynolds number. It is weakly removed by collecting points at very different velocities, because $f$ depends on $\mathrm{Re}$ and $K$ does not, so the two parameters are not in a fixed ratio across the campaign. The commissioning lifts do change the flow, but not by the factor of ten that would separate a smooth-pipe friction factor from a minor loss. A campaign designed to identify roughness would include a near-shut final valve and a wide-open one, and would still be limited by the fact that a hygienic bore at these Reynolds numbers sits in a flat part of the Moody chart. The engineering quantity is $C_L$. The thesis estimates that quantity to two and a half percent and treats the split as unidentified.
+
+The capacities do not have this problem. $K_{v,h}$ scales only $Q_h$, and it scales it with the square root of a drop that the header bias also shifts. Varying the beer lift changes the drop and the flow in a combination a pure bias cannot imitate, because a bias shifts every beer-valve point by the same pressure and a capacity scales them. The standard error of \SI{0.08}{\cubic\metre\per\hour} on a capacity of $32$ is the numerical expression of that excitation. Twenty-eight points were more than the rank of the problem required. They were not more than the noise required.
+
+\subsection{The residual network as a function}
+\label{sec:netfun}
+
+Let $\xi\in\mathbb{R}^{6}$ be the standardised feature $(l_h,l_w,l_f,A_w,E_r,p_m)$, with the mean and the scale taken from the training points only. The network is
+\begin{equation}
+\label{eq:net}
+h = \tanh(W_1\xi + b_1),
+\qquad
+\Delta Q = W_2 h + b_2,
+\end{equation}
+with $W_1\in\mathbb{R}^{8\times 6}$ and $W_2\in\mathbb{R}^{3\times 8}$. The corrected flow is the physical prediction plus $\Delta Q$. The training loss on a batch is the mean square of $\Delta Q$ against the measured residual, plus the weight decay, plus, every fifth step, a multiple of \eqref{eq:masspen}. The mass penalty is a function of $\Delta Q$ and therefore of $W_2$ and, through $h$, of $W_1$. Its gradient is an ordinary back-propagation of a linear form in the three flows. No collocation point in the sense of a space-time residual of a partial differential equation is required \citep{raissi2019}. The conservation law is the one the flow already lives under.
+
+The hold-out is six points drawn as the last six of the campaign, not re-used in the standardisation or the training. Root-mean-square flow error rises from \SI{0.030}{\cubic\metre\per\hour} to \SI{0.037}{\cubic\metre\per\hour} when $\Delta Q$ is added. The rise is the signature of a model whose physical part has already reached the sensor noise. Adding eight hidden units, forty-eight input weights and twenty-four output weights to a residual whose standard deviation is \SI{0.03}{\cubic\metre\per\hour} on twenty-two points is enough capacity to fit the particular noise of those twenty-two points. The gate compares the two errors and publishes the physical prediction. The weights are kept on disk with the campaign so that a later campaign can be scored against the same architecture. They are not written into the controller.
+
+This is the opposite deployment decision from \citet{wu2023cerd} and \citet{zheng2023}, and it is the same rule. They keep the network because the hold-out improves. This skid drops the network because the hold-out does not. A twin that kept the network anyway would be adding \SI{0.007}{\cubic\metre\per\hour} of invented flow, which is a third of a percent at the beer line and a pointless risk next to a capacity estimate that is already inside \SI{0.1}{\cubic\metre\per\hour}.
+
+\subsection{Observer, delay and the information the analyser still carries}
+\label{sec:observer}
+
+The fast observer is the discrete mixer \eqref{eq:exactdisc} driven by measured flows. Its only unknown, between analyser updates, is the inlet composition, and that unknown is replaced by the last mother-beer analysis after eight seconds. The outlet analysis is a measurement of the state that existed \SI{12}{\second}, or six integration steps, earlier. A correction that simply overwrites the current state with the delayed analysis assigns today's vessel the beer of one residence time ago, which is the lager during the first moments of the grade change, and pulls the prediction backwards. The correction used here is therefore applied to the innovation of the delayed prediction: the observer stores a short buffer of predicted outlet values, subtracts the analysis when it arrives, and distributes a fraction of that innovation onto the current state. With healthy flow meters the fraction can be small. The case study adds composition noise of about $0.01$ percentage points by weight so that the controller does not receive the plant state as an oracle.
+
+If the beer flow meter failed, this observer would integrate a lie and the outlet analysis would become the primary measurement. That is the situation in which the moving-horizon estimator of \citet{rao2003} earns its window, and in which an unscented filter \citep{julier2004} is a cheaper approximation. The thesis does not simulate a failed meter. It names the estimator that would replace the balance, and it keeps the balance for the campaign that was actually run. \citet{kalman1960} is the linear special case of both, and it is the right filter for the pressure and flow channels, which are already linear in their noise and are used without a window.
+
+Dissolved oxygen is observed on the same analyser and is not controlled. The observer reports it. The phase logic compares it with \SI{30}{ppb}. The predictive controller includes it in $\ell_{\mathrm{soft}}$ so that a move which would add oxygen by flashing is expensive, and so that a move which cannot remove oxygen already present is not invented. Those are different uses of the same measurement. Conflating them is how a ratio station gets talked into chasing a disturbance it has no actuator for.
+
+\subsection{Faults the cost already contains}
+\label{sec:faults}
+
+Four faults are inside the formulation rather than on a list of future work.
+
+A biased beer-header transmitter is $b_h$. It is estimated once and subtracted. Leaving it inside the nominal model produces the grade-change offset of Section~\ref{sec:s1}.
+
+A wrong capacity is an element of $\theta$. It is the difference between the two predictive controllers in every scenario. The ratio station is less sensitive to it because the flow loops close on measured flow. The predictive controller is more sensitive to it because the flow it closes on is a prediction. That asymmetry is the reason the twin is not an optional display next to an otherwise finished controller.
+
+An infeasible brand is a positive minimum of \eqref{eq:stage}. The controller returns the minimiser. It does not return a feasibility flag unless the supervisory station computes the same one-dimensional search in $w$ that Section~\ref{sec:s2} used and compares the two pure compromises with the weighted point. That search is cheap and should be part of the phase start, so that an operator sees ``this mother beer cannot hit both numbers'' before the valves move. The case study performs the search offline and confirms that the closed-loop tail matches it.
+
+A sticky water valve is $S$ in \eqref{eq:invstick}. Undetected, it turns a small flow correction into a delayed jump. Detected, it is a known lead on one command. The eight-second detection delay in the third scenario is a stand-in for a test that looks for a command change with no stem change \citep{jelali2010,choudhury2005}. It is not a claim that eight seconds is the best detector.
+
+Faults that are not inside the formulation are a plugged injector, a failed analyser, a bright-tank pressure below $p_{\mathrm{eq}}$, and a dilution water whose calcium or oxygen certificate is already outside the release limit. The first three are interlocks. The fourth is a hold on the phase. The controller is not asked to blend its way around them.

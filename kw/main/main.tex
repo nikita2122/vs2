@@ -1,0 +1,81 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[a4paper,margin=2.55cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.58}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,array,tabularx,longtable}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\setlength{\parskip}{0.32em}
+\setlength{\parindent}{1.15em}
+\setlist[enumerate]{itemsep=0.22em,topsep=0.35em}
+\setlist[itemize]{itemsep=0.22em,topsep=0.35em}
+\captionsetup{font=small,skip=6pt}
+\pgfplotsset{every axis/.append style={tick label style={font=\small},label style={font=\small}}}
+
+\title{A Study on Improving Thresher Efficiency\\Using Deep Neural Networks}
+\author{A computer-science thesis}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent
+Threshing efficiency and mechanical stability are usually set by a fixed command or by a moisture card. Both ignore the axial load shape, and both are blind to an interaction between a heavy feed and a wet crop. This thesis treats the thresher as a plant and studies two computational problems on it. The first is to identify a discrete operating status from a short sensor window, after the axial stations have been placed by a design criterion rather than by habit. The second is to map the resulting features to four normalized setpoints---intensity, residence, cleaning, and feed admission---with a deep network trained to imitate a numerical optimizer.
+
+The status model is a feedforward network on window statistics. On a held-out mixture of operating conditions it reaches \(89.8\%\) accuracy and a macro-F1 of \(0.846\), against \(82.6\%\) and \(0.734\) for a linear softmax on the same features. The gain is concentrated on the spatial and the rare labels: front-loaded recall rises from \(0.56\) to \(0.79\), and under-filled recall from \(0.27\) to \(0.61\). A \(D\)-optimal design for a quadratic load shape puts stations at the inlet, at two central bands, and at the discharge. Accuracy saturates once the two ends are instrumented, which is what a contrast feature needs; the four-station design is kept because the control features also use the curvature of the load.
+
+The control network is trained by squared error against the optimizer, on features drawn under a fixed command, under the moisture card, and under random commands. On a weighted seasonal mix of wheat, rice, and soybean it lowers grain loss from \(2.85\%\) at the fixed setting and \(2.50\%\) on the moisture card to \(1.80\%\), against \(1.78\%\) for the optimizer itself. Specific shaft energy rises from \(1.41\) to \(1.63\,\mathrm{kWh\,t^{-1}}\). A stability index whose design floor is \(0.70\) rises from \(0.686\) to \(0.701\). Impurity rises from \(1.17\%\) to \(1.50\%\) and a breakage index from \(1.04\%\) to \(1.49\%\). Those two rises are the prices inside the optimizer's objective, not side effects discovered after the fact. The numbers are a numerical experiment on a reduced-order plant. They are not a field trial.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\chapter*{Nomenclature}
+\addcontentsline{toc}{chapter}{Nomenclature}
+\markboth{Nomenclature}{Nomenclature}
+
+Symbols used in more than one place are collected here. A symbol that belongs to a single derivation is defined where it appears.
+
+\begin{longtable}{@{}p{0.16\textwidth}p{0.76\textwidth}@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+\endhead
+\(q\) & Fresh biomass feed offered to the machine, kilograms per second. \\
+\(m\) & Grain moisture, wet basis, as a fraction. \\
+\(u_I,u_R,u_C,u_F\) & Normalized commands: threshing intensity, residence, cleaning, and feed admission, each in \([0,1]\). \\
+\(\mathbf{u}\) & The command vector \((u_I,u_R,u_C,u_F)\). \\
+\(\mathbf{u}^\star\) & Command returned by the numerical optimizer for a known disturbance. \\
+\(q_e\) & Biomass actually admitted to the rotor after the feed trim. \\
+\(\eta\) & Grain-recovery efficiency: recovered grain divided by grain offered. \\
+\(L\) & Grain-loss fraction of the admitted grain. The sum of unthreshed, free-grain, and sieve terms. \\
+\(\iota\) & Impurity fraction in the cleaned stream. \\
+\(b\) & Breakage index, a monotone function of residence, intensity, and moisture. \\
+\(e\) & Specific shaft energy, kilowatt-hours per tonne of admitted grain. \\
+\(F_i\) & Load at axial station \(i\), newtons. Stations are numbered \(1\) to \(8\) from inlet to discharge. \\
+\(\mathrm{CV}\) & Coefficient of variation of the station loads. \\
+\(S\) & Mechanical-stability index in \([0,1]\). Higher is calmer. The design floor is \(0.70\). \\
+\(\mathbf{x}\) & Feature vector built from one sensor window. \\
+\(p\) & The set of axial stations that are instrumented. \\
+\(K\) & Number of instrumented axial stations. \\
+\(C\) & Discrete operating status. \\
+\(J\) & Scalar objective maximized by the teacher optimizer. \\
+\bottomrule
+\end{longtable}
+
+\input{ch1}
+\input{ch2}
+\input{ch3}
+\input{refs}
+
+\end{document}

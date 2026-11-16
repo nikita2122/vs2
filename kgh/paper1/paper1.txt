@@ -1,0 +1,290 @@
+
+
+===== PAGE 1 =====
+A Vibration--Wavelet--Coefficient Feature
+for Rotating-Machinery Faults
+Short paper on the first innovation of the expanded study
+based on You, Fan, Li, Liang, Fang, and Wang,
+Shock and Vibration, 2019, Article ID 1908485
+Abstract
+Fault description for a vertical axial-flow pump has to keep three facts that a single transform
+discards. Vibration severity measures how hard the casing is moving, and on this rig it separates
+an eccentric axle from healthy running while leaving a bearing-pedestal fault almost unchanged.
+A dyadic wavelet energy time-spectrum shows which scale carries the record, so a short transient is
+not averaged away by one Fourier transform of the whole capture. The coefficient power spectrum
+of that loudest scale then reads seven shaft orders, from half order through the sixth harmonic,
+on the radial, tangential, and axial channels. One severity scalar and twenty-one spectral samples
+form the vibration--wavelet--coefficient (VWC) vector in R22. This short paper specifies that map,
+shows why the three blocks are not substitutes for one another, and records what the published
+pump signatures look like inside it. The vector is the common input of every classifier in the
+parent study. The search that labels it is a separate innovation.
+1
+Introduction
+A rotating machine writes its condition into casing acceleration, but the raw record is the wrong
+object to classify. At the duty used here the shaft turns at 960 r/min, so the fundamental is f0 =
+n/60 = 16 Hz, and a capture of 8192 samples at 10 kHz lasts 0.8192 s, about 13.1 revolutions, with
+a Fourier bin of 1.221 Hz. That grid resolves 3f0 = 48 Hz from the 50 Hz supply line. It does not by
+itself say which number a maintenance decision needs.
+Three descriptions compete. Root-mean-square velocity, the vibration severity, is the standardized
+intensity [5]. On the published radial records it is 1.051 mm/s when the pump is healthy, 3.737 mm/s
+with an eccentric axle, 1.161 mm/s with a bearing-pedestal fault, and 1.700 mm/s with sealing-ring
+wear [1]. The eccentric state is obvious on this axis. The pedestal state is a ten-percent change and
+cannot be thresholded safely. A single Fourier spectrum of the whole capture sees shaft orders and
+also averages any impact that does not last for the 0.82 s record [4]. A wavelet energy vector sees the
+loud scale and does not say whether the loudness sits at 8 Hz or at 16 Hz [2]. VWC keeps all three,
+and nothing else, so the interface to a classifier stays a vector of dimension 22.
+The mechanical vocabulary is fixed by the shaft. The orders sampled from the loudest scale are
+F =
+{ 1
+2f0, f0, 2f0, 3f0, 4f0, 5f0, 6f0
+}
+= {8, 16, 32, 48, 64, 80, 96} Hz.
+(1)
+Half order is the signature of a motion that repeats every two revolutions, as a loose pedestal can.
+The first order is the unbalance line. The fourth order is also blade pass, because the impeller has
+four blades: 4 × 16 = 64 Hz. A line at 64 Hz is therefore expected in the healthy machine.
+
+
+===== PAGE 2 =====
+2
+The three blocks
+2.1
+Severity
+If v(t) is vibration velocity over a record of length T, severity is the RMS velocity
+VIB =
+s
+1
+T
+Z T
+0
+v(t)2 dt =
+v
+u
+u
+t 1
+n
+n−1
+X
+i=0
+v2
+i .
+(2)
+The parent study's source accumulates absolute acceleration over a 10 ms window to obtain the
+velocity series that enters (2) [1]. That window is about one sixth of a revolution at 16 Hz, and
+the absolute value makes the sample a local intensity rather than a signed integral. The published
+millimetre-per-second figures are used under that definition. Figure 1 restates them. Severity con-
+tributes one coordinate, the radial value, because seven orders on three axes already give 21 numbers
+and the full vector has length 22.
+Normal
+Eccentric axle
+Bearing pedestal
+Sealing-ring wear
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+4.0
+4.5
+Vibration severity (mm/s)
+1.051
+3.737
+1.161
+1.700
+Published radial vibration severity (You et al., 2019)
+Figure 1: Published radial vibration severity. Eccentricity multiplies the healthy value by about 3.56.
+The pedestal fault multiplies it by about 1.10.
+2.2
+Dyadic energy
+A mother wavelet ψ of zero mean and unit norm generates the dyadic family ψ2j,b(t) = 2−j/2ψ(2−j(t−
+b)). On a sampled record the inner products are the detail coefficients of Mallat's filter bank [2, 3].
+One analysis step convolves the current approximation with a low-pass filter h and a high-pass filter
+g, then downsamples both branches by two. The high-pass branch at level j is cDj. The energy
+time-spectrum at that scale is the squared coefficient sequence
+E(2j)[k] = |cDj[k]|2,
+(3)
+and the scalar that ranks scales is the sum E(2j) = P
+k E(2j)[k]. The winning index k⋆is any level
+of maximum E, with a tie broken toward the finer level so that a transient is preferred to a trend
+of equal energy. The map does not hard-code level 5. The source plots happen to show d5 as the
+loudest detail, which is consistent with acceleration energy sitting in a structural band near a few
+hundred hertz while the shaft family itself is coarser. With fs = 10 kHz, ideal half-bands put d5 near
+156--312 Hz. The shaft orders are still readable at that level because they modulate the resonant
+2
+
+
+===== PAGE 3 =====
+carrier, and because the coefficient rate fs/25 = 312.5 Hz has Nyquist frequency 156.25 Hz, above
+6f0 = 96 Hz.
+2.3
+Coefficient power spectrum
+The third block is the power spectrum of the energy time series at the winning level,
+Ep(ω, 2k⋆) = 1
+Nc
+|||||
+Nc−1
+X
+n=0
+E(2k⋆)[n] e−iωn/Nc
+|||||
+2
+,
+(4)
+with coefficient-domain frequency mapped back to hertz by f = ν ·fs/2k⋆. Each feature is the sample
+of (4) nearest an order in F, taking the strongest bin inside half a shaft order if the line falls between
+bins. That window is 4 Hz at this speed, narrower than the 2 Hz gap from 48 Hz to the supply, so
+the sampler does not report mains as 3f0. An order above the coefficient Nyquist of k⋆is refused
+rather than folded.
+3
+The vector, and what the four states do in it
+Concatenate the radial severity with the seven amplitudes on each axis:
+x =
+(VIBr, pt(η), pa(η), pr(η)
+)⊤,
+η ∈F.
+(5)
+Training and test rows must use the same coordinate order. Before classification, each coordinate
+is scaled to the unit interval by a range fit on the training rows only and frozen for the test rows.
+Severity is near 1 mm/s and a coefficient power sample is near 10−3; without this map the radial
+kernel would ignore the spectral block.
+The published reading of the pump records is then a statement about x [1]. Healthy running
+pairs a moderate severity with a tangential spectrum peaked at 16 Hz. The published tangential
+peak power there is 1.683 × 10−3. Eccentric axle raises severity by the factor 3.56 and raises that
+tangential peak to 3.322 × 10−3, which is the stationary form of a larger unbalance force. Bearing-
+pedestal fault leaves severity almost alone and moves the tangential peak to 8 Hz, at a published
+power 4.701 × 10−3, about 2.8 times the healthy tangential peak. Sealing-ring wear sets severity at
+1.70 mm/s and emphasizes f0, half order, and 2f0, with the tangential channel again the largest. The
+pedestal ratio is the empirical reason the vector contains both blocks: the spectral coordinate moves
+by a larger factor than the severity coordinate. Figure 2 is an illustrative baseband picture of that
+emphasis, not a laboratory spectrum.
+4
+What this innovation does and does not do
+VWC is deterministic once the wavelet, the depth, the integrator, and the tie break are fixed. This
+specification uses the Daubechies wavelet with four vanishing moments and eight levels, which the
+2019 paper does not name; the name is part of the exposition, and the definition of k⋆does not
+depend on it. The map costs one linear filter bank per axis plus one Fourier transform of the winning
+coefficient sequence. At N = 8192 that cost is negligible beside any later parameter search. Two
+hundred and forty vectors, sixty per state, are the entire labeled sample the vector is asked to support
+[1].
+The innovation does not label the vector. Healthy, eccentric, pedestal, and seal-wear patterns still
+overlap, and the pedestal pattern is the least stable because resonance and site interference occupy
+3
+
+
+===== PAGE 4 =====
+0
+20
+40
+60
+80
+100
+120
+Frequency (Hz)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Normalized power
+Normal
+0
+20
+40
+60
+80
+100
+120
+Frequency (Hz)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Normalized power
+Eccentric axle (EAF)
+0
+20
+40
+60
+80
+100
+120
+Frequency (Hz)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Normalized power
+Bearing pedestal (BPF)
+0
+20
+40
+60
+80
+100
+120
+Frequency (Hz)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Normalized power
+Sealing-ring wear (SRWF)
+Illustrative baseband spectra, 0–120 Hz
+Figure 2: Illustrative baseband spectra shaped to the published emphasis. They are not the labora-
+tory recordings.
+Triaxial
+acceleration
+Radial
+severity
+Loudest dyadic
+scale k⋆
+Seven orders
+on three axes
+x ∈R22
+Figure 3: VWC is a concatenation. The classifier never sees the raw record.
+the same high orders the fault uses. Every classifier that later reads x misses at least two of the
+fifteen pedestal test vectors. That residue is a property of the measurement, and a different feature
+map would have to be estimated on a new split before it could be claimed as a repair. Severity alone
+is already known to be insufficient: a threshold between 2 and 3 mm/s catches the eccentric axle and
+misses the other two faults. The 22-vector is the object that makes the half-order pedestal move and
+the seal-wear second harmonic available to a margin classifier at the same time as the standardized
+intensity.
+5
+Conclusion
+The first innovation replaces an unstructured vibration record with a 22-dimensional description:
+radial vibration severity, the identity of the loudest dyadic scale, and the coefficient power of seven
+shaft orders on three casing axes. The blocks answer different questions, and the published severities
+show that the intensity question and the order question disagree on the pedestal fault. The map
+4
+
+
+===== PAGE 5 =====
+is specified completely enough to implement, including the training-only scale and the refusal of an
+order that the winning scale cannot represent. Labels for the vector are the subject of the companion
+short paper on the modified frog-leaping search.
+References
+[1] L. You, W. Fan, Z. Li, Y. Liang, M. Fang, and J. Wang, (A fault diagnosis model for rotating ma-
+chinery using VWC and MSFLA-SVM based on vibration signal analysis,) Shock and Vibration,
+vol. 2019, Article ID 1908485, 2019.
+[2] S. G. Mallat, (A theory for multiresolution signal decomposition: the wavelet representation,)
+IEEE Trans. Pattern Analysis and Machine Intelligence, vol. 11, no. 7, pp. 674--693, 1989.
+[3] I. Daubechies, (Orthonormal bases of compactly supported wavelets,) Comm. Pure Appl. Math.,
+vol. 41, no. 7, pp. 909--996, 1988.
+[4] Z. K. Peng and F. L. Chu, (Application of the wavelet transform in machine condition monitoring
+and fault diagnostics: a review,) Mechanical Systems and Signal Processing, vol. 18, no. 2, pp. 199--
+221, 2004.
+[5] International Organization for Standardization, ISO 20816-1:2016, Mechanical vibration --- Mea-
+surement and evaluation of machine vibration --- Part 1. Geneva, 2016.
+[6] R. B. Randall and J. Antoni, (Rolling element bearing diagnostics---a tutorial,) Mechanical Sys-
+tems and Signal Processing, vol. 25, no. 2, pp. 485--520, 2011.
+5

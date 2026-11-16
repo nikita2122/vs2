@@ -1,0 +1,31 @@
+\subsection{An error budget in crates, before the tables}
+
+The tables measure a net error. The net is easier to read if it is split, even approximately, into the pieces the design can and cannot move. Consider a front face whose true occupancy is a solid $m_{\star}$ cells, depth $d$, truth $N=d\,m_{\star}$. Let the detector return $m_{\star}-q+f$ centers that snap into distinct true or false cells, where $q$ is the number of missed true cells and $f$ is the number of false cells that land outside the true set. The gap rule then adds $r$ restorations of true misses and $p$ phantom cells. The declared front count is
+\begin{equation}
+m = (m_{\star}-q+f) + r + p,
+\label{eq:front-balance}
+\end{equation}
+and the booked total, when the depth reading is correct, is $\hat N = d\, m$. The signed front error is
+\begin{equation}
+m-m_{\star} = -q + f + r + p = -(q-r) + (f+p).
+\label{eq:front-signed}
+\end{equation}
+The first parenthesis is unrestored misses. The second is false cells plus phantoms. PLC exists to make $r$ close to $q$ without making $p$ large. The span, by comparison, sets the declared count to the area of the bounding rectangle, which sets $r=q$ on a solid rectangle whose corners were detected, and sets $p$ equal to every truly empty cell inside that rectangle plus any cell the false positives pushed into the percentile span. On the stepped stack of \Cref{fig:grid}, $q$ may be zero and $p$ is already one for PLC and two for the span, before any detection noise. That is a structural $p$, not a random $p$.
+
+When the depth reading is off by one, an additional $\pm m$ appears in $\hat N-N$. Section~\ref{sec:depth-sensitivity} estimates that term at about one crate of absolute error under the ten percent error rate, for fronts near ten cells. It does not enter~\eqref{eq:front-signed}. A table that shows PLC-single at mean absolute error $3.01$ is therefore a sum of at least three positive contributions: unrestored misses scaled by depth, phantoms and false cells scaled by depth, and depth-reading mistakes. Removing any one of them leaves the other two. This is why a three-tenth-of-a-crate improvement over the span can coexist with a three-crate absolute error, and why the improvement is still the right comparison. The span pays the same depth-reading term. The difference between the rows is the difference in $(q-r)$ and $(f+p)$, not the difference in the sensor.
+
+Equation~\eqref{eq:front-signed} also fixes the sign of the bias. A rule with $r$ near $q$ and $p>0$ on stepped outlines has positive front bias. A rule with $r=0$, which is the raw mask count, has negative front bias equal to $-q+f$, and $q$ exceeds $f$ because the detection probabilities in~\eqref{eq:detprob} are all below one and the false-center mean is only $0.35$. Multiplying by $d\ge 1$ preserves the sign. The sign flip between the mask rows and the lattice rows of the counting table is~\eqref{eq:front-signed} with two different $(r,p)$, written before the table so that the flip is a prediction. Chapter~\ref{ch:system} checks it.
+
+\subsection{The worked stack in the same letters}
+\label{sec:letters}
+
+The letters of~\eqref{eq:front-signed} are easier to trust if they are filled in on the one stack that was also counted by hand. The front truth has $m_{\star}=10$. The first frame produced nine detections, so if those nine landed in nine distinct true cells, then $q=1$ and $f=0$ before the gap rule. The rule restored the miss, so $r=1$, and it added the phantom beside the stepped top row, so $p=1$. Then
+\begin{equation}
+m-m_{\star} = -(1-1) + (0+1) = +1,
+\label{eq:letters-num}
+\end{equation}
+and times a correct depth of $2$ the booked error is $+2$, which is the instrument's $22$ against $20$. The span on the same frame fills both empty cells of the top row, so its $p$ is $2$ if $q$ and $r$ cancel, and the front error is $+2$, times depth $24$ against $20$. The arithmetic does not use the random seed. It uses the grid and the visit order. A different visit order, as Section~\ref{sec:grid-drawn} noted, would have set $p=2$ for PLC as well and the two counters would have agreed at $24$. The estimated gap between them is partly an agreement about holes and partly an accident of left-to-right visitation on this particular step. On a solid rectangle with no step, structural $p$ is zero for both, and the gap that remains is only the random holes one rule restores and the other fills blindly.
+
+The same letters explain a passage the operator should not treat as a success merely because the total moved closer to the truth. Suppose the detector missed two cells, $q=2$, the rule restored one, $r=1$, and invented one phantom, $p=1$, with $f=0$. The front error is $-(2-1)+(0+1)=0$. The booked total matches $d\,m_{\star}$ and the exact-match column of the table increments. The load is still wrong in two places: one crate was never seen and was not inferred, and one crate was inferred where the pallet is empty. The completed-cell count is $r+p=2$, which is the quantity that keeps this zero from looking like a clean observation. An exact total with a completed-cell count of zero is the passage the lattice actually saw. An exact total with a positive completed-cell count is a cancellation inside~\eqref{eq:front-signed}, and the record is required to show the cancellation rather than only the zero.
+
+This is also the sense in which the exact-match rate of $0.337$ for PLC-single should not be read as ``one passage in three is correct for the right reason.'' Some of those exact passages are cancellations. The bias of $+0.83$ says the cancellations do not dominate: phantoms and false cells outweigh unrestored misses, but not by a full crate on average. A rate of exact matches near one third, a bias under one crate, and a mean absolute error of three crates are three different statements, and a shift supervisor who is given only the exact-match rate will think the system is three times more reliable than the mean absolute error says it is. The table reports all three because~\eqref{eq:front-signed} says they can move independently.

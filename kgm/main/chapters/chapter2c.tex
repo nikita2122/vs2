@@ -1,0 +1,225 @@
+\section{Open-loop detergent step and the linearized fan problem}
+\label{sec:openloop}
+
+The week integral in Chapter~\ref{ch:estimate} closes the dissolved-oxygen loop, so the fans move as soon as the error appears. That closure hides the size of the mistake a wrong $\alpha$ makes before the loop has time to act. This section freezes the airflow on purpose, for less than one hour, so the oxygen balance can be read as an initial-value problem. It then linearizes the same balance, because a quadratic program is the form a solver-based implementation of \eqref{eq:p1} will actually code when the integer staging is fixed.
+
+\subsection{Frozen airflow after the detergent arrives}
+
+Take the fermentation conditions of the hand inversion: uptake held at \SI{30}{\milli\gram\per\litre\per\hour}, temperature \SI{33}{\celsius}, $\beta C^{*}=6.80\,\mathrm{mg/L}$, and $\alpha=0.40$. Two airflows are frozen. The first, \SI{3570}{\nmcph}, is what the inversion computes if it still believes $\alpha=0.55$. The second, \SI{5250}{\nmcph}, is the inversion at the true $\alpha$. The transfer coefficient follows \eqref{eq:kla-est}. Dissolved oxygen is integrated with the semi-implicit step \eqref{eq:semi} at $\Delta t=0.1\,\mathrm{h}$, starting from \SI{1.80}{\milli\gram\per\litre}. Uptake is not allowed to fall as dissolved oxygen falls. That is the conservative open-loop case: the biomass keeps asking for oxygen the fans are not delivering. In the closed-loop plant, uptake does fall, through $\mu_{C}$ in \eqref{eq:monod}, which is why a week minimum of \SI{0.90}{\milli\gram\per\litre} is not the same number as the open-loop end point below.
+
+\begin{table}[ht]
+\centering
+\caption{Open-loop dissolved oxygen after a detergent step, uptake held at \SI{30}{\milli\gram\per\litre\per\hour}. The short column is the airflow a controller computes with $\alpha=0.55$. The corrected column uses $\alpha=0.40$.}
+\label{tab:openloop}
+\begin{tabular}{@{}ccc@{}}
+\toprule
+Time (h) & $C$ at \SI{3570}{\nmcph} & $C$ at \SI{5250}{\nmcph} \\
+\midrule
+0.0 & 1.80 & 1.80 \\
+0.1 & 1.37 & 1.95 \\
+0.2 & 1.08 & 2.05 \\
+0.3 & 0.89 & 2.10 \\
+0.4 & 0.75 & 2.14 \\
+0.5 & 0.66 & 2.16 \\
+0.6 & 0.60 & 2.17 \\
+0.8 & 0.53 & 2.18 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At the wrong airflow the transfer coefficient is $4.74\,\mathrm{h^{-1}}$. Oxygen transfer at the initial dissolved oxygen is $4.74\times(6.80-1.80)=23.7\,\mathrm{mg\,L^{-1}\,h^{-1}}$, against an uptake of $30$, so the tank loses oxygen at about \SI{6}{\milli\gram\per\litre\per\hour} immediately and faster as the driving force grows. By $0.3\,\mathrm{h}$ the open-loop concentration is already under \SI{1}{\milli\gram\per\litre}. At the corrected airflow the coefficient is $6.50\,\mathrm{h^{-1}}$, transfer at the initial state is $6.50\times 5.00=32.5$, slightly above the uptake, and the concentration climbs to the set-point neighbourhood of \SI{2.2}{\milli\gram\per\litre} and stops. The two columns are the same balance. The only change is whether $\alpha$ in the inversion is the quiet-week number or the detergent number. That is the entire content of the second technology, seen without a neural network and without a week of feedback: forty-five minutes of believing the wrong factor is enough, in open loop, to cross the operational floor.
+
+Feedback reduces the damage, and the estimation shows how much. The fixed-$\alpha$ loop in Table~\ref{tab:do-cip} reaches a minimum of \SI{0.90}{\milli\gram\per\litre}, not \SI{0.53}{\milli\gram\per\litre}, because the bias \eqref{eq:bias} adds air as soon as the probe falls, and because uptake itself declines when $\mu_{C}$ declines. The proposed loop, which does not wait for the probe, stays at a minimum of \SI{1.63}{\milli\gram\per\litre}. Table~\ref{tab:openloop} is the reason that difference exists. It is not a second estimate of the week.
+
+\subsection{Linear model used when staging is held}
+
+Between staging events $n$ is constant and $q$ is the only continuous input. Linearize \eqref{eq:do-bal} at an equilibrium $(C_{0},q_{0},\alpha_{0})$ where transfer equals uptake. With $K_La$ from \eqref{eq:kla-est},
+\begin{equation}
+\label{eq:klin}
+\frac{\partial K_La}{\partial q}
+=
+0.82\,
+\frac{K_La}{q},
+\qquad
+\frac{\partial K_La}{\partial \alpha}
+=
+\frac{K_La}{\alpha}.
+\end{equation}
+The dissolved-oxygen deviation $c=C-C_{0}$ then obeys
+\begin{equation}
+\label{eq:clin}
+\dot{c}
+=
+-a\,c
++
+b_{q}\,\delta q
++
+b_{\alpha}\,\delta\alpha
+-
+\delta\mathrm{OUR},
+\end{equation}
+where
+\begin{align}
+a
+&=
+K_La(q_{0},\alpha_{0}),
+\\
+b_{q}
+&=
+0.82\,
+\frac{K_La}{q_{0}}
+\big(\beta C^{*}-C_{0}\big),
+\\
+b_{\alpha}
+&=
+\frac{K_La}{\alpha_{0}}
+\big(\beta C^{*}-C_{0}\big).
+\end{align}
+The pole $-a$ is the transfer coefficient itself. At the base hand inversion, $a\approx 3.2\,\mathrm{h^{-1}}$, so the open-loop time constant of dissolved oxygen is about twenty minutes. A preview of $0.75\,\mathrm{h}$ is a little more than two time constants. A preview of one minute is not a preview. This is the quantitative link between the blower lag of $0.10\,\mathrm{h}$, the oxygen time constant, and the calendar lead specified in Section~\ref{sec:saempc}.
+
+At the corrected detergent point, $q_{0}=5250$, $K_La=6.50$, $C_{0}=2.2$, $\alpha_{0}=0.40$, the driving force is $4.60$, and
+\begin{equation}
+b_{q}
+=
+0.82\times
+\frac{6.50}{5250}
+\times
+4.60
+=
+0.00467
+\quad
+\mathrm{mg\,L^{-1}\,h^{-1}}
+\text{ per }
+\mathrm{Nm^{3}/h}.
+\end{equation}
+An extra \SI{200}{\nmcph} therefore adds about \SI{0.93}{\milli\gram\per\litre\per\hour} of transfer at that point, before the concentration has moved. The same increment at the wrong-$\alpha$ airflow is not the right correction: the plant needs on the order of \SI{1700}{\nmcph} more air, which is outside the linear range of a model built at \SI{3570}{\nmcph}. The linear model is for the tracking layer once $\alpha$ is right. It is not a substitute for putting the right $\alpha$ in the inversion. That distinction keeps the quadratic program honest. It optimizes deviations. It does not discover the detergent.
+
+Discretize \eqref{eq:clin} at the one-minute controller step $\Delta t=1/60\,\mathrm{h}$ with a zero-order hold on $\delta q$. The exact discrete step for a scalar pole is
+\begin{equation}
+\label{eq:cdisc}
+c_{k+1}
+=
+e^{-a\Delta t}\,c_{k}
++
+\frac{1-e^{-a\Delta t}}{a}
+\big(
+b_{q}\,\delta q_{k}
++
+b_{\alpha}\,\delta\alpha_{k}
+-
+\delta\mathrm{OUR}_{k}
+\big).
+\end{equation}
+With $a=6.50\,\mathrm{h^{-1}}$ and $\Delta t=1/60$, $a\Delta t=0.108$ and $e^{-a\Delta t}\approx 0.897$. About ten percent of a concentration error is forgotten each minute if the input is held at the equilibrium airflow. A bias that adds airflow every minute is therefore fast enough to remove a small offset and too slow, as Table~\ref{tab:openloop} shows, to remove a forty-percent error in $\alpha$ before the floor is crossed. Equation~\eqref{eq:cdisc} is what a tracking quadratic program should embed. The economic hinges \eqref{eq:hinge-c} and \eqref{eq:hinge-s} remain outside the quadratic part, as linear slacks, which is the standard transcription \cite{rawlings2017mpc,boyd2004convex,maciejowski2002}.
+
+\subsection{Slack form of the economic problem at fixed staging}
+
+With $n$ fixed, the decision at each step of a horizon of $N$ minutes is $\delta q_{k}$ and two non-negative slacks $s^{C}_{k}$ and $s^{S}_{k}$. Power is replaced by its tangent at $q_{0}$,
+\begin{equation}
+\label{eq:ptan}
+P(q_{0}+\delta q)
+\approx
+P(q_{0})
++
+P'(q_{0})\,\delta q,
+\end{equation}
+and $P'$ is read off Table~\ref{tab:powermap} rather than off a cube law. Between \SI{1550}{\nmcph} and \SI{2500}{\nmcph} the secant is $(54.4-32.6)/(2500-1550)=0.0229\,\mathrm{kW}$ per $\mathrm{Nm^{3}/h}$. Between \SI{5200}{\nmcph} and \SI{6552}{\nmcph} the secant is $(185.5-132.9)/(6552-5200)=0.0389\,\mathrm{kW}$ per $\mathrm{Nm^{3}/h}$. The slope rises, but it does not triple. A quadratic program that used $P\propto q^{3}$ would put a much steeper price on the detergent airflow and would talk the optimizer out of the air Table~\ref{tab:openloop} shows is necessary.
+
+The slack problem at fixed $n$ is then
+\begin{equation}
+\label{eq:qp}
+\begin{aligned}
+\min_{\delta q,\,s}
+\quad
+&
+\sum_{k=0}^{N-1}
+\left(
+P'(q_{0})\,\delta q_{k}\,\Delta t
++
+\lambda_{C}\,s^{C}_{k}
++
+\lambda_{S}\,s^{S}_{k}
+\right)
+\\
+\text{subject to}\quad
+&
+\eqref{eq:cdisc},
+\\
+&
+C_{0}+c_{k}+s^{C}_{k}
+\ge
+C_{\mathrm{floor}},
+\\
+&
+s^{C}_{k}\ge 0,
+\quad
+s^{S}_{k}\ge 0,
+\\
+&
+q_{\min}
+\le
+q_{0}+\delta q_{k}
+\le
+q_{\max}^{(n)},
+\end{aligned}
+\end{equation}
+where $q_{\max}^{(n)}$ is the largest header flow the online machines can deliver without crossing the motor limit, and the chemical-oxygen-demand slack is supplied by a similar linearization of \eqref{eq:sb} that this paragraph does not repeat. The program \eqref{eq:qp} is convex. It can be solved by any interior-point code already cited for the nonlinear case \cite{wachter2006ipopt,nocedal2006,boyd2004convex}. It does not choose $n$. The integer rule, or an enumeration over $n\in\{1,2,3\}$ of three convex programs, chooses $n$. Three convex programs per minute is a trivial load. It is also the clean way to upgrade Algorithm~\ref{alg:deployed} when the machines stop being identical: replace the rule by the enumeration, and keep the same slacks.
+
+Move blocking keeps the program small. Hold $\delta q$ constant over blocks of five minutes inside a horizon of sixty minutes, except for the first block, which is one minute so the command that is actually applied is free. The decision count is then about a dozen continuous moves plus slacks, not sixty. Nothing in the oxygen time constant argues for a new airflow every minute once the first move has been made. The one-minute publish remains, because the first block is re-optimized every minute in the usual receding-horizon way \cite{mayne2000mpc,qin2003mpc}.
+
+\subsection{Where the soft sensor enters the linear problem}
+
+In \eqref{eq:clin} the term $b_{\alpha}\,\delta\alpha$ is a measured disturbance if the sensor is healthy and a forecast error if it is not. A healthy sensor sets $\delta\alpha$ from the difference between the emitted $\alpha$ and the $\alpha_{0}$ at which the linear model was built, and the quadratic program treats that difference as known over the horizon, constant until the calendar says the recipe changes. An unhealthy sensor sets $\delta\alpha=0$ and relies on the slack $s^{C}$ and on the bias \eqref{eq:bias}. The program does not estimate $\alpha$. Estimation stays in Algorithm~\ref{alg:sensor}, where the residual \eqref{eq:lphys} has the nonlinear curve. Splitting the jobs this way is what makes the quadratic program convex and the sensor free to be nonlinear. Putting a neural network inside \eqref{eq:qp} would give up both properties for a coupling the plant does not need at a one-minute clock.
+
+The numerical size of $b_{\alpha}$ at the detergent point is
+\begin{equation}
+b_{\alpha}
+=
+\frac{6.50}{0.40}\times 4.60
+=
+74.8
+\quad
+\mathrm{mg\,L^{-1}\,h^{-1}}
+\text{ per unit $\alpha$}.
+\end{equation}
+A mistake of $0.15$ in $\alpha$, which is the gap between $0.55$ and $0.40$, is a transfer error of $74.8\times 0.15=11.2\,\mathrm{mg\,L^{-1}\,h^{-1}}$. Against an uptake of \SI{30}{\milli\gram\per\litre\per\hour} that is more than a third of the oxygen budget. No reasonable weight $\lambda_{C}$ will prefer to absorb a third of the budget in the slack if the sensor can remove it. The weight is for probe noise and for the minutes the filter \eqref{eq:alpha-lag} has not yet moved. It is not for a detergent hour lived at the wrong factor.
+
+This section closes the specification. The week in Chapter~\ref{ch:estimate} uses the inversion form, not \eqref{eq:qp}, and the text there says so. The linear program is the upgrade path that keeps the same $\alpha$, the same calendar, the same floors, and the same fan map, and that replaces a one-step inversion with a horizon once the staging machines are no longer twins. The open-loop table is the reason the upgrade is not allowed to drop the sensor in order to simplify the program.
+
+\subsection{One blocked hour, written out}
+
+A sixty-minute horizon with five-minute blocks after a free first minute has one free move and eleven blocked moves if the first block is one minute and the rest are five, because $1+11\times 5=56$, and the last four minutes are held with the last block. The exact partition is not important. The pattern is. Denote the applied command by $q_{0}$ and the blocked commands by $q^{(1)},\ldots,q^{(11)}$. The concentration at minute $k$ depends on $q_{0}$ for every $k\ge 1$ and on block $b$ only for minutes inside and after that block. With the scalar transition $\Phi=e^{-a\Delta t}\approx 0.897$ at the detergent pole, the gain from a move that begins at minute $m$ to the concentration at minute $k>m$ is
+\begin{equation}
+\label{eq:gain}
+g(k,m)
+=
+\frac{1-\Phi}{a}\,
+b_{q}\,
+\sum_{j=m}^{k-1}
+\Phi^{\,k-1-j}.
+\end{equation}
+The inner sum is a geometric series,
+\begin{equation}
+\sum_{j=0}^{k-m-1}\Phi^{j}
+=
+\frac{1-\Phi^{\,k-m}}{1-\Phi},
+\end{equation}
+so
+\begin{equation}
+\label{eq:gain2}
+g(k,m)
+=
+\frac{b_{q}}{a}
+\left(
+1-\Phi^{\,k-m}
+\right).
+\end{equation}
+At the detergent point $b_{q}/a=0.00467/6.50=7.18\times 10^{-4}\,\mathrm{mg\,L^{-1}}$ per $\mathrm{Nm^{3}/h}$. A move of \SI{200}{\nmcph} that has been in force for many time constants changes dissolved oxygen by $200\times 7.18\times 10^{-4}=0.144\,\mathrm{mg/L}$. The same move, one minute old, has $\Phi^{1}\approx 0.90$, so $1-\Phi\approx 0.10$ and the change is only about $0.014\,\mathrm{mg/L}$. Most of the effect of an airflow decision is not visible in the probe at the next sample. A controller that retunes from the one-minute error alone, which is what a high-gain proportional term does, chases a signal that has not yet arrived. The integral term and the calendar exist because of \eqref{eq:gain2}. The calendar moves the airflow before minute $m$. The gain formula says the probe will agree about twenty minutes later, which is $1/a$ at this pole.
+
+The power price of that early move is the secant from Table~\ref{tab:powermap}. At the detergent end of the map, $0.0389\,\mathrm{kW}$ per $\mathrm{Nm^{3}/h}$. Raising the header by \SI{1700}{\nmcph}, which is the gap between \SI{3570}{\nmcph} and \SI{5250}{\nmcph}, costs about $1700\times 0.0389=66\,\mathrm{kW}$ while the higher flow is held. Over the eighteen hours of the fermentation window that would be about $1200\,\mathrm{kWh}$ if the gap were held the entire time. The week does not hold it the entire time. The fixed-$\alpha$ loop spends $2186\,\mathrm{kWh}$ in the window and the proposed loop spends $2441\,\mathrm{kWh}$. The difference, $255\,\mathrm{kWh}$, is what a partial and delayed correction costs relative to arriving with the right airflow. It is much smaller than $1200\,\mathrm{kWh}$ because the bias does eventually add air, and it is large enough to buy the dissolved-oxygen minimum back from $0.90$ to $1.63\,\mathrm{mg/L}$. Equation~\eqref{eq:gain2} and that $255\,\mathrm{kWh}$ are the same fact at two scales: air that arrives before the concentration has moved is cheaper, in constraint violations, than air that arrives after.
+
+The blocked horizon uses this by letting $q_{0}$ jump when the calendar flips $\delta_{\mathrm{CIP}}$, and by letting the later blocks sit on the new airflow rather than ramp in ignorance. A block that is not allowed to change until the probe has confirmed the detergent has the same defect as the proportional-integral loop, only with a solver in front of it. The solver is not the technology. The disturbance model inside the solver is the technology. On this plant the disturbance model is the recipe clock plus $\alpha$ from the residual \eqref{eq:lphys}. Remove either one and \eqref{eq:qp} is a competent tracking problem of a kind the literature already contains \cite{holenda2008,shen2008,zeng2015empc,cristea2011}. Keep both and the problem is the one stated in Chapter~\ref{ch:previous}.
+
+\subsection{What the edge computer must log in that hour}
+
+The blocked hour is also an audit object. For each publish the log line has to be reconstructible from the formulae, otherwise a later disagreement with the meter cannot be assigned to a cause. The minimum line is: time, regime identifier, detergent flag, $\alpha$ used and whether it came from the sensor or the table, health bit, dissolved-oxygen measurement, set-point, load scale $\sigma$, inverted airflow before the bias, bias, commanded airflow, staging $n$, and a saturation bit if the command met $q_{\min}$ or $q_{\max}$. That is fourteen fields. None of them is a weight inside a network. An operator can read $\sigma>1$ together with a detergent flag and know the calendar, not the probe, asked for air. An operator can read a cleared health bit and know the table value was substituted. The estimation in Chapter~\ref{ch:estimate} is a week of those lines, reduced to regime sums. A site that logs only dissolved oxygen and power can still compute kilowatt-hours. It cannot tell a calendar failure from a sensor failure from a drive limit, which are the three degradations in Table~\ref{tab:degrade}. The fourteen fields are therefore part of the fan controller, in the same sense that the surge inequality is part of it. A controller that cannot explain its last hour is not finished, however small its tracking error is on a benchmark file \cite{qin2003mpc,obrien2011,iratni2019,corominas2018}.

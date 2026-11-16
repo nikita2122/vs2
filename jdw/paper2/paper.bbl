@@ -1,0 +1,90 @@
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Kritzinger et~al.(2018)Kritzinger, Karner, Traar, Henjes, and
+  Sihn]{kritzinger2018}
+Werner Kritzinger, Matthias Karner, Georg Traar, Jan Henjes, and Wilfried Sihn.
+\newblock Digital twin in manufacturing: A categorical literature review and
+  classification.
+\newblock \emph{IFAC-PapersOnLine}, 51\penalty0 (11):\penalty0 1016--1022,
+  2018.
+\newblock \doi{10.1016/j.ifacol.2018.08.474}.
+
+\bibitem[Goffi et~al.(2025)Goffi, Tremblay, and Oakes]{goffi2025}
+Pierre-Emmanuel Goffi, Rapha{\"e}l Tremblay, and Bentley Oakes.
+\newblock Engineering a digital twin for the monitoring and control of beer
+  fermentation sampling.
+\newblock In \emph{IEEE Conference on Engineering Digital Twins}, 2025.
+\newblock Author preprint, arXiv:2508.18452.
+
+\bibitem[von Stosch et~al.(2014)von Stosch, Oliveira, Peres, and Feyo~de
+  Azevedo]{vonstosch2014}
+Moritz von Stosch, Rui Oliveira, Joana Peres, and Sebasti{\~a}o Feyo~de
+  Azevedo.
+\newblock Hybrid semi-parametric modeling in process systems engineering: Past,
+  present and future.
+\newblock \emph{Computers and Chemical Engineering}, 60:\penalty0 86--101,
+  2014.
+\newblock \doi{10.1016/j.compchemeng.2013.08.008}.
+
+\bibitem[Raissi et~al.(2019)Raissi, Perdikaris, and Karniadakis]{raissi2019}
+Maziar Raissi, Paris Perdikaris, and George~E. Karniadakis.
+\newblock Physics-informed neural networks: A deep learning framework for
+  solving forward and inverse problems involving nonlinear partial differential
+  equations.
+\newblock \emph{Journal of Computational Physics}, 378:\penalty0 686--707,
+  2019.
+\newblock \doi{10.1016/j.jcp.2018.10.045}.
+
+\bibitem[Karniadakis et~al.(2021)Karniadakis, Kevrekidis, Lu, Perdikaris, Wang,
+  and Yang]{karniadakis2021}
+George~Em Karniadakis, Ioannis~G. Kevrekidis, Lu~Lu, Paris Perdikaris, Sifan
+  Wang, and Liu Yang.
+\newblock Physics-informed machine learning.
+\newblock \emph{Nature Reviews Physics}, 3\penalty0 (6):\penalty0 422--440,
+  2021.
+\newblock \doi{10.1038/s42254-021-00314-5}.
+
+\bibitem[Zheng and Wu(2023)]{zheng2023}
+Yingzhe Zheng and Zhe Wu.
+\newblock Physics-informed online machine learning and predictive control of
+  nonlinear processes with parameter uncertainty.
+\newblock \emph{Industrial and Engineering Chemistry Research}, 62\penalty0
+  (6):\penalty0 2804--2818, 2023.
+\newblock \doi{10.1021/acs.iecr.2c03691}.
+
+\bibitem[Wu et~al.(2023)Wu, Yion, Dang, and Wu]{wu2023cerd}
+Guoquan Wu, Wallace Tan~Gian Yion, Khoa Le Nguyen~Quang Dang, and Zhe Wu.
+\newblock Physics-informed machine learning for {MPC}: Application to a batch
+  crystallization process.
+\newblock \emph{Chemical Engineering Research and Design}, 192:\penalty0
+  556--569, 2023.
+\newblock \doi{10.1016/j.cherd.2023.02.046}.
+
+\bibitem[Int(2011)]{iec60534}
+\emph{{IEC} 60534-2-1: Industrial-Process Control Valves---Part 2-1: Flow
+  Capacity---Sizing Equations for Fluid Flow under Installed Conditions}.
+\newblock International Electrotechnical Commission, Geneva, 2011.
+
+\bibitem[Cra(2009)]{crane2009}
+\emph{Flow of Fluids Through Valves, Fittings, and Pipe}.
+\newblock Crane Co., Stamford, 2009.
+\newblock Technical Paper No. 410.
+
+\bibitem[Choudhury et~al.(2005)Choudhury, Thornhill, and Shah]{choudhury2005}
+M.~A. A.~Shoukat Choudhury, Nina~F. Thornhill, and Sirish~L. Shah.
+\newblock Modelling valve stiction.
+\newblock \emph{Control Engineering Practice}, 13\penalty0 (5):\penalty0
+  641--658, 2005.
+\newblock \doi{10.1016/j.conengprac.2004.05.005}.
+
+\bibitem[Jelali and Huang(2010)]{jelali2010}
+Mohieddine Jelali and Biao Huang, editors.
+\newblock \emph{Detection and Diagnosis of Stiction in Control Loops}.
+\newblock Springer, London, 2010.
+
+\end{thebibliography}

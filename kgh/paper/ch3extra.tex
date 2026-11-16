@@ -1,0 +1,154 @@
+\subsection{Error budget of the measurement chain}
+\label{sec:budget}
+
+The classification counts already include every error the chain actually made.
+A separate budget is still useful, because it shows which contributions are large enough to move a feature and which are not.
+Start from the sensor.
+The B\&K~4321 charge sensitivity is stated as \(9.8\,\mathrm{pC/g}\) within \(\pm 2\%\).
+A two-percent scale error multiplies every acceleration sample on that axis by a factor between \(0.98\) and \(1.02\).
+Severity, being an RMS of a quantity linear in acceleration, inherits the same relative error:
+\begin{equation}
+\frac{\Delta\mathrm{VIB}}{\mathrm{VIB}}\approx 0.02.
+\label{eq:senserr}
+\end{equation}
+On the healthy severity of \(1.051\,\mathrm{mm/s}\) this is about \(0.021\,\mathrm{mm/s}\).
+On the eccentric severity of \(3.737\,\mathrm{mm/s}\) it is about \(0.075\,\mathrm{mm/s}\).
+The gap between healthy and pedestal severities is \(1.161-1.051=0.110\,\mathrm{mm/s}\).
+A two-percent calibration error is a fifth of that gap on the healthy reading and is smaller than the gap.
+It does not by itself explain a confusion between those two states, and it is negligible beside the factor \(3.56\) that separates the eccentric state from the healthy state.
+After the train-only normalization \eqref{eq:norm}, a pure scale error that is constant for the whole campaign is absorbed into \(u^{(j)}\) and \(v^{(j)}\) of the severity coordinate, provided the same sensor and the same gain are used for every record.
+A scale error that changed between the training days and the test days would not be absorbed.
+The source does not report a recalibration, and the budget assumes the gain was held fixed.
+
+The acquisition card states a DC accuracy of \(\pm 0.1\%\) of full-scale range.
+On the \(\pm 10\,\mathrm{V}\) range this is \(10\,\mathrm{mV}\).
+On the \(\pm 100\,\mathrm{mV}\) range it is \(0.1\,\mathrm{mV}\).
+Which range was selected is not printed.
+The time-domain plots show accelerations of roughly \(7\) to \(9\,\mathrm{m/s}^{2}\), about one \(g\).
+At \(9.8\,\mathrm{pC/g}\) that motion produces about \(10\,\mathrm{pC}\) at the peaks.
+The voltage that results is the charge divided by the amplifier's feedback capacitance, a setting the source also does not print.
+The relevant statement the budget can still make is comparative.
+A full-scale error of \(0.1\%\) is twenty times smaller than the sensor's \(2\%\) sensitivity tolerance, so on any range that actually uses a reasonable fraction of its bits the card is not the leading scale error.
+Quantization at, for example, a \(16\)-bit converter on a range matched to a few \(g\) sits well below both.
+The chain is sensor-limited for amplitude, and it is clock-limited for frequency.
+
+Clock error moves the orders in Table~\ref{tab:bins}.
+A sampling-rate error of \(\varepsilon\) moves every apparent frequency by the same relative amount.
+The widest order, \(6f_{0}=96\,\mathrm{Hz}\), moves by \(96\varepsilon\).
+The half-order acceptance window specified for this exposition is \(4\,\mathrm{Hz}\).
+Keeping the true \(6f_{0}\) inside that window requires
+\begin{equation}
+96\,\abs{\varepsilon}<4
+\qquad\Rightarrow\qquad
+\abs{\varepsilon}<0.042,
+\label{eq:clock}
+\end{equation}
+a four-percent clock, which any PXI timebase meets by a wide margin.
+The binding frequency constraint is not the clock.
+It is the mechanical speed.
+A one-percent speed drift, already discussed as an envelope of the method, moves \(6f_{0}\) by about \(1\,\mathrm{Hz}\), still inside the window, and moves the supply-to-\(3f_{0}\) gap from \(2.00\,\mathrm{Hz}\) to either \(1.52\,\mathrm{Hz}\) or \(2.48\,\mathrm{Hz}\) according to the sign.
+The \(1.22\,\mathrm{Hz}\) bin can still hold them apart.
+A speed that was only nominally \(960\,\mathrm{r/min}\), and that wandered by several percent inside a record, would broaden every order and would raise the pedestal and seal-wear confusion first, because those states are identified by which order is largest rather than by a large severity.
+The source states a single speed.
+The budget treats residual speed wander as an unquantified contribution inside the pedestal errors, not as a number the tables support.
+
+Aliasing is the contribution the budget cannot bound from the printed table.
+The sensor responds to \(12\,\mathrm{kHz}\) and the converter samples at \(10\,\mathrm{kHz}\), so energy between \(5\) and \(12\,\mathrm{kHz}\) folds into \(0\) to \(5\,\mathrm{kHz}\) unless an analog filter stops it.
+Folded energy lands preferentially in the fine wavelet levels, and it can change which level wins \(k^{\star}\).
+If the winning level moves, the coefficient rate changes and the amplitudes \eqref{eq:samples} are read on a different series.
+The source plots show \(d_{5}\) winning for the displayed records, which is evidence that, on those records, the mid band carried the energy, and it is not evidence that an anti-alias filter was present.
+A repetition of the build should state the filter cutoff next to the \(10\,\mathrm{kHz}\) clock.
+Until that cutoff is known, high-frequency folding remains an open term in the budget and a candidate contributor to the two pedestal test errors that every SVM method still makes.
+
+Interference tones that the order sampler does not aim at --- the reported crosstalk at \(28\), \(34\), and \(38\,\mathrm{Hz}\) under the eccentric fault, and the supply line at \(50\,\mathrm{Hz}\) --- are rejected by the sampler's narrow windows and are not rejected by the wavelet energy that chooses the level.
+They can change \(k^{\star}\) without entering \(\vect{x}\) as their own coordinates.
+That indirect path is the reason a clean mechanical spectrum and a clean scale choice are both part of signal conditioning, which is the improvement the source itself defers to future work.
+The budget's conclusion is short.
+Calibration and quantization are too small to explain the published confusions.
+Speed error at the one-percent level is tolerable for the order windows.
+Unfiltered high-frequency energy and in-band interference are large enough, in mechanism, to move the pedestal features, and they are exactly the mechanisms named in the source discussion of that class.
+
+\subsection{An operating procedure for one labeled record}
+\label{sec:procedure}
+
+The build is reproducible as a sequence even where some numerical settings remain those of the original run.
+One labeled record, from the command to start the pump through the row that enters \(\vect{X}\), is the following procedure.
+It is the system of Section~\ref{sec:build} written as steps an operator can tick, not as a new experiment.
+\begin{enumerate}
+\item Set the loop to the duty in Table~\ref{tab:rig}: \(960\,\mathrm{r/min}\), \(550\,\mathrm{m}^{3}/\mathrm{h}\), \(3\,\mathrm{m}\) head, four-blade impeller, closed circuit.
+Confirm \(f_{0}=16\,\mathrm{Hz}\) from a tachometer or from the once-per-revolution line before any fault label is trusted.
+\item Install the fault for this record, or install none.
+Eccentric axle: displace the balance weight and record the mass and the radius, even though the classifier never sees those two numbers, because a later reader of the severity \(3.737\,\mathrm{mm/s}\) will want them.
+Pedestal: seed the bearing defect the campaign has defined and confirm that the pedestal is the vibrating part under the sensor.
+Seal wear: use the worn ring the campaign has defined and confirm that the impeller is not rubbing.
+Do not combine two of these in one record.
+The label set is a partition.
+\item Mount the triaxial charge accelerometer on the casing.
+Note the direction that will be called radial, because that direction supplies the single severity coordinate.
+Check that the charge cables and the amplifier gains are the same ones used for the records already in the training matrix.
+\item Set the converter to \(10\,\mathrm{kHz}\), confirm the anti-alias cutoff is below \(5\,\mathrm{kHz}\), and arm a capture of at least \(8192\) samples on all three axes after the pump has been at speed long enough for the flow to be steady.
+Store the three series and the tachometer reading with the state label.
+\item Compute radial severity by the campaign's stated integrator and by \eqref{eq:vibdisc}.
+Run the eight-level db4 bank on each axis, select \(k^{\star}\) by \eqref{eq:kstar} with the finer level winning a tie, and sample the seven orders of \eqref{eq:ordersexact} from the coefficient power spectrum \eqref{eq:cps} through the frequency map \eqref{eq:fmap}.
+Refuse any order above the coefficient Nyquist of the winning level.
+\item Assemble \eqref{eq:x22}.
+If the row is a training row, update nothing about scaling until the full training matrix exists, then fit \eqref{eq:norm}.
+If the row is a test row, apply the training ranges already stored.
+Do not refit them.
+\item When \(180\) training rows are in hand, run the modified leap inside the box \eqref{eq:box} with fitness \eqref{eq:fitness}, retrain the six binary machines on all \(180\) rows at the returned pair, and only then label the \(60\) test rows by vote.
+Log the six items of Section~\ref{sec:cost}.
+\end{enumerate}
+Steps 1--4 are the rig.
+Steps 5 and 6 are VWC.
+Step 7 is MSFLA-SVM.
+A baseline replaces step 7 and does not replace steps 1--6.
+That separation is what makes Table~\ref{tab:test} a comparison of classifiers on one feature.
+
+The procedure also says what the operator does not do.
+The operator does not choose \(C\) and \(g\) by hand after looking at the test labels.
+The operator does not drop the pedestal records because they are harder.
+The operator does not lengthen the test set by moving training rows across the split after the search has run.
+Each of those moves would raise a number in Table~\ref{tab:test} and would destroy the estimate.
+The published counts are informative because, as far as the source text shows, none of those moves was made.
+
+\subsection{The estimate in the unit the experiment controls}
+\label{sec:unit}
+
+Table~\ref{tab:errors} restates the published result as error counts, which is the unit in which a one-vector gap is not asked to look like a percentage-point discovery.
+Training errors are out of \(180\).
+Test errors are out of \(60\).
+The per-class test errors follow by subtracting the correct counts of Table~\ref{tab:test} from \(15\).
+
+\begin{table}[H]
+\centering
+\caption{Error counts. Training errors are out of \(180\) pooled vectors. Test errors are out of \(60\) pooled vectors, and the four class columns are out of \(15\).}
+\label{tab:errors}
+\begin{tabular}{lrrrrrr}
+\toprule
+Method & Train & Test & Normal & EAF & BPF & SRWF \\
+\midrule
+BPNN & 15 & 9 & 2 & 2 & 3 & 2 \\
+ACROA-SVM & 5 & 5 & 0 & 2 & 2 & 1 \\
+SFLA-SVM & 6 & 5 & 0 & 1 & 2 & 2 \\
+MSFLA-SVM & 3 & 4 & 0 & 1 & 2 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Read across the test columns, the modified search matches the better of the other two searches in every state: it matches SFLA-SVM on the eccentric axle (one error), matches both SVM searches on the pedestal (two errors), matches ACROA-SVM on seal wear (one error), and matches every SVM search on the healthy state (no error).
+It does not create a new kind of success on the pedestal.
+It collects, in one rule, the per-class results that the other searches hold only separately.
+That is a fair description of a one-vector pooled gain, and it is the description this estimate keeps.
+
+Read down the pedestal column, no method is in single digits of a different kind: the best pedestal result on the test set is two errors out of fifteen, which is \(13/15\).
+The training pedestal column of Table~\ref{tab:train} is consistent with the same ranking.
+MSFLA-SVM misses two of forty-five pedestal training vectors, and every other method misses more.
+The feature, not the leap, is saturated on this class.
+Further optimization of \((C, g)\) can rearrange one error among the easier classes, which is what the sealing-ring column shows, and it has not been observed to buy a pedestal test vector.
+
+The practical statement that closes the estimate is therefore a statement about effort.
+On this rig, with this sample, the VWC vector plus a radial SVM already carries the diagnosis from the neural baseline's nine test errors to five.
+The modified leap carries it from five to four, by avoiding one seal-wear error that the unmodified leap makes and one eccentric error that the chemical-reaction search makes.
+The two pedestal errors that remain are the next experiment: a second sensor, a stated anti-alias filter, or a conditioning step aimed at the site tones, scored on a new split.
+They are not a reason to discard the twenty-two coordinates or the leap that reads them.
+They are the part of the problem the published counts show is still open.

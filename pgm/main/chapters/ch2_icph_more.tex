@@ -1,0 +1,65 @@
+\subsection{What each block of the feature is worth}
+\label{sec:icph-ablation}
+
+\Cref{prop:uniform} says that $\chi$ and $o$ go to zero on a pure face, and that $\eta$ keeps $\mathbf{L}\odot\mathbf{R}$. The linear layer might still use the small residuals that shading and the neighbor strip leave in $\chi$. Whether it does is an empirical question about this feature, and it can be asked inside the same generator without a new theory. A second run, restarted from the same seed and the same schedule of six thousand patches and five hundred steps, trains six classifiers. Each classifier sees a subset of the eight coordinates. The subsets are the three chromaticity coordinates, the two opponent coordinates, the three illuminant coordinates, chromaticity with opponent, chromaticity with illuminant, and the full vector. Accuracy is measured at severities $0.05$, $0.30$, and $0.60$ on $2500$ fresh patches each. This run is not the run behind \Cref{tab:color}. Restarting the seed consumes the random stream in a different order, so the full-feature column here is a replicate, not a transcription.
+
+\begin{table}[t]
+\centering
+\caption{Top-1 accuracy of linear heads trained on subsets of $\mathbf{f}$. The full row is a replicate of the ICPH feature, not the main table. Chance is $1/6\approx 0.167$.}
+\label{tab:ablation}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Coordinates & $s=0.05$ & $s=0.30$ & $s=0.60$ \\
+\midrule
+Chromaticity $\chi$ only & $0.542$ & $0.534$ & $0.486$ \\
+Opponent $o$ only & $0.538$ & $0.529$ & $0.480$ \\
+Illuminant $\eta$ only & $0.864$ & $0.705$ & $0.504$ \\
+$\chi$ and $o$ & $0.550$ & $0.532$ & $0.494$ \\
+$\chi$ and $\eta$ & $0.976$ & $0.824$ & $0.592$ \\
+Full $\mathbf{f}$ & $0.974$ & $0.827$ & $0.596$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\Cref{tab:ablation} is the practical form of the proposition. Chromaticity alone, the quantity a corrected matcher would trust, sits near $0.54$ at a mild lamp and falls toward $0.49$ at a harsh one. It is well above chance, because the shade ramp and the neighbor strip keep $\chi$ from being exactly neutral, and it is far below the raw matcher, which at low severity still sees $\mathbf{R}$ directly. Opponent coordinates alone do no better. They are a rotation of $\chi$, and a rotation cannot recover a signal the correction destroyed. Adding opponent to chromaticity moves the mild-lamp accuracy from $0.542$ to $0.550$. The opponent block is not where the accuracy lives.
+
+The illuminant block alone is a different estimator. At $s=0.05$ it reaches $0.864$. On a nearly pure face $\eta$ is the chromaticity of $\mathbf{L}\odot\mathbf{R}$, and when $\mathbf{L}$ is near white that chromaticity is nearly the chromaticity of $\mathbf{R}$. At $s=0.60$ the same block falls to $0.504$, close to chromaticity-only. A strong gain rotates $\mathbf{L}\odot\mathbf{R}$ off the prototype, and $\eta$ rotates with it. The illuminant feature is a good feature exactly while the lamp is the nuisance the raw matcher can also tolerate, and it ceases to be sufficient at the severity ICPH was introduced to handle.
+
+The combination of $\chi$ and $\eta$ is the head. At $s=0.05$ it reaches $0.976$, at $s=0.30$ it reaches $0.824$, and at $s=0.60$ it reaches $0.592$. The full eight-dimensional vector changes those three numbers to $0.974$, $0.827$, and $0.596$. Opponent coordinates are worth a few thousandths at the harsh end and a slight loss at the mild end, which is what an almost-redundant linear feature does under an $\ell_2$ penalty. They are kept in the specified head because they cost two coordinates and because the amber--yellow axis is an opponent axis. They are not kept because the ablation shows a large effect. A deployment that needs to shrink the feature can drop $o$ and expect to lose the margin visible in the last column, not the gap between ICPH and raw matching.
+
+The ablation also warns against a story in which ``illumination invariance'' means the corrected chromaticity. The invariant-looking coordinates are the weak ones. The coordinates that carry the class are the ones the classical algorithm divides out, read by a classifier that has seen many lamps, together with the residual that contamination leaves in $\chi$. Invariance here is a property of the decision, not of a single normalized image. That is a weaker slogan and a more accurate description of \Cref{tab:ablation}.
+
+\subsection{Severity as an angle, and the gradient the head follows}
+\label{sec:icph-angle}
+
+The severity $s$ is the standard deviation of a normal variable in log-gain space. It is worth converting to an angle so that ``$0.60$'' is not an arbitrary dial. Draw $\xi_c\sim\mathcal{N}(0,s^{2})$ independently and set $g_c=\exp(\xi_c)$, then renormalize $\mathbf{g}$ to unit sum or unit mean. The direction of $\mathbf{g}$ is the illuminant direction up to that normalization. For small $s$ the coordinates of $\xi$ are small and $\exp(\xi_c)\approx 1+\xi_c$. The component of $\xi$ orthogonal to $(1,1,1)$ has expected squared length $2s^{2}$, because the three coordinates have total variance $3s^{2}$ and the projection onto the white axis has variance $s^{2}$. The white vector has length $\sqrt{3}$, so the angle $\theta$ from white satisfies
+\begin{equation}
+\mathbb{E}[\theta^{2}]
+\approx
+\frac{2s^{2}}{3}.
+\label{eq:angle}
+\end{equation}
+The root mean square angle is therefore $s\sqrt{2/3}$. At $s=0.05$ that is about $0.041$ radians, a little over two degrees. At $s=0.30$ it is about $0.24$ radians, near fourteen degrees. At $s=0.60$ the linearization is no longer quantitative: a one-standard-deviation log-gain of $0.60$ is a factor of about $1.8$ between channels, and the draws in the harsh column are lamp changes rather than tints. The mild column is a residual a locked camera might still see from shading. The harsh column is the size of change that separates daylight from a warm warehouse lamp.
+
+The training update is the ordinary linear-softmax update, written out so that the ablation has a mechanism. With $p=\softmax(z)$ and label $y$, the gradient of the cross-entropy in~\eqref{eq:loss} with respect to the score is $p-e_{y}$. The gradient with respect to the row $W_{k,:}$ is
+\begin{equation}
+\frac{\partial\mathcal{L}}{\partial W_{k,:}}
+= (p_k-\mathbf{1}_{k=y})\,\tilde{\mathbf{f}}^{\top}
++ \lambda W_{k,:}.
+\label{eq:grad}
+\end{equation}
+A feature coordinate that is almost constant on the training set, as $\chi$ is on pure faces, produces a small outer product and a weight that the penalty $\lambda$ shrinks toward zero. A feature coordinate that tracks the class, as $\eta$ does when the lamp is mild and the face is pure, produces a weight that survives. The ablation is what~\eqref{eq:grad} does when some coordinates of $\tilde{\mathbf{f}}$ are noise of a destroyed reflectance and others are the reflectance the destruction was supposed to remove. No part of this argument requires the neck path. The neck path is an additional $256$-dimensional $\mathbf{u}$ that would enter~\eqref{eq:grad} through its own rows of $W$, and it is not part of the run.
+
+\subsection{A numerical margin on the amber--yellow pair}
+\label{sec:amber-number}
+
+The confusion matrix is a count of swaps. The geometry of the swap is visible from the prototypes alone, before any classifier is trained. Take the amber and yellow triples in~\eqref{eq:prototypes}. Their cosine is
+\begin{equation}
+\frac{\mathbf{R}_{\mathrm{amber}}^{\top}\mathbf{R}_{\mathrm{yellow}}}
+{\lVert\mathbf{R}_{\mathrm{amber}}\rVert\,\lVert\mathbf{R}_{\mathrm{yellow}}\rVert}
+= \frac{0.9675}{0.8575\times 1.1435}
+= 0.987.
+\label{eq:cosine-ay}
+\end{equation}
+The numerator is $0.72\cdot 0.85+0.45\cdot 0.75+0.12\cdot 0.15$. The angle between the prototypes is $\arccos(0.987)\approx 9.3^{\circ}$. The same calculation for red against blue gives a cosine of $0.385$ and an angle near $67^{\circ}$. A gain perturbation of about fourteen degrees, the root-mean-square scale of $s=0.30$ under~\eqref{eq:angle}, is already larger than the amber--yellow separation and still smaller than the red--blue separation. The classifier can still do better than the cosine of the raw prototypes, because it sees $\eta$ and $\chi$ jointly and because the perturbation is random rather than adversarial, but it cannot manufacture distance that the reflectances do not have. Equation~\eqref{eq:cosine-ay} is why the abstention rule is aimed at a pair rather than applied uniformly, and why a deployment with a different palette should recompute this angle before trusting the harsh column of the table. A palette whose nearest pair sits at $30^{\circ}$ would make the same head look more accurate without any change in the algorithm. The accuracy in \Cref{tab:color} is an accuracy on~\eqref{eq:prototypes}, not an accuracy on color naming in the abstract.

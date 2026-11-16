@@ -1,0 +1,70 @@
+\contentsline {chapter}{Abstract}{i}{chapter*.1}%
+\contentsline {chapter}{Acknowledgements}{iii}{chapter*.2}%
+\contentsline {chapter}{Nomenclature}{1}{chapter*.6}%
+\contentsline {chapter}{\numberline {1}Research of Previous Work}{2}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Research on vision-guided seed metering}{2}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}What the classical indices measure}{2}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}Wooden tools and the depth band of woody seed}{4}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}Optoelectronics and high-speed imaging}{7}{subsection.1.1.3}%
+\contentsline {subsection}{\numberline {1.1.4}Detectors that name an empty cell and a double}{8}{subsection.1.1.4}%
+\contentsline {subsection}{\numberline {1.1.5}Vacuum, contact mechanics and design inversion}{9}{subsection.1.1.5}%
+\contentsline {subsection}{\numberline {1.1.6}What this line of work does not close}{11}{subsection.1.1.6}%
+\contentsline {section}{\numberline {1.2}Research on coverage planning and model-predictive tracking}{11}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Coverage as a geometric problem}{11}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Driving direction, headlands and three-dimensional energy}{13}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Tracking controllers and what they optimise}{14}{subsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.2.4}The missing coupling}{16}{subsection.1.2.4}%
+\contentsline {section}{\numberline {1.3}Problem set}{18}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Operating context and scope}{18}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Formal problems}{19}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}Requirements}{20}{subsection.1.3.3}%
+\contentsline {subsection}{\numberline {1.3.4}Research questions and the route through the remaining chapters}{21}{subsection.1.3.4}%
+\contentsline {chapter}{\numberline {2}Proposed Technologies}{24}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Compliance-aware vision metering}{24}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Role of the loop and the signals it may use}{24}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Timber flexure as a process model}{25}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Seed state and the observation the camera actually makes}{26}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Unscented filter for a mixed observation}{28}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Plate law and the condition for attempting a repair}{29}{subsection.2.1.5}%
+\contentsline {subsection}{\numberline {2.1.6}Depth servo}{30}{subsection.2.1.6}%
+\contentsline {subsection}{\numberline {2.1.7}Predicted indices at a constant speed}{32}{subsection.2.1.7}%
+\contentsline {subsection}{\numberline {2.1.8}Four rows, clocking and what the filter does not estimate}{34}{subsection.2.1.8}%
+\contentsline {subsection}{\numberline {2.1.9}A numerical pass through one empty cell}{34}{subsection.2.1.9}%
+\contentsline {subsection}{\numberline {2.1.10}One unscented step on a reduced flexure state}{36}{subsection.2.1.10}%
+\contentsline {subsection}{\numberline {2.1.11}Vacuum margin and the cases the plate law refuses}{37}{subsection.2.1.11}%
+\contentsline {section}{\numberline {2.2}Singulation-constrained terrain model-predictive coverage}{38}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Decisions the coverage technology is allowed to make}{38}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Work model on a grade}{39}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Outer program}{41}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Inner tracker}{42}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}What the inner cost will not do}{44}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}How the two technologies avoid a circular design}{45}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}Arithmetic of the work model at two headings}{46}{subsection.2.2.7}%
+\contentsline {subsection}{\numberline {2.2.8}Linearisation used by the inner tracker}{47}{subsection.2.2.8}%
+\contentsline {subsection}{\numberline {2.2.9}A local spacing change, and why the speed set moves with it}{48}{subsection.2.2.9}%
+\contentsline {subsection}{\numberline {2.2.10}What has been fixed for the estimation}{49}{subsection.2.2.10}%
+\contentsline {subsection}{\numberline {2.2.11}One headland, sample by sample}{49}{subsection.2.2.11}%
+\contentsline {subsection}{\numberline {2.2.12}Logging that makes the next pass stricter rather than braver}{50}{subsection.2.2.12}%
+\contentsline {subsection}{\numberline {2.2.13}A calibration pass before the first planted swath}{51}{subsection.2.2.13}%
+\contentsline {chapter}{\numberline {3}System Build and Estimation}{54}{chapter.3}%
+\contentsline {section}{\numberline {3.1}System build}{54}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Mechanical arrangement}{54}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Sensors and the time base}{56}{subsection.3.1.2}%
+\contentsline {subsection}{\numberline {3.1.3}Software tasks}{57}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.4}Safety interlocks}{58}{subsection.3.1.4}%
+\contentsline {subsection}{\numberline {3.1.5}Interfaces between the two technologies}{59}{subsection.3.1.5}%
+\contentsline {subsection}{\numberline {3.1.6}Build sequence}{59}{subsection.3.1.6}%
+\contentsline {section}{\numberline {3.2}Estimation}{60}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Protocol}{60}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Speed response of the metering model}{61}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Heading and speed on the estimation field}{62}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Where the gain comes from}{64}{subsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.2.5}Sensitivity the estimation can still speak about}{65}{subsection.3.2.5}%
+\contentsline {subsection}{\numberline {3.2.6}Comparison with the nearest published systems}{66}{subsection.3.2.6}%
+\contentsline {subsection}{\numberline {3.2.7}Limits}{67}{subsection.3.2.7}%
+\contentsline {subsection}{\numberline {3.2.8}Checking the selected plan against the requirements}{68}{subsection.3.2.8}%
+\contentsline {subsection}{\numberline {3.2.9}A measurement sheet for the fourth build stage}{68}{subsection.3.2.9}%
+\contentsline {subsection}{\numberline {3.2.10}A short spacing tape, scored by hand}{70}{subsection.3.2.10}%
+\contentsline {subsection}{\numberline {3.2.11}Reading the energy prize at the scale of one hectare}{71}{subsection.3.2.11}%
+\contentsline {subsection}{\numberline {3.2.12}The same rectangle turned the other way}{72}{subsection.3.2.12}%
+\contentsline {chapter}{References}{74}{section*.28}%

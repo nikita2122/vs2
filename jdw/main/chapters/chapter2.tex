@@ -1,0 +1,332 @@
+\chapter{The Two Technologies}
+\label{ch:methods}
+
+This chapter specifies the two technologies named in Section~\ref{sec:problem}. The first is the predictive controller that moves the three valves and the carbon-dioxide injector. The second is the twin that estimates the model inside that controller. Both are written so that a programmer can implement them, and so that the numerical choices of the case study are the same choices the text describes.
+
+\section{Three-valve nonlinear model predictive control}
+\label{sec:nmpc}
+
+\subsection{Time scales and the model that is predicted}
+
+The controller runs every $\Delta t_c = \SI{4}{\second}$. Between samples the command is held. Inside a prediction the hydraulics are algebraic and the composition is integrated with a step of \SI{2}{\second}. The justification is the bulk-modulus argument of \eqref{eq:bulk}. Pressure equalises in a small fraction of a second. Composition equalises on
+\begin{equation}
+\label{eq:tau}
+\tau = \frac{V}{Q_f}
+=
+\frac{0.080}{20/3600}
+=
+\SI{14.4}{\second}
+\end{equation}
+at the design flow. A horizon of \SI{12}{\second} therefore sees most of one residence time and does not pretend to see the next brand. The analyser delay is \SI{12}{\second} as well, so a controller that used only the outlet analysis would be aiming at a beer that has already left. The controller instead integrates the measured inlet flows through \eqref{eq:ode} and \eqref{eq:co2bal}, and it uses the outlet analysis as a slow correction when it arrives. The state that enters the prediction is that integrated composition, plus a small allowance for flow-measurement noise.
+
+The mother-beer analysis enters with its own delay of \SI{8}{\second}. During those eight seconds the predictor still uses the previous mother beer. The error is visible and short. It is not hidden inside a valve gain.
+
+\subsection{Hydraulics inside each shooting node}
+
+At a candidate lift $(l_h,l_w,l_f)$ and a candidate dose, the mix pressure $p_m$ is the unknown. Inlet densities are evaluated at the inlet compositions. The product density is evaluated at the current mixer composition. With the equal-percentage law \eqref{eq:eqpct} and the sizing law \eqref{eq:kv} at $F_P=F_R=1$,
+\begin{align}
+\label{eq:qhw}
+Q_h
+&=
+K_{v,h}\,R^{\,l_h-1}
+\sqrt{\frac{p_h + b_h - p_m}{\rho_h/1000}},
+\\
+Q_w
+&=
+K_{v,w}\,R^{\,l_w-1}
+\sqrt{\frac{p_w - p_m}{\rho_w/1000}},
+\end{align}
+when the drops are positive, and zero otherwise. The symbol $b_h$ is the header bias the model believes. On the true plant it is zero. In a nominal, uncommissioned model it is whatever the transmitter adds. The product flow demanded by mass is
+\begin{equation}
+\label{eq:qfmass}
+Q_f^{\mathrm{mass}}
+=
+\frac{\rho_h Q_h + \rho_w Q_w}{\rho_f}.
+\end{equation}
+The blend line then drops by \eqref{eq:darcy}, using the Haaland friction factor at the velocity $Q_f^{\mathrm{mass}}/A_f$, and the final valve passes
+\begin{equation}
+\label{eq:qfvalve}
+Q_f^{\mathrm{valve}}
+=
+K_{v,f}\,R^{\,l_f-1}
+\sqrt{\frac{p_m - \Delta p_{\mathrm{line}} - p_b}{\rho_f/1000}}.
+\end{equation}
+The scalar residual $Q_f^{\mathrm{valve}} - Q_f^{\mathrm{mass}}$ changes sign between a mix pressure just above the tank and a mix pressure just below the lower header. A bracketed scalar solve, Brent's method in the case study, returns $p_m$. Vena-contracta pressures follow from \eqref{eq:pvc} with the recovery factors of the three trims. If the bracket fails, the node is assigned a large cost and the solver steps away from it. That is a numerical guard, not a physical operating point. At the lager solution of Chapter~\ref{ch:estimate} the residual is closed and the cost of the steady problem is numerically zero.
+
+Density is the affine map identified for \SI{2}{\celsius} in the window of this skid,
+\begin{equation}
+\label{eq:rho}
+\rho
+=
+\big(999.94 - 1.62\,A_w + 4.05\,E_r\big)
+\big(1 - \gamma A_w E_r\big).
+\end{equation}
+The contraction $\gamma$ is zero in the nominal model and is estimated by the twin. Equilibrium pressure uses \eqref{eq:zeta} with the scale $\kappa_{\zeta}$. Alcohol uses \eqref{eq:abv}. Original extract uses \eqref{eq:balling}. None of these inversions is iterative beyond the scalar pressure solve, because $A_w$ and $E_r$ are states, not outputs that have to be searched for.
+
+\subsection{Composition prediction and carbon-dioxide loss}
+
+From a solved hydraulic node the composition is stepped by the forward Euler form of \eqref{eq:ode} and \eqref{eq:co2bal}. The eigenvalue of the mixer is $-1/\tau \approx \SI{-0.07}{\per\second}$. A step of \SI{2}{\second} multiplies a composition error by about $0.87$ per step and does not oscillate. Euler is therefore enough. A production code can substitute a single exponential on the linear mixer without touching the optimiser.
+
+Delivered carbon dioxide is not identical to the mixer concentration. If the final vena contracta lies below equilibrium, a fraction of the supersaturation leaves the liquid in one pass,
+\begin{equation}
+\label{eq:strip}
+c_{\mathrm{out}}
+=
+c - \eta\,\max\!\big(0,\; c - \kappa_{\zeta}\zeta\,p_{\mathrm{vc},f}\big),
+\end{equation}
+with $\eta = 0.35$ for this skid. The same test, with a coefficient of \SI{30}{ppb\per\bar}, adds dissolved oxygen when the margin is negative. Both expressions are inactive when the inequalities in \eqref{eq:ineq} hold, which they do at the design point and throughout the closed-loop runs of Chapter~\ref{ch:estimate}. They exist so that a controller is charged for a flashing move in the prediction, rather than discovering the flash in the bright tank.
+
+\subsection{The program solved at each sample}
+
+The horizon is two move blocks of three integration steps. The decision vector is eight numbers,
+\begin{equation}
+\mathbf{z} = (l_h^{(1)}, l_w^{(1)}, l_f^{(1)}, \dot m^{(1)},\;
+l_h^{(2)}, l_w^{(2)}, l_f^{(2)}, \dot m^{(2)}).
+\end{equation}
+Inside a block the command is constant, and it is still limited by $\dot l_{\max}$ relative to the previous stem position, so a block cannot teleport a valve. The cost is the sum of \eqref{eq:stage} over the six steps. Soft pressure penalties are quadratic outside the margin, with a weight of $6$ on each squared bar, which is large next to a unit tolerance cost. Valve travel is penalised as $0.4\,\|\Delta\mathbf{l}\|^{2}/0.01$, so a simultaneous move of $0.1$ lift on one valve costs about $0.4$. That is less than one tolerance of extract and enough to suppress chatter.
+
+Bounds are the lift limits and a dose limit of \SI{15}{\gram\per\second}. The initial guess is the move that was applied at the previous sample, copied into both blocks. A sequential least-squares quadratic program then reduces the cost. In the case study the iteration limit is six, which is short on purpose: the warm start is already near a good move, and a valve controller that thinks for longer than a fraction of its sample has missed the sample. The production transcription of the same shooting problem is the real-time iteration \citep{diehl2005,gros2020} solved by an interior-point code \citep{wachter2006,andersson2019}. The case-study solver is a stand-in that minimises the same function. It is not a claim that six sequential-quadratic iterations are a certified real-time iteration.
+
+Only the first block is applied. The stem command is limited once more by $\dot l_{\max}\Delta t_c = 0.16$ lift per sample. The dose is applied as a flow setpoint to the injector, which is fast relative to the mixer.
+
+\begin{algorithm}[htbp]
+\caption{One sample of three-valve nonlinear model predictive control}
+\label{alg:nmpc}
+\begin{algorithmic}[1]
+\Require Mixer state, delayed mother-beer analysis, header pressures, previous command, brand setpoint
+\State Build the initial guess by repeating the previous command in both blocks
+\State Predict the horizon from $\mathbf{z}$ through the algebraic network and the mixer step
+\State Minimise the summed stage cost subject to lift and dose bounds
+\State Rate-limit the first block against the previous stem position
+\State If a deadband estimate is active, lead the water-valve command by that band in the direction of travel
+\State Apply the three lifts and the dose; hold them until the next sample
+\end{algorithmic}
+\end{algorithm}
+
+The deadband lead in line 5 is supplied by the twin and is zero until a stick has been observed. The predictive controller of the first technology does not invent it.
+
+\subsection{Steady solution and the relative-gain array}
+
+The same cost, with the derivatives removed and the composition replaced by its algebraic blend, is a four-variable steady program. At the lager brand, on the plant model, the solution is
+\begin{equation}
+\label{eq:usteady}
+l_h = 0.704,\quad
+l_w = 0.711,\quad
+l_f = 0.840,\quad
+\dot m_{\mathrm{CO_2}} = \SI{7.507}{\gram\per\second}.
+\end{equation}
+The flows are \SI{13.962}, \SI{6.055} and \SI{20.000}{\cubic\metre\per\hour}. The velocities are \SI{1.134}, \SI{0.762} and \SI{1.078}{\metre\per\second} in the \SI{66}{\milli\metre}, \SI{53}{\milli\metre} and \SI{81}{\milli\metre} bores. Mix pressure is \SI{2.855}{bar} absolute against an equilibrium pressure of \SI{1.905}{bar}. The final vena contracta is \SI{2.279}{bar}. Original extract, alcohol and carbon dioxide meet the brand to three decimals, and dissolved oxygen is \SI{9.22}{ppb}, which is the flow-weighted inlet oxygen and no more. The steady cost is below $10^{-8}$. This is the point a grade change leaves and, for the light brand, the kind of point it has to reach.
+
+Linearising the map $(l_h,l_w,l_f)\mapsto(Q_h,Q_w,p_m)$ with a step of $0.012$ lift gives
+\begin{equation}
+\label{eq:G}
+G
+=
+\begin{bmatrix}
+48.05 & -3.21 & 7.64 \\
+-2.59 & 23.09 & 2.64 \\
+2.09 & 0.89 & -2.14
+\end{bmatrix},
+\end{equation}
+with flows in cubic metres per hour and pressure in bar, per unit lift. The relative-gain array \eqref{eq:rga} is
+\begin{equation}
+\label{eq:RGAnum}
+\Lambda
+=
+\begin{bmatrix}
+0.87 & 0.00 & 0.13 \\
+0.00 & 0.95 & 0.05 \\
+0.13 & 0.05 & 0.82
+\end{bmatrix}.
+\end{equation}
+The diagonal dominates. Bristol's test supports pairing beer lift with beer flow, water lift with water flow, and final lift with mix pressure. It does not say the off-diagonal terms are zero. Thirteen percent of the beer-flow relative gain sits on the final valve, and the beer valve moves the pressure. A well-tuned decentralised station can hold this point. A simultaneous grade change excites the off-diagonal terms while the mixer is still full of the previous beer. That is the regime in which the predictive controller has work to do, and it is the regime of the first case in Chapter~\ref{ch:estimate}.
+
+The sign of $G_{33}$ is the operator's sign: opening the final valve lowers the mix pressure. The pressure loop of the baseline is therefore reverse-acting. The predictive controller never needs that sentence, because the final lift is just a coordinate of $\mathbf{z}$.
+
+\subsection{The ratio station used as the baseline}
+
+The baseline is the controller the relative-gain array recommends, built so that the comparison is against a competent station rather than against an untuned one.
+
+Given the delayed mother beer, the station inverts \eqref{eq:balling} for the mass fraction $w_{\mathrm{OE}}$ that hits the extract target, and it inverts \eqref{eq:abv} with the linear part of \eqref{eq:rho} for the mass fraction $w_{\mathrm{ABV}}$ that hits the alcohol target. The feedforward fraction is $0.55\,w_{\mathrm{OE}}+0.45\,w_{\mathrm{ABV}}$. A slow integral on the delayed outlet extract, gain $0.006$ per second, trims that fraction. Mass flows are split by $w$ at the demanded product flow, converted to volumetric setpoints with the linear density, and tracked by incremental proportional--integral loops. With $\Delta t_c=\SI{4}{\second}$ the increments are
+\begin{align}
+\label{eq:pi}
+\Delta l_h
+&=
+0.018\,(e_h-e_h^{-}) + 0.0018\,e_h\,\Delta t_c,
+\\
+\Delta l_w
+&=
+0.028\,(e_w-e_w^{-}) + 0.0030\,e_w\,\Delta t_c,
+\\
+\Delta l_f
+&=
+0.12\,(e_p-e_p^{-}) + 0.022\,e_p\,\Delta t_c.
+\end{align}
+Here $e_h$ and $e_w$ are setpoint minus measurement in cubic metres per hour, and $e_p$ is measured mix pressure minus a fixed pressure setpoint. The fixed setpoint is $p_{\mathrm{eq}}+\SI{0.90}{bar}$ evaluated at the lager steady state, which is \SI{2.805}{bar} absolute. The integral gains were chosen so that $K_I\,G_{ii}\,\Delta t_c$ lies near $0.3$ on the diagonal of \eqref{eq:G}. For the beer valve, $0.0018\times 48.05\times 4 \approx 0.35$. For the water valve, $0.0030\times 23.09\times 4 \approx 0.28$. For the pressure loop, $0.022\times 2.14\times 4 \approx 0.19$. These are the SIMC-sized gains for an algebraic process \citep{skogestad2003,astrom2006}. They are not detuned to make the predictive controller look better.
+
+Carbon dioxide is feedforward from \eqref{eq:dosess} using the measured flows and the delayed mother-beer carbonation, plus an incremental correction from the delayed outlet analysis. The same rate limit is applied to the three lifts. Anti-windup is the incremental form itself: the state of the controller is the stem position, and the stem position is clipped to the lift bounds.
+
+What this station cannot do is revise the pressure setpoint when the brand or the mother beer changes $p_{\mathrm{eq}}$, trade extract against alcohol at the tolerance weights when both cannot be met, or refuse a move whose predicted vena contracta flashes. Those are the jobs of \eqref{eq:stage} and \eqref{eq:ineq}.
+
+\subsection{Offset, feasibility and what the horizon does not prove}
+
+A predictive controller that re-optimises from a measured state removes a constant disturbance that the model can see. It does not remove a constant error in its own gain. If $K_v$ is wrong, the predicted flow of a given lift is wrong, the optimiser asks for the wrong lift, and the outlet integral of a ratio station may still be the faster way home. That is why the first technology, deployed on the nominal model, is not expected to dominate the baseline. The second technology exists to make the model that the first technology trusts.
+
+Feasibility of the inequalities is not guaranteed for every mother beer. When extract and alcohol are inconsistent, the hard bounds on the lifts remain feasible and the quality targets become a soft compromise through \eqref{eq:stage}. When a header pressure collapses so far that the product flow cannot be passed without entering the vena contracta, the soft pressure penalty outranks the flow penalty and the controller gives up flow. The case study does not include a collapse of that size. The header step in Chapter~\ref{ch:estimate} is \SI{0.45}{bar}, and every controller keeps a positive margin.
+
+A terminal constraint to the steady set, of the kind \citet{mayne2000} use to prove stability, is the correct production addition to Algorithm~\ref{alg:nmpc}. The case study does not implement it. The horizon is short, the rate limit is hard, and the steady program is feasible at both brands. The numerical evidence in Chapter~\ref{ch:estimate} is an estimation of closed-loop error, not a Lyapunov certificate. Saying so keeps the first technology in the class of engineering predictive control reviewed by \citet{qin2003} and \citet{maciejowski2002}, where certificates are added when the model and the constraints have settled.
+
+\subsection{A grade change, computed before the valves move}
+
+The light brand asks for $w=0.58$ rather than $0.70$. Product mass flow at the lager density is about \SI{5.61}{\kilogram\per\second}. The beer mass flow therefore falls from about \SI{3.92}{\kilogram\per\second} to about \SI{3.25}{\kilogram\per\second}, and the water mass flow rises by the same \SI{0.67}{\kilogram\per\second}. In volumetric units the beer setpoint moves from \SI{13.96}{\cubic\metre\per\hour} toward about \SI{11.6}{\cubic\metre\per\hour}, and the water setpoint rises from \SI{6.06}{\cubic\metre\per\hour} toward about \SI{8.4}{\cubic\metre\per\hour}. Divided by the diagonal gains, those are lift changes of a few hundredths on the beer valve and about a tenth on the water valve. At \SI{0.04}{lift\per\second} that water-valve move takes about three seconds. Holding the inlet exactly at the new brand after that move would still leave an extract error near \SI{0.7}{\degree}P one residence time later, because $\mathrm{e}^{-1}$ times the \SI{1.93}{\degree}P step has not yet entered the \SI{0.05}{\degree}P band. A controller that is inside the band in \SI{16}{\second} has therefore used an inlet lighter than the new brand while the vessel empties. Section~\ref{sec:firstsample} records that move on the commissioned model. A controller that is still outside the band two minutes later is limited by its model or by its tuning, not by the pipe. Chapter~\ref{ch:estimate} uses that comparison directly.
+
+The carbon-dioxide setpoint falls from \SI{5.20}{\gram\per\litre} to \SI{5.00}{\gram\per\litre} at the same moment. Because the water fraction rises, the dose does not fall in proportion: more uncarbonated water has to be made up. The predictive controller sees both effects in \eqref{eq:co2bal}. The baseline sees them in \eqref{eq:dosess}, which is algebraically the same at steady state and is blind to the trajectory between.
+
+\input{chapters/chapter2gain}
+
+\section{Physics-informed pressure digital twin}
+\label{sec:twin}
+
+\subsection{What the twin contains}
+
+The twin is a second copy of the equations of Section~\ref{sec:nmpc}, with a parameter vector that the skid is allowed to disagree about, a residual correction that is allowed to be zero, and an interface that hands the commissioned copy to Algorithm~\ref{alg:nmpc}. In the classification of \citet{kritzinger2018} it is a twin because that hand-off moves the valves. A display of the same equations would be a shadow.
+
+The parameter vector is
+\begin{equation}
+\label{eq:theta}
+\theta
+=
+\big(
+\log K_{v,h},\;
+\log K_{v,w},\;
+\log K_{v,f},\;
+\log \varepsilon,\;
+\log K,\;
+b_h,\;
+\kappa_{\zeta},\;
+\gamma
+\big).
+\end{equation}
+Logarithms keep the capacities, the roughness and the minor-loss coefficient positive. The bias $b_h$ is in bar and may have either sign. The solubility scale and the contraction are estimated from different experiments than the valve steps, because they are barely visible in those steps. They are stored in $\theta$ because the predictor reads them there.
+
+The nominal twin, before commissioning, is the model a project would start from: capacities \SI{29.4}, \SI{13.2} and \SI{58.0}{\cubic\metre\per\hour} against true values \SI{32}, \SI{12} and \SI{64}; roughness \SI{15}{\micro\metre} against \SI{2}{\micro\metre}; minor loss $8$ against $14$; solubility scale $1$ against $0.93$; contraction $0$; and a belief that the beer-header transmitter is truth when it reads \SI{0.10}{bar} high. Those errors are the size of a worn or mis-sized trim and a transmitter that has not been zeroed. They are not a caricature.
+
+\subsection{Commissioning experiment}
+
+Twenty-eight steady points are collected. Each point holds a random lift triple in $[0.40,0.82]$ and a random dose, long enough for the mixer to settle, and records the three flows and the mix pressure. Flow noise is \SI{0.03}{\cubic\metre\per\hour} standard deviation. Pressure noise is \SI{0.008}{bar}. The beer-header measurement used by the estimator is the true header plus \SI{0.10}{bar} plus that noise. Inlet composition is the mother beer of the design point, known because the campaign is run on one tank. This is a few hours of a skid, not a month of history. The point of a physics-based estimator is that a few hours are enough \citep{zheng2023,kadlec2009}.
+
+The hydraulic residual stacks four normalised errors per point,
+\begin{equation}
+\label{eq:resid}
+r
+=
+\begin{bmatrix}
+(Q_h-\tilde Q_h)/0.08 \\
+(Q_w-\tilde Q_w)/0.05 \\
+(Q_f-\tilde Q_f)/0.08 \\
+(p_m-\tilde p_m)/0.02
+\end{bmatrix},
+\end{equation}
+and $\theta$ enters $Q$ and $p_m$ through the network of Section~\ref{sec:nmpc}. The estimator minimises $\|r(\theta)\|^{2}$ by a bound-aware nonlinear least-squares method, starting from the nominal capacities. An approximate covariance follows from the Jacobian $J$ of the converged residual,
+\begin{equation}
+\label{eq:cov}
+\mathrm{Cov}(\hat\theta)
+\approx
+\hat\sigma^{2}\,(J^{\mathsf T}J)^{-1},
+\qquad
+\hat\sigma^{2}
+=
+\frac{\|r\|^{2}}{N-n_{\theta}}.
+\end{equation}
+Standard errors on $K_v$ are the standard errors on $\log K_v$, multiplied by $K_v$. This is the local Gaussian approximation used throughout nonlinear least squares. It is honest about precision only when the parameters are locally identifiable. Chapter~\ref{ch:estimate} shows that for roughness and minor loss they are not, and the enormous standard errors are the estimator saying so.
+
+\subsection{Parameters that need their own experiment}
+
+Solubility is estimated from one bench point. A sample of known $A_w$, $E_r$ and dissolved carbon dioxide is brought to equilibrium at \SI{2}{\celsius}, the headspace pressure is read, and
+\begin{equation}
+\label{eq:kappahat}
+\hat\kappa_{\zeta}
+=
+\frac{c}{\zeta_{\mathrm{poly}}(T,E,\mathrm{ABV})\,p_{\mathrm{meas}}}.
+\end{equation}
+One point identifies one scale. It does not re-identify the polynomial. A brewery that changes beer style enough to leave the polynomial's range repeats the bench point on the new style. That is a laboratory sample, not a flashing test on the line.
+
+Contraction is estimated from the Coriolis density. At each steady point,
+\begin{equation}
+\label{eq:gammahat}
+\hat\gamma
+=
+\mathrm{median}_{i}
+\left(
+\frac{1 - \tilde\rho_i/\rho_{\mathrm{lin}}(A_{w,i},E_{r,i})}{A_{w,i}E_{r,i}}
+\right),
+\end{equation}
+taken over points where $A_w E_r > 1$ so that the denominator is not a trace of noise. The median rejects a single bad density reading. The linear map $\rho_{\mathrm{lin}}$ is the parenthesis in \eqref{eq:rho}.
+
+Effective line resistance is not a seventh search variable. After $\varepsilon$ and $K$ have been estimated, or have failed to be estimated, it is computed from \eqref{eq:closs} at $\mathrm{Re}=4\times 10^{4}$, which is the blend-line Reynolds number at the design point. The twin may be rebuilt with that single $C_L$ in place of the pair $(\varepsilon,K)$. In the case study the deployed twin keeps the estimated pair because, although each member is nonsense, the sum $C_L$ lands within three percent of the truth. The text reports both facts so that the next skid estimates $C_L$ directly and does not publish a roughness.
+
+\subsection{The residual network and the mass-balance gate}
+
+After the physical parameters are fixed, the flow residual on the training points is a target for a small network. The input is the standardised vector $(l_h,l_w,l_f,A_w,E_r,p_m)$. The network has one hidden layer of eight hyperbolic-tangent units and a linear output of three flow corrections. Twenty-two of the twenty-eight points train it. Six are held out. Training is Adam for 900 steps at learning rate $0.02$, with a weight decay of $2\times 10^{-3}$.
+
+Every fifth step adds a physics penalty. If $q$ is the physically predicted flow plus the network correction, the penalty is the squared mass imbalance
+\begin{equation}
+\label{eq:masspen}
+\big(\rho_h q_h + \rho_w q_w - \rho_f q_f\big)^{2},
+\end{equation}
+scaled so that it does not drown a residual that is already at the sensor floor. This is the blend-skid form of the collocation penalty of \citet{raissi2019}. The conservation law is algebraic rather than a differential equation, because the quantity being corrected is a steady flow. \citet{cai2021} make the same substitution whenever a fluid constraint is a flux balance rather than a momentum residual.
+
+The gate is the held-out root-mean-square flow error. If the network increases it, the deployed twin uses $\Delta Q = 0$. The architecture stays in the software so that a later campaign, on a valve whose characteristic is not equal-percentage, can open the gate without a rewrite. \citet{wu2023cerd} and \citet{zheng2023} deploy the network because their reactors have a kinetic discrepancy that the parameters do not absorb. This skid, after $K_v$ and $b_h$ are estimated, does not. The gate is how the twin tells those two situations apart.
+
+\begin{algorithm}[htbp]
+\caption{Commissioning of the physics-informed pressure twin}
+\label{alg:twin}
+\begin{algorithmic}[1]
+\Require Step-test records, one bench equilibrium pressure, Coriolis densities
+\State Estimate $\log K_v$, $\log\varepsilon$, $\log K$ and $b_h$ by least squares on \eqref{eq:resid}
+\State Compute standard errors from \eqref{eq:cov}; if a standard error exceeds the estimate, replace that parameter by the identifiable combination $C_L$
+\State Estimate $\kappa_{\zeta}$ from \eqref{eq:kappahat} and $\gamma$ from \eqref{eq:gammahat}
+\State Train the residual network on all but six step tests, with the penalty \eqref{eq:masspen}
+\State If the held-out flow error rises, set the residual to zero
+\State Publish $\theta$ and the residual gate to the predictive controller
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{The fast state, and the deadband}
+
+During a run the slow parameters stay at the commissioned values. The mixer state is integrated from the measured flows and the delayed mother-beer analysis. This observer is a soft sensor in the sense of \citet{kadlec2009}, and it is almost a balance rather than a regression: if the flows and the inlet composition are right, the mixer composition is determined. Noise of a hundredth of a percent by weight is added in the case study to represent the imperfection of that statement. An unscented filter \citep{julier2004} or a moving-horizon estimator \citep{rao2003} is the right replacement when an inlet meter drops out and the outlet analysis has to carry the state alone. With all three Coriolis meters healthy, the balance is the estimator.
+
+Water-valve stiction is detected as a deadband $S$: the stem does not move until the command has led the reported position by $S$. The case-study fault is $S=0.03$ lift, with no slip jump, which is the stick band of \citet{choudhury2005} reduced to one parameter. The inverse used by the twin-backed controller is
+\begin{equation}
+\label{eq:invstick}
+l_{w,\mathrm{cmd}}
+=
+l_{w,\mathrm{des}} + S\,\mathrm{sign}(l_{w,\mathrm{des}} - l_{w,\mathrm{pos}}),
+\end{equation}
+applied only when the desired move exceeds a small threshold, so that a valve already at the setpoint is not dithered. \citet{jelali2010} discuss the limit cycle that a naive inverse can excite. The threshold and the rate limit are what keep \eqref{eq:invstick} from becoming a knocker. The predictive controller that does not receive $S$ has no inverse. It sees a flow that refuses small moves and, if its gain is wrong as well, it walks away from the setpoint.
+
+\subsection{How the twin changes the first technology}
+
+Algorithm~\ref{alg:nmpc} does not contain $\theta$. It contains a model. Commissioning replaces that model. Three substitutions are visible in the closed loop of Chapter~\ref{ch:estimate}.
+
+The capacities and the header bias are the substitutions that repair the grade change. An eight-percent error in $K_{v,h}$ is an error of about \SI{1}{\cubic\metre\per\hour} at the lager point, because the valve is not fully open and the equal-percentage gain is steep. The predictive controller converts that flow error into a composition error and then holds it, because the model believes the composition is already right. The ratio station, which integrates measured flow rather than predicted flow, is less sensitive to $K_v$ and more sensitive to the interaction during the move. The numerical comparison falls out of that difference.
+
+The solubility scale and the contraction are the substitutions that keep the pressure constraint and the alcohol conversion honest. At the design point $\kappa_{\zeta}=0.93$ lowers $\zeta$ from the bare polynomial by seven percent and raises $p_{\mathrm{eq}}$ by the same fraction. A controller that ignores the scale guards the wrong pressure. The contraction shifts density by about \SI{4}{\kilogram\per\cubic\metre} on the mother beer and by about \SI{2}{\kilogram\per\cubic\metre} on the lager. Alcohol by volume, through \eqref{eq:abv}, moves in proportion. The shift is smaller than the alcohol tolerance and is still worth removing, because the tolerance budget should be spent on the mother beer, not on the equation of state.
+
+The deadband inverse is the substitution that matters when the water valve sticks. It does not change the steady mathematics of $w$. It changes the first samples after a small flow error appears.
+
+The residual network, in this campaign, is the substitution that is not made. Publishing that fact is a duty of the estimator. A twin that always adds its network, after the network has failed a hold-out test, is a softer sensor with a harder name.
+
+\subsection{Information, interfaces and the safety boundary}
+
+The twin reads flows, pressures, stem positions, temperature and quality through the OPC UA model of the skid \citep{iec62541}. It writes a recommended $(l_h,l_w,l_f,\dot m_{\mathrm{CO_2}})$ at \SI{4}{\second} intervals. The programmable controller remains the only device that energises a solenoid. It enforces the rate limit again, the lift limits again, and a set of interlocks the optimiser is not allowed to relax: a low bright-tank pressure, a high mixer pressure, a loss of the water-deaeration permissive, and a quality hold if dissolved oxygen or a water analysis crosses the alarm. ISA-88 names the brand change as a phase whose running state may be held by those permissives \citep{isa88}. The predictive controller is a step inside the running state. It is not a replacement for the phase logic.
+
+This boundary is the practical content of the warning in \citet{fuller2020} and \citet{goffi2025} that a twin which can move equipment has to be commissioned inside the interlocks, not beside them. The estimation problem is unaffected. The interlocks define a subset of $\mathbf{u}$ that the least-squares model never sees, because the campaign is run with the interlocks healthy. Extrapolating the twin into a tripped skid is not a use this thesis supports.
+
+\input{chapters/chapter2more}
+
+\subsection{What each technology is for}
+
+The first technology is a way to choose $\mathbf{u}$ when the model is believed. It coordinates the three valves, it uses the nonlinear quality map, and it prices a flashing vena contracta in the same sum as a missed extract. The second technology is a way to decide whether the model should be believed, and to correct the particular parameters that a blend skid gets wrong: capacities, a pressure bias, a solubility scale, a density contraction, a line resistance that must be estimated as a sum, and a deadband. A residual network is part of the second technology and is subject to a hold-out gate.
+
+The next chapter builds the numerical skid on which both are estimated, and it reports what the beer does.

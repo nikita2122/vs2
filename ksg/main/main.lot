@@ -1,0 +1,18 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces What recent scheduling models decide, and what they leave out of the school-bag assignment.}}{15}{table.caption.6}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Identified positive weights on the twelve costs, from \eqref {eq:wstar}. A large weight means the identification was willing to avoid that cost even when other costs rose.}}{42}{table.caption.10}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces One navy shell cut, three ways of treating Cutter-A. Times are minutes. Energy is kilowatt-hours. Failure delay is the expectation \(48\phi \).}}{50}{table.caption.12}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Three successive shell cuts on Cutter-A. ``Charged'' time is processing plus expected repair delay, or processing plus the single sixteen-minute maintenance on the renewed path. Health is the value at the start of the cycle.}}{52}{table.caption.13}%
+\contentsline {table}{\numberline {2.4}{\ignorespaces What to check when a transferred cell misbehaves. The estimation books did not trip these checks.}}{56}{table.caption.15}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Machines in the estimation cell. Wear is the drift \(\eta _k\) in health per processing minute. Health \(h_0\) is the nominal-scenario initial state.}}{60}{table.caption.17}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Operator skills. The number multiplies machine speed in Equation~\eqref {eq:ptime}. A dash is an infeasible pairing.}}{61}{table.caption.18}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Nominal order books, twenty paired seeds. Lower is better except for the on-time rate.}}{64}{table.caption.20}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Rush release at minute 220, twenty paired seeds. The book contains twenty orders after the release.}}{66}{table.caption.22}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Accelerated wear, twenty paired seeds. Initial health is shifted up by \(0.10\) and every wear coefficient is multiplied by \(1.85\).}}{67}{table.caption.23}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Thread-lot shortage, twenty paired seeds. Navy, red, and khaki allow only one concurrent user.}}{68}{table.caption.24}%
+\contentsline {table}{\numberline {3.7}{\ignorespaces Chance-constraint tolerance on eight accelerated-wear books. The policy is RCH-SSDT. Maintenance count is the mean number of times Algorithm~\ref {alg:ssdt} fires.}}{69}{table.caption.25}%
+\contentsline {table}{\numberline {3.8}{\ignorespaces Standard deviations on the twenty nominal books. Compare with the means in Table~\ref {tab:nominal}.}}{72}{table.caption.27}%
+\contentsline {table}{\numberline {3.9}{\ignorespaces RCH-SSDT divided by a baseline, four scenarios. Makespan and failures are against first-in-first-out. Energy is against shortest processing time, the best classical energy. Tardiness is against earliest due date, the best classical due-date rule. Ratios use the means of Tables~\ref {tab:nominal}--\ref {tab:shortage}.}}{76}{table.caption.28}%
+\contentsline {table}{\numberline {3.10}{\ignorespaces Seeds used by the driver. Estimation seeds are paired across every method.}}{78}{table.caption.29}%

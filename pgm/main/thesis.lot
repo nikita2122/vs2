@@ -1,0 +1,12 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces What published systems decide, and what the brewery passage still needs. A dash means the quantity is outside the stated task.}}{12}{table.caption.6}%
+\contentsline {table}{\numberline {1.2}{\ignorespaces Which published number is allowed to stand in for which decision. The right-hand column is the quantity Chapter~\ref {ch:system} actually computes.}}{14}{table.caption.7}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Top-1 accuracy of linear heads trained on subsets of $\mathbf {f}$. The full row is a replicate of the ICPH feature, not the main table. Chance is $1/6\approx 0.167$.}}{32}{table.caption.13}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Timing budget for one passage at $15\,\mathrm {Hz}$ with five kept frames. The segmenter line is a budget, not a measured latency of a named device. The other lines are consequences of the algorithms in Chapter~\ref {ch:methods}.}}{55}{table.caption.19}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Top-1 color accuracy on $2500$ patches at each illuminant severity. Gray-world uses $p=1$. Shades-of-gray uses $p=6$. ICPH is the linear head on the eight-dimensional feature. The generator, not a photographed aisle, produced the patches.}}{58}{table.caption.20}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Confusion matrix of ICPH at severity $0.60$. Rows are the true class, columns the predicted class, in the order amber, green, red, blue, yellow, white. Each row sums to the number of test patches of that class inside the $2500$.}}{59}{table.caption.22}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Counting error on $4000$ stacks. Bias is the mean of $\hat {N}-N$. Exact is the fraction of trials with $\hat {N}=N$. PLC-single uses the first frame. PLC-passage unions five frames at vote one. The mean true count is $22.62$.}}{60}{table.caption.23}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Mean absolute error by true depth. The number of trials is $1326$, $1329$, and $1345$ at depths $1$, $2$, and $3$.}}{61}{table.caption.25}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Where each requirement of Section~\ref {sec:requirements} is answered.}}{67}{table.caption.27}%

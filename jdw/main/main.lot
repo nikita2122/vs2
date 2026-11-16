@@ -1,0 +1,11 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces What the prior art computes, and what it leaves to the blend skid.}}{23}{table.caption.5}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Prediction budget at the lager flow of \SI {20}{\cubic \metre \per \hour }.}}{42}{table.caption.7}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Clocks on the numerical skid. The plant step is the integration of the mixer. The control step is when a new command may be published.}}{63}{table.caption.8}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Steady operating point of the sales-gravity lager on the plant model.}}{66}{table.caption.10}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Steady gain matrix and relative-gain array at the lager point. Outputs are beer flow (m$^3$/h), water flow (m$^3$/h) and mix pressure (bar). Inputs are the three valve lifts.}}{66}{table.caption.11}%
+\contentsline {table}{\numberline {3.4}{\ignorespaces Commissioning estimates. Standard errors are from the linearised least-squares covariance.}}{66}{table.caption.12}%
+\contentsline {table}{\numberline {3.5}{\ignorespaces Closed-loop estimation of beer quality after each upset. IAE is integrated from the upset to the end of the run. Settling time is the time after the upset until original-extract error remains inside $0.05\,^\circ $P.}}{67}{table.caption.13}%
+\contentsline {table}{\numberline {3.6}{\ignorespaces Commissioned grade change, at the control samples after the upset. Flows are cubic metres per hour and the dose is grams per second.}}{70}{table.caption.17}%

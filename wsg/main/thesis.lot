@@ -1,0 +1,10 @@
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {1.1}{\ignorespaces Design point of the blending line.}}{16}{table.caption.7}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Bandwidths of the proposed loops, in \si {\radian \per \second }.}}{38}{table.caption.11}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Beer-valve gain after the supply falls to \SI {3.05}{\barg }, with all three flows held at the design values. The stem is the opening that \eqref {eq:kv} then requires.}}{41}{table.caption.12}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Coefficients at the design point and at the high-rate point used to size the outlet valve. The high-rate header is \SI {1.45}{\barg } with the beer supply already at \SI {3.05}{\barg }.}}{52}{table.caption.13}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Scenario clock.}}{56}{table.caption.14}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Full-run indices, \SIrange {0}{560}{s}.}}{57}{table.caption.15}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Extract IAE in $^{\circ }\mathrm {P}\cdot \mathrm {s}$ and beer-flow IAE in \si {\cubic \metre \per \hour \second }, by window.}}{70}{table.caption.24}%

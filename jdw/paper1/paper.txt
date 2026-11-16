@@ -1,0 +1,265 @@
+             Three-Valve Nonlinear Model Predictive Control
+                    for High-Gravity Beer Blending
+                                 Department of Computer Science
+
+                                             October 2026
+
+
+                                                Abstract
+     High-gravity blending dilutes a concentrated mother beer with cold deaerated water. The
+     actuators are three control valves—beer, dilution water, and the line leaving the skid—and a
+     carbon-dioxide injector. Industrial practice closes a flow ratio and a separate pressure loop.
+     That station can hold a quiet point. It does not plan a brand change, and it has no prediction
+     of the pressure at which carbon dioxide leaves solution inside a valve. This paper puts the
+     three lifts and the carbon-dioxide dose in one nonlinear model predictive program. Original
+     extract is the Balling map, so extract and alcohol are not treated as two linear dilutions of one
+     ratio. The throat pressure of each valve is required to stay above the composition-dependent
+     equilibrium pressure. On an 80 L mixer at 20 m3 h−1 , the controller, given a commissioned
+     hydraulic model, brings a lager-to-light grade change inside 0.05◦ P in 16 s. The same program
+     on a biased nominal model leaves an offset of about 0.19◦ P and matches a well-tuned ratio
+     station on extract. When the mother beer cannot meet extract and alcohol together, the
+     program returns the tolerance-weighted compromise.
+
+
+1    Introduction
+High-gravity brewing ferments a wort stronger than the beer that will be sold and restores sales
+strength by adding water [1, 2]. The blend skid is the step that sets original extract, alcohol and
+carbonation. Commercial frames quote tolerances of about 0.05◦ P and 0.03 % by volume and
+implement them with ratio control [3, 4]. Foam, yeast stress and flavour differences of the strong
+fermentation are upstream of this skid. Dissolved oxygen that arrives in the dilution water is
+likewise outside the authority of the valves. What the valves can still damage is the brand itself: a
+wrong ratio, or a throat pressure low enough to strip carbon dioxide.
+   The relative-gain array at the design point is diagonally dominant, so a decentralised pairing
+of beer lift with beer flow, water lift with water flow, and final lift with mix pressure is a fair
+steady-state station [5, 6]. The difficulty is the transient and the output map. Original extract is
+not proportional to the mother-beer mass fraction. A ratio taken from original extracts misses
+the true extract by about 0.19◦ P, four times the release tolerance. Carbon dioxide equilibrium
+pressure depends on temperature, composition and concentration [7, 8]. A pressure loop with a
+fixed setpoint does not follow that pressure when the brand changes.
+  Model predictive control is the standard way to move several constrained actuators against a
+nonlinear output map [9, 10]. Brewing applications have used it on fermentation temperature
+over days. The contribution here is the hydraulic program for this skid: three valve lifts and
+the carbon-dioxide dose, predicted with the Balling map and with the vena-contracta constraint
+written on carbon-dioxide equilibrium pressure rather than on the vapour pressure of water.
+
+
+
+
+                                                    1
+2     Plant model
+Mother beer at the design point has alcohol 5.40 % by weight, real extract 6.10 % by weight,
+original extract 16.319◦ P and 5.50 g L−1 of carbon dioxide, at 2 ◦ C. Original extract of a blend is
+
+                                                 100 (2.0665 Aw + Er )
+                                      pOE =                            ,                              (1)
+                                                   100 + 1.0665 Aw
+
+with Aw and Er in percent by weight [2]. Alcohol by volume is Aw ρ/789.24. Both Aw and Er
+scale with the mother-beer mass fraction w, and pOE does not. The sales lager is w = 0.70, hence
+11.613◦ P and 4.833 % by volume. The light brand is w = 0.58, hence 9.687◦ P and 4.000 % by
+volume. A linear dilution of the mother-beer original extract at the lager w is already about 0.19◦ P
+off (1)’s value. The mass fraction that hits the Balling target is 0.70, not the linear ratio.
+    Each valve is an equal-percentage trim of rangeability 50 [11],
+                                                             s
+                                                       l−1         ∆p
+                                        Q = Kv 50                       .                             (2)
+                                                                 ρ/1000
+
+Capacities are 32, 12 and 64 cubic metres per hour. The mix pressure is the scalar unknown that
+matches mass flow into the mixer with the flow through the final valve after the blend-line loss.
+The throat pressure is pvc = p1 − (p1 − p2 )/FL2 , with recovery factors 0.90, 0.93 and 0.86. Carbon
+dioxide flashes if pvc falls below peq = c/(κζ ζ). At the lager point peq = 1.905 bar absolute, the
+mix node is 2.855 bar, and the final throat is 2.279 bar. The mixer holds 80 L. At 20 m3 h−1 its
+residence time is 14.4 s, which is the only slow time constant. Header pressures are 4.80 bar on the
+beer, 5.30 bar on the water and 2.40 bar on the bright tank, all absolute.
+
+
+3     The predictive program
+Every 4 s the controller chooses two move blocks of (lh , lw , lf , ṁCO2 ). Each block is held for three
+Euler steps of 2 s, so the horizon is 12 s, about 0.83 residence times. The decision vector has length
+eight. Lifts stay in [0.18, 0.90], the dose in [0, 15] grams per second, and the lift may change by at
+most 0.16 in one sample. The stage cost normalises each quality error by its tolerance,
+                                      ⋆          ABV − ABV⋆ 2             c − c ⋆ 2
+                                OE − pOE 2
+                           p
+                      ℓ=                     +                          +
+                                0.05               0.03             0.05                              (3)
+                                   Qf − Q⋆ 2
+                                          f
+                           + 0.35              + soft pressure penalties + travel.
+                                      0.5
+One tolerance of extract, alcohol or carbon dioxide costs 1. A flow error of 0.5 m3 h−1 costs 0.35.
+A throat or mix pressure inside the forbidden side of the margin is penalised at 6 per bar squared,
+so a flash outranks a quality tolerance and a small pressure noise does not. The case-study solver
+is a warm-started sequential quadratic program with an iteration limit of six. A production
+implementation would replace those iterations by one real-time iteration [10, 12]. The study does
+not impose a terminal constraint, and it does not claim a Lyapunov certificate [13].
+   The baseline is an incremental ratio station sized so that KI Gii ∆t is near 0.3 on the diagonal
+gains [14]. Its pressure setpoint is fixed at the lager equilibrium plus 0.90 bar. It inverts Balling for
+a feedforward mass fraction and trims extract with a slow integral. It cannot move the pressure
+setpoint when peq changes, and it cannot trade extract against alcohol when both targets are
+infeasible.
+    At the lager steady point the installed gains, in cubic metres per hour and bar per unit lift, are
+
+
+                                                        2
+Table 1: Extract, alcohol and carbon-dioxide integrals from the upset to the end of each run. Settling time
+is the first instant after which the extract error remains inside 0.05◦ P.
+               Case                     Controller          IAE OE IAE ABV IAE CO2 Settle (s)
+               Grade change             Ratio                 31.30    13.48    11.81     129
+               Grade change             Nominal NMPC          32.29    13.90     8.10     129
+               Grade change             Commissioned NMPC     10.75     4.63     2.06      16
+               Infeasible mother beer   Ratio                 12.38    21.44     2.83     139
+               Infeasible mother beer   Nominal NMPC          39.34     9.96     5.06     139
+               Infeasible mother beer   Commissioned NMPC     20.04    17.80     1.27     139
+               Oxygen and stiction      Ratio                  3.97     1.73     1.07     107
+               Oxygen and stiction      Nominal NMPC          19.28     8.41     6.06     116
+               Oxygen and stiction      Commissioned NMPC      1.29     0.56     0.95     <1
+
+
+
+approximately                                                        
+                                               48.05 −3.21 7.64
+                                         G = −2.59 23.09 2.64  ,                                      (4)
+                                                                
+
+                                                2.09  0.89 −2.14
+and the relative-gain array is diagonally dominant with entries 0.87, 0.95 and 0.82. Thirteen
+percent of the beer-flow relative gain sits on the final valve. That term is quiet at steady state and
+active during a grade change, which is why the three lifts are coordinates of one program.
+
+
+4    Numerical estimation
+The plant is a dynamic simulation, not a brewery trial. Sensor noise is shared across controllers.
+The outlet analysis is delayed 12 s; the mixer state used by the predictive controller is a flow
+integration. Three upsets are applied at t = 20 s.
+   On the grade change the commissioned model spends the whole rate limit on the first move:
+every lift changes by 0.16. Beer flow falls from about 13.8 m3 h−1 to 6.4 m3 h−1 and water flow
+rises to about 10.2 m3 h−1 , so the inlet is lighter than the light brand. Extract error falls from
+1.92◦ P to 0.87◦ P in four seconds. A pure residence-time decay of the same step would still be at
+1.46◦ P. The error enters and remains inside 0.05◦ P at 16 s. The extract integral is 10.75◦ P·s. The
+ratio station and the predictive controller on the nominal model finish at 31.30◦ P·s and 32.29◦ P·s,
+and neither enters the band. The nominal tail is +0.19◦ P . Valve travel is about 1.7 lift-units for
+both predictive controllers and 7.1 for the ratio station, which reverses while the vessel is still
+exchanging. Figure 1 shows the three quality traces.
+   The second upset makes the brand infeasible. Mother-beer real extract rises by 0.45 percentage
+points and alcohol falls by 0.25, and the beer header drops by 0.45 bar. The mass fraction that
+minimises the tolerance cost is w = 0.712, at 11.780◦ P and 4.696 % by volume. The commissioned
+tail is 11.777◦ P and 4.695 % by volume. The ratio station is extract-greedy. The nominal predictive
+controller chases alcohol, because its gain is wrong. No second ratio creates the missing alcohol.
+   The third upset raises dilution-water oxygen from 12 ppb to 85 ppb and sticks the water valve
+with a deadband of 0.03 lift. Product oxygen reaches about 31 ppb for every controller. The valves
+do not remove it. With the deadband inverted, the commissioned extract integral is 1.29◦ P·s and
+the error never leaves the band. The nominal program, which does not know the stick, is the worst
+of the three stations on extract.
+
+
+5    Conclusion
+The innovation is the joint program: three lifts and the carbon-dioxide dose, a Balling output map,
+and a vena-contracta constraint written on carbon-dioxide equilibrium pressure. Decentralised
+
+                                                       3
+                                                                                    Ratio-PI
+                                11.5                                                3V-NMPC
+
+        Original extract (°P)
+                                                                                    3V-NMPC + PIP-Twin
+                                11.0                                                Setpoint
+                                10.5
+                                10.0
+                                 9.5
+
+                                   4.8
+               Alcohol (% v/v)
+
+
+
+
+                                   4.6
+                                   4.4
+                                   4.2
+                                   4.0
+                                   3.8
+
+                                   5.2
+             Dissolved CO2 (g/L)
+
+
+
+
+                                   5.0
+
+                                   4.8
+
+                                         0   20   40   60         80   100    120         140
+                                                            Time (s)
+Figure 1: Original extract, alcohol and carbon dioxide on the lager-to-light grade change. The commissioned
+predictive controller is the solid trace.
+
+
+ratio control remains a competent steady station. On a feasible grade change it is slow, and on an
+infeasible mother beer it spends the only ratio on extract. The predictive program returns the
+weighted compromise when both targets cannot be met, and it keeps the throat pressure above
+equilibrium at the design point used here. Those closed-loop numbers hold when the hydraulic
+model has been commissioned. On the nominal model the same program does not improve extract
+over the ratio station. The companion paper treats that commissioning problem. The study is a
+reproducible simulation of one skid. It is not a plant trial, and the short-horizon solver used here
+is not a certified real-time iteration.
+
+
+References
+ [1] Graham G. Stewart. High-gravity brewing and distilling—past experiences and future
+     prospects. Journal of the American Society of Brewing Chemists, 68(1):1–9, 2010. doi:
+     10.1094/ASBCJ-2009-1214-01.
+
+ [2] Wolfgang Kunze. Technology Brewing and Malting. VLB Berlin, Berlin, 6 edition, 2019.
+
+ [3] Centec GmbH. High gravity blending. https://www.centec.de/process-systems/brewery/
+     blender/, 2024. Technical data sheet, accessed 29 October 2026.
+
+ [4] corosys Prozesssysteme GmbH.         Blending and carbonisation systems for
+     breweries.          https://bbt.corosys.com/en/portrait/professional-articles/
+
+
+                                                            4
+    blending-carbonisation-plants-breweries.php, 2024. Professional article, accessed 29
+    October 2026.
+
+ [5] Edgar H. Bristol. On a new measure of interaction for multivariable process control. IEEE
+     Transactions on Automatic Control, 11(1):133–134, 1966. doi: 10.1109/TAC.1966.1098266.
+
+ [6] F. Greg Shinskey. Process Control Systems: Application, Design, and Tuning. McGraw-Hill,
+     New York, 4 edition, 1996.
+
+ [7] R. A. Speers and A. J. MacIntosh. Carbon dioxide solubility in beer. Journal of the American
+     Society of Brewing Chemists, 71(4):242–247, 2013. doi: 10.1094/ASBCJ-2013-1008-01.
+
+ [8] M. Rammert and M. H. Pahl. Die Löslichkeit von Kohlendioxid in Getränken. Brauwelt, 132:
+     488–499, 1991.
+
+ [9] S. Joe Qin and Thomas A. Badgwell. A survey of industrial model predictive control technology.
+     Control Engineering Practice, 11(7):733–764, 2003. doi: 10.1016/S0967-0661(02)00186-7.
+
+[10] James B. Rawlings, David Q. Mayne, and Moritz Diehl. Model Predictive Control: Theory,
+     Computation, and Design. Nob Hill Publishing, Madison, 2 edition, 2017.
+
+[11] IEC 60534-2-1: Industrial-Process Control Valves—Part 2-1: Flow Capacity—Sizing Equations
+     for Fluid Flow under Installed Conditions. International Electrotechnical Commission, Geneva,
+     2011.
+
+[12] Moritz Diehl, Hans Georg Bock, and Johannes P. Schlöder. A real-time iteration scheme
+     for nonlinear optimization in optimal feedback control. SIAM Journal on Control and
+     Optimization, 43(5):1714–1736, 2005. doi: 10.1137/S0363012902400713.
+
+[13] D. Q. Mayne, J. B. Rawlings, C. V. Rao, and P. O. M. Scokaert. Constrained model
+     predictive control: Stability and optimality. Automatica, 36(6):789–814, 2000. doi: 10.1016/
+     S0005-1098(99)00214-9.
+
+[14] Sigurd Skogestad. Simple analytic rules for model reduction and PID controller tuning.
+     Journal of Process Control, 13(4):291–309, 2003. doi: 10.1016/S0959-1524(02)00062-8.
+
+
+
+
+                                                5
+

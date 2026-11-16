@@ -1,0 +1,73 @@
+\subsection{Trace from requirement to row of the table}
+\label{sec:trace}
+
+The requirements of Section~\ref{sec:requirements} were a filter on the design. The estimate is now in hand, and the filter can be read in the other direction: each requirement is either discharged by a row of a table, or it is a property of the specification that no table can discharge. \Cref{tab:trace} is that reading. It is the checklist a later implementer can use without re-deriving the thesis. A requirement marked ``specification'' is discharged by the absence of a code path, not by a number. A requirement marked by a table is discharged only inside the observation model of that table.
+
+\begin{table}[t]
+\centering
+\caption{Where each requirement of Section~\ref{sec:requirements} is answered.}
+\label{tab:trace}
+\small
+\begin{tabular}{@{}p{0.28\textwidth}p{0.30\textwidth}p{0.32\textwidth}@{}}
+\toprule
+Requirement & Where it is answered & What would falsify it \\
+\midrule
+Type and total & \Cref{eq:per-color}, \Cref{tab:color}, \Cref{tab:count} & A joint trial whose per-color error exceeds~\eqref{eq:bound} in a systematic way \\
+One passage & PLC-single row of \Cref{tab:count}; the passage row is the rejected alternative & A vote rule whose bias beats PLC-single on filmed passages \\
+Side view only & Depth is an input in \Cref{alg:plc} and in Section~\ref{sec:compute} & A side-image depth estimator with smaller error than the pallet record \\
+Illumination unlocked & \Cref{tab:color} and \Cref{tab:ablation}; firmware white balance forbidden & A lamp distribution under which raw matching dominates at every severity the dock produces \\
+The seam & Vertical gate~\eqref{eq:vf-again}; not estimated & Labeled frames where merged seams dominate the residual of PLC \\
+Line budget & \Cref{tab:timing}, $9760$ parameters & A profiled segmenter that misses the frame period after the head is added \\
+Signed errors & Bias column of \Cref{tab:count} & An operation in which positive and negative inventory errors have the same cost and the same cause \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two rows of \Cref{tab:trace} are the ones most likely to be overturned by a real dock, and they should be named rather than buried. The seam is not estimated. The Monte Carlo center noise is an average of many ways a center can move, including a merged seam that slides the moment~\eqref{eq:moment} halfway between two crates. If real frames merge seams often enough that the center falls outside the snap radius, PLC will book one cell where two crates stand, the completed-cell count will not rise, and the bias formula~\eqref{eq:front-signed} will acquire a new negative term the present $q$ does not represent, because the miss will be invisible to a counter that never received two centers. The vertical gate is the specified mitigation. It is untested. A field trial that labels seams is the trial that can retire or confirm that part of the architecture.
+
+The illumination row can be overturned in the other direction. If the dock's lamps, after the camera gain is locked, stay inside the mild end of \Cref{tab:color}, raw matching is the better head and ICPH's correction is a small loss. The weekly margin calibration will show this as a high abstention rate that buys nothing, or as a confusion matrix that is already diagonal under the raw rule. The specified response is to keep the feature and the linear layer, because they are cheap, and to lower the influence of the correction only if a refit of $W$ on that building's patches puts near-zero weight on the residual coordinates. The ablation says the weights that matter are the illuminant block and the residual chromaticity. A refit is allowed to discover that, on this dock, the illuminant block alone is enough. The refit is not allowed to replace the head by a gray-world division. That alternative is not close.
+
+\subsection{What a passage stores}
+\label{sec:stores}
+
+The record of Section~\ref{sec:sys-output} is what a person reads. The computer should store a little more, because the estimate cannot be replaced by a field trial that did not keep the inputs of the estimate. For each booked passage the store keeps the chosen frame, the masks of that frame, the centers in pixels and in metres, the origin residual, the set $\mathcal{D}$ before completion, the set $\mathcal{F}$ after completion, the depth reading and its source bit, the per-mask class and margin, and the seven displayed fields. It does not keep every frame of the buffer once the sharp frame has been chosen, except when the passage was refused, in which case the whole buffer is kept. The distinction is deliberate. A refused passage is the data from which a better trigger or a better shutter will be judged. A booked passage is the data from which PLC and ICPH will be judged, and the unused frames are the temptation to reintroduce the union that \Cref{tab:count} rejected.
+
+Retention is a shift, not a year. The geometric calibration target images are kept until the next calibration. The weekly color-calibration patches are kept until the next refit of $W$, together with the vector $W$ itself, so that a change in amber--yellow recall can be attributed to the weights or to the lamps. None of this store is a contribution of the thesis. It is the minimum on which the claim ``the tables were replaced by a measurement'' can later be true. A deployment that books $\hat N$ and discards the centers cannot compute the origin residual after the fact, cannot tell a phantom cell from a detection, and cannot rebuild \Cref{tab:confusion} when a customer complains about yellow crates booked as amber.
+
+The size of the store is small next to the video the camera could have written. One chosen frame at the working resolution, a few dozen masks as compressed bitmaps, and a page of numbers, times the number of trucks in a shift, is an ordinary disk. The constraint is not capacity. The constraint is that the booked integer and the evidence for the integer stay in the same record, so that the signed error the thesis treats as meaningful can be computed on a Friday from the passages of the week.
+
+\subsection{What the mean error is, in a shift}
+\label{sec:shift}
+
+A mean absolute error of three crates is an abstract number until it is placed against a shift. The counting model drew loads whose mean truth was $22.6$ crates, so three crates is about thirteen percent of a typical load and, on the depth-three slice, four crates against a larger load. Suppose a shift sends forty pallets through the gate, independent in the sense of the model, and each is booked by PLC-single. The expected total absolute discrepancy across the shift is about $40\times 3.01 \approx 120$ crates, while the expected signed discrepancy is about $40\times 0.83 \approx 33$ crates long. The signed number is the one that survives in a daily reconciliation against the packaging line's own tally: misses and phantoms that cancel inside one pallet do not cancel in the sum of absolute errors, and the bias adds. A warehouse that ``checks the system'' by comparing the day's sum to the day's production will see a discrepancy near the bias, and will conclude that the system is long by a fraction of a crate per pallet. That conclusion is the bias column. It is not the mean absolute error, and it is not a reason to turn the gap rule off. Turning the rule off returns the system to the mask-times-depth row, whose bias is $-4.33$ per pallet, about $170$ crates short over the same forty pallets, a reconciliation error several times larger and of the dangerous sign.
+
+The color errors do not add in the same way. A swap of amber and yellow preserves the total crates and moves one pallet's line from one stock-keeping unit to another. Over forty pallets, at the harsh severity where amber recall is $0.47$ and yellow recall is $0.41$, a large minority of those two colors would be booked under the other name if the head were forced to answer. The abstention rule exists so that this minority is a list of faces for a person rather than a silent transfer between two bins in the inventory. The shift arithmetic for color is therefore a count of abstentions, not a count of crates. The store of Section~\ref{sec:stores} keeps the margins so that the tenth-percentile threshold can be recomputed from the week's own pallets rather than from the generator's severity dial. Until that week exists, the dial and the shift arithmetic above are the scale on which the tables should be read: a few crates of absolute error per pallet, a bias under one crate and positive, and a color head that is asked to abstain on the pair whose prototypes sit $9.3^{\circ}$ apart.
+
+The same shift makes the abstention rule quantitative. Suppose a pallet shows eight amber or yellow faces on the front, the harsh recall of those two classes is near one half, and the other colors are held well enough that the person is not asked about them. Four faces a shift, times forty pallets, is on the order of a hundred faces a day if every lamp is as harsh as $s=0.60$ and if every face is forced into the confusion rates of \Cref{tab:confusion}. That is not an operating point the design accepts. It is the upper end of the generator, and it is the reason the camera gain is locked and the reason the weekly calibration is allowed to move the abstention threshold. At the mild end of \Cref{tab:color} the same eight faces are named correctly almost all of the time by either ICPH or the raw matcher, and the list for the person is short. A dock that measures its own severity, by the margin distribution on the known-color pallets, will know which of those two days it is having. The thesis cannot know that for a building it has not seen. It can refuse to hide the range.
+
+\begin{figure}[p]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners=2pt, align=center, inner sep=4pt, minimum width=38mm, minimum height=11mm},
+  arr/.style={-{Stealth}, thick}
+]
+  \node[box, fill=black!6] (cam) {Locked camera\\at the gate};
+  \node[box, fill=orange!12, right=12mm of cam] (pass) {One passage\\five or fewer frames};
+  \node[box, fill=orange!12, right=12mm of pass] (sharp) {Sharpest frame\\by median margin};
+  \node[box, fill=green!12, below=12mm of sharp] (plc) {PLC-single\\and depth $\hat d$};
+  \node[box, fill=blue!10, left=12mm of plc] (rec) {Record:\\total, colors,\\completed cells,\\weakest margin};
+  \node[box, fill=black!5, left=12mm of rec] (week) {Weekly color\\calibration};
+  \node[box, fill=red!8, below=12mm of rec] (abs) {Abstain on\\low-margin faces};
+  \node[box, fill=black!6, below=12mm of plc] (shift) {Shift sum\\against the line};
+  \draw[arr] (cam) -- (pass);
+  \draw[arr] (pass) -- (sharp);
+  \draw[arr] (sharp) -- (plc);
+  \draw[arr] (plc) -- (rec);
+  \draw[arr] (week) -- (rec);
+  \draw[arr] (rec) -- (abs);
+  \draw[arr] (rec) -- (shift);
+\end{tikzpicture}
+\caption{The passage the specification actually runs, collected onto one page so the estimate and the build can be read together. Frames are not unioned. Depth joins at PLC. The weekly calibration moves only the abstention threshold. The shift sum is where a positive bias of under one crate per pallet becomes a reconciliation against production, and where the much larger negative bias of a mask tally would appear if the lattice were removed.}
+\label{fig:shift-flow}
+\end{figure}

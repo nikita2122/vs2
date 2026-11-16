@@ -1,0 +1,13 @@
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces The three-valve high-gravity blend skid. $V_h$, $V_w$ and $V_f$ are the beer, dilution-water and final valves. FT, PT and AT are flow, pressure and quality measurements. Carbon dioxide is injected at the mixer.}}{24}{figure.caption.6}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Runtime of the two technologies. The programmable controller is the only writer of solenoid outputs. The twin publishes a model; the predictive controller publishes a setpoint.}}{64}{figure.caption.9}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Absolute pressure along the beer path at the lager steady point. The dashed line is the carbon-dioxide equilibrium pressure of the finished beer.}}{67}{figure.caption.14}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Inherent equal-percentage capacity, scaled to the installed beer flow at lift $0.85$, and the beer flow the network passes with the water and final valves fixed.}}{67}{figure.caption.15}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Beer flow predicted by the nominal model and by the commissioned twin, against the measured beer flow on the commissioning points.}}{69}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Grade change from the lager to the light brand at $t=\SI {20}{\second }$. The thin line is the setpoint.}}{71}{figure.caption.18}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Valve lifts during the grade change. The ratio station continues to move after the predictive controllers have stopped.}}{72}{figure.caption.19}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Integral absolute error of original extract from the upset to the end of each run.}}{72}{figure.caption.20}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Supply upset at $t=\SI {20}{\second }$: beer-header pressure down by \SI {0.45}{bar}, mother beer less attenuated. Setpoints are unchanged and are not jointly feasible.}}{74}{figure.caption.21}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Dilution-water oxygen raised to \SI {85}{ppb} and a water-valve deadband of $0.03$ lift, from $t=\SI {20}{\second }$. Extract and alcohol stay near the lager setpoint only for the commissioned controller.}}{76}{figure.caption.22}%

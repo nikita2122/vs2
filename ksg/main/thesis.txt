@@ -1,0 +1,3010 @@
+
+
+===== PAGE 1 =====
+
+Research for Solving Multi-Target Scheduling of School
+Bag Factory Production by Using Resource-Coupled
+Graph Reinforcement Learning and
+Status-Synchronized Digital Twin Coordination
+Computer Science Thesis
+System Design and Optimization
+October 2026
+
+===== PAGE 2 =====
+
+Abstract
+A school bag factory is a flexible job shop with a particular kind of coupling. Cutting,
+embroidery, sewing, hardware assembly, inspection, and packing can each run on more
+than one machine, but an operation is not free to start merely because a machine is idle. It
+also needs a qualified operator, and often a shared token such as a cutting die or a colour-
+matched thread lot. While the schedule is running, the machines are not constant. Cutter
+wear, needle temperature, motor current, and thread-break counts change the time and the
+energy of the next cycle, and they change the chance that the cycle will be interrupted by
+a breakdown. The planner therefore has several targets at once: a short makespan, small
+tardiness against order due dates, low energy, balanced workload, and few failures. A rule
+that is excellent for one target is routinely poor for another.
+This thesis studies that planning problem and proposes two technologies that are de-
+signed to work as one system. The first, called resource-coupled heterogeneous graph at-
+tention scheduling (RCH-GAT), represents the shop as a graph of operations, machines,
+operators, and shared resource tokens. A preference-conditioned attention policy chooses,
+at each decision epoch, an operation together with a machine and a resource bundle. One
+policyservesafamilyoftargetweights, sothesamesystemcanbeaskedtoprotectduedates
+in one shift and energy in the next. The second technology, called the status-synchronized
+digital twin with chance-constrained rescheduling (SSDT-CC), keeps a live degradation
+state for every machine. Processing times become functions of that state. A chance con-
+straint refuses an assignment whose predicted failure probability exceeds a set tolerance,
+and inserts a short preventive maintenance instead. Rescheduling is driven by the twin, not
+by a fixed clock: the policy is called again when health, a breakdown, or a newly released
+rush order makes the current plan unreliable.
+The first chapter reviews the two bodies of work these technologies come from, and sets
+the factory problem in a form that those bodies of work do not quite cover. The second
+chapter gives the models, the formulas, the decision procedures, and worked numerical
+steps. The third chapter describes the system that was built around the factory and reports
+a controlled estimation on a school-bag shop simulator. The estimation program is part of
+the thesis. On the nominal order book the full system improves the joint cost relative to
+first-in-first-out, shortest processing time, earliest due date, and apparent tardiness cost,
+
+===== PAGE 3 =====
+
+and the two ablations (resource features removed, status features removed) each give back
+part of that gain. The results are estimates of this implementation, not figures copied from
+another factory.
+2
+
+===== PAGE 4 =====
+
+Contents
+Notation 8
+1 Research of Previous Work 9
+1.1 Research on graph-based multi-target scheduling . . . . . . . . . . . . . . . . 10
+1.1.1 The job shop and the flexible job shop . . . . . . . . . . . . . . . . . 10
+1.1.2 Dispatching rules and why they are still the factory default . . . . . . 11
+1.1.3 Evolutionary search for several targets . . . . . . . . . . . . . . . . . 12
+1.1.4 Reinforcement learning for dispatching . . . . . . . . . . . . . . . . . 13
+1.1.5 Heterogeneous graphs and multi-target policies . . . . . . . . . . . . 14
+1.1.6 Textile shops and the second resource . . . . . . . . . . . . . . . . . . 16
+1.1.7 The gap that the first technology is built to close . . . . . . . . . . . 17
+1.2 Research on machine status and digital twins . . . . . . . . . . . . . . . . . . 18
+1.2.1 Status is a signal, not a label . . . . . . . . . . . . . . . . . . . . . . 18
+1.2.2 Digital twins of a production system . . . . . . . . . . . . . . . . . . 19
+1.2.3 Degradation and remaining useful life . . . . . . . . . . . . . . . . . . 20
+1.2.4 Maintenance inside the production schedule . . . . . . . . . . . . . . 21
+1.2.5 The gap that the second technology is built to close . . . . . . . . . . 22
+1.3 Problem set . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+1.3.1 The school-bag route . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+1.3.2 Resources and the information the scheduler is allowed to see . . . . . 24
+1.3.3 Targets . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+1.3.4 Why the previous methods do not close this problem . . . . . . . . . 26
+1
+
+===== PAGE 5 =====
+
+1.3.5 The two technologies, stated as contributions . . . . . . . . . . . . . . 27
+1.3.6 Questions the estimation is required to answer . . . . . . . . . . . . . 27
+1.3.7 How the remaining chapters answer the problem set . . . . . . . . . . 28
+2 The Two Technologies 29
+2.1 Resource-coupled heterogeneous graph attention . . . . . . . . . . . . . . . . 29
+2.1.1 Sets, routes, and the decision that is actually taken . . . . . . . . . . 29
+2.1.2 Objectives . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30
+2.1.3 Constraints . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31
+2.1.4 Processing time at a given health . . . . . . . . . . . . . . . . . . . . 33
+2.1.5 The heterogeneous graph of one decision . . . . . . . . . . . . . . . . 33
+2.1.6 Attention and the preference . . . . . . . . . . . . . . . . . . . . . . . 35
+2.1.7 Markov decision process . . . . . . . . . . . . . . . . . . . . . . . . . 36
+2.1.8 Training the full model with proximal policy optimisation . . . . . . . 37
+2.1.9 Identification used in the estimation system . . . . . . . . . . . . . . 38
+2.1.10 What the mask guarantees . . . . . . . . . . . . . . . . . . . . . . . . 39
+2.1.11 A numerical assignment without the twin’s veto . . . . . . . . . . . . 39
+2.1.12 Attention arithmetic on the two cutters . . . . . . . . . . . . . . . . . 40
+2.1.13 A strap, two machines, and one missing skill . . . . . . . . . . . . . . 43
+2.1.14 How a preference would have to be re-fit . . . . . . . . . . . . . . . . 44
+2.1.15 Scaling, and what would break it . . . . . . . . . . . . . . . . . . . . 44
+2.2 Status-synchronized chance constraints . . . . . . . . . . . . . . . . . . . . . 45
+2.2.1 What is synchronised . . . . . . . . . . . . . . . . . . . . . . . . . . . 45
+2.2.2 Drift, diffusion, and the sensor . . . . . . . . . . . . . . . . . . . . . . 45
+2.2.3 Failure probability as a hazard . . . . . . . . . . . . . . . . . . . . . . 46
+2.2.4 The maintenance action . . . . . . . . . . . . . . . . . . . . . . . . . 47
+2.2.5 When the decision is taken again . . . . . . . . . . . . . . . . . . . . 48
+2.2.6 Coupling the twin back into the graph . . . . . . . . . . . . . . . . . 49
+2.2.7 The same cut, with the veto turned on . . . . . . . . . . . . . . . . . 50
+2
+
+===== PAGE 6 =====
+
+2.2.8 Feasibility of the maintained bundle . . . . . . . . . . . . . . . . . . . 51
+2.2.9 Three cycles of the same cutter . . . . . . . . . . . . . . . . . . . . . 51
+2.2.10 How many decisions a day contains . . . . . . . . . . . . . . . . . . . 53
+2.2.11 Where the disjunctive graph went . . . . . . . . . . . . . . . . . . . . 53
+2.2.12 A sensor reading, worked as a Kalman step . . . . . . . . . . . . . . . 54
+2.2.13 What Chapter 3 is allowed to claim about these formulas . . . . . . . 55
+2.2.14 Failure modes of the score . . . . . . . . . . . . . . . . . . . . . . . . 55
+3 System Build and Estimation 59
+3.1 System build . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 59
+3.1.1 What was built . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 59
+3.1.2 The cell . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 60
+3.1.3 Methods that share the cell . . . . . . . . . . . . . . . . . . . . . . . 61
+3.1.4 Identification . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 62
+3.1.5 Scenarios and the statistics that are reported . . . . . . . . . . . . . . 63
+3.2 Estimation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64
+3.2.1 Nominal book . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64
+3.2.2 Rush release . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 66
+3.2.3 Accelerated wear . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 67
+3.2.4 Thread-lot shortage . . . . . . . . . . . . . . . . . . . . . . . . . . . . 68
+3.2.5 The tolerance as a knob . . . . . . . . . . . . . . . . . . . . . . . . . 69
+3.2.6 A static evolutionary reference . . . . . . . . . . . . . . . . . . . . . . 70
+3.2.7 Where the gain comes from . . . . . . . . . . . . . . . . . . . . . . . 70
+3.2.8 Spreads, and which gaps survive them . . . . . . . . . . . . . . . . . 71
+3.2.9 What the weights say about the tables . . . . . . . . . . . . . . . . . 73
+3.2.10 What a factory would instrument first . . . . . . . . . . . . . . . . . 74
+3.2.11 A note on the clock . . . . . . . . . . . . . . . . . . . . . . . . . . . . 75
+3.2.12 The four questions, answered in one table . . . . . . . . . . . . . . . 75
+3.2.13 Limits of the estimate . . . . . . . . . . . . . . . . . . . . . . . . . . 77
+3
+
+===== PAGE 7 =====
+
+List of Figures
+1.1 The classical flexible-job-shop picture. Solid arcs are the route of one school-
+bag order. Dashed arcs are a machine assignment. Operators, dies, thread
+lots, colour setups, and machine health are not nodes in this graph. . . . . . 11
+1.2 The twin loop required by a status-aware schedule. The return arrow is the
+part most digital-twin case studies leave as a manual action by the planner. . 19
+1.3 Route of one classic school backpack. Trolley bags and sports sacks use
+shorter or longer chains on the same cells. Cutting and colour-sensitive
+sewing are the steps that seize a shared token. . . . . . . . . . . . . . . . . . 24
+2.1 One-hop heterogeneous graph of a single candidate bundle. The full shop
+graph is the union of these candidate graphs at the current ready set. Atten-
+tion pools the four nodes; it does not mix two candidates before the scores
+are compared. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 34
+2.2 Coupling of SSDT-CC into RCH-GAT. The score never reads a raw sensor.
+It reads a health state that maintenance and ordinary wear both rewrite. . . 49
+2.3 Health of Cutter-A at the start of three identical shell cuts. The renewed
+path begins after Equation (2.62). Neither path is a failure time. Both are
+the state the next score will read. . . . . . . . . . . . . . . . . . . . . . . . . 52
+3.1 Executable architecture. The policy reads the twin and writes one bundle
+back into the cell. The KPI log is the only path from a run to the tables in
+Section 3.2. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 60
+3.2 Identificationofthetwentyscorecoefficients. Theverticalaxisisthepreference-
+weighted cost divided, term by term, by first-in-first-out on the same training
+books. The search was stopped at generation 27. The coefficient vector used
+in the tables is the best vector observed, at0.366. . . . . . . . . . . . . . . . 63
+4
+
+===== PAGE 8 =====
+
+3.3 Nominal means rescaled onto one axis. Energy is multiplied by five and
+expected failures by fifty, so that a kilowatt-hour and a failure can sit beside
+a minute of makespan. The scaling is only for the drawing. Table 3.3 has
+the unscaled numbers. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 66
+3.4 Expected failures against the chance-constraint tolerance on the eight-book
+wear sweep. Loosening the veto lets the worn machines run and the failure
+count returns. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 70
+5
+
+===== PAGE 9 =====
+
+List of Tables
+1.1 What recent scheduling models decide, and what they leave out of the school-
+bag assignment. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+2.1 Identified positive weights on the twelve costs, from (2.43). A large weight
+means the identification was willing to avoid that cost even when other costs
+rose. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 42
+2.2 One navy shell cut, three ways of treating Cutter-A. Times are minutes.
+Energy is kilowatt-hours. Failure delay is the expectation48ϕ. . . . . . . . . 50
+2.3 Three successive shell cuts on Cutter-A. “Charged” time is processing plus
+expected repair delay, or processing plus the single sixteen-minute mainte-
+nance on the renewed path. Health is the value at the start of the cycle. . . 52
+2.4 What to check when a transferred cell misbehaves. The estimation books
+did not trip these checks. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 56
+3.1 Machines in the estimation cell. Wear is the driftηk in health per processing
+minute. Healthh 0 is the nominal-scenario initial state. . . . . . . . . . . . . 60
+3.2 Operator skills. The number multiplies machine speed in Equation (2.12).
+A dash is an infeasible pairing. . . . . . . . . . . . . . . . . . . . . . . . . . . 61
+3.3 Nominal order books, twenty paired seeds. Lower is better except for the
+on-time rate. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64
+3.4 Rush release at minute 220, twenty paired seeds. The book contains twenty
+orders after the release. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 66
+3.5 Accelerated wear, twenty paired seeds. Initial health is shifted up by0.10
+and every wear coefficient is multiplied by1.85. . . . . . . . . . . . . . . . . 67
+6
+
+===== PAGE 10 =====
+
+3.6 Thread-lot shortage, twenty paired seeds. Navy, red, and khaki allow only
+one concurrent user. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 68
+3.7 Chance-constraint tolerance on eight accelerated-wear books. The policy is
+RCH-SSDT. Maintenance count is the mean number of times Algorithm 3
+fires. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 69
+3.8 Standard deviations on the twenty nominal books. Compare with the means
+in Table 3.3. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72
+3.9 RCH-SSDT divided by a baseline, four scenarios. Makespan and failures
+are against first-in-first-out. Energy is against shortest processing time, the
+best classical energy. Tardiness is against earliest due date, the best classical
+due-date rule. Ratios use the means of Tables 3.3–3.6. . . . . . . . . . . . . . 76
+3.10 Seeds used by the driver. Estimation seeds are paired across every method. . 78
+7
+
+===== PAGE 11 =====
+
+Notation
+The symbols below are used with a stable meaning. Local symbols are defined where they
+appear.
+Symbol Meaning
+J,M,K,QSets of jobs (orders), machines, operators, and shared resource
+tokens.
+Oij Operationiof jobj.
+Gij Set of machine groups that can performOij.
+pijko(h)Processing time ofO ij on machinekwith operatoroat health
+h.
+sijk Sequence-dependent setup on machinekbeforeO ij.
+Cj,d j,r j Completion time, due date, and release time of jobj.
+Cmax Makespan,max jCj.
+TTotal tardiness, ∑
+j max(0,Cj−dj).
+ETotal energy of processing, setup, maintenance, and expected
+repair.
+BWorkload imbalance across machines.
+ΦExpected number of breakdowns.
+ωPreference vector over the targets. Its components are non-
+negative and sum to one.
+hk(t)Degradation state of machinekat timet.
+εChance-constraint tolerance on the failure probability of an as-
+signment.
+GHeterogeneous shop graph.
+α(r)
+uv Attention weight on an edge of relationr.
+πθ(a|s,ω)Scheduling policy.
+8
+
+===== PAGE 12 =====
+
+Chapter 1
+Research of Previous Work
+A school bag looks like a simple product. The shop that makes it is not simple. One order
+asks for a navy backpack in three sizes, the next for a red trolley bag with a short due
+date, and a third for a khaki sports sack that must share the only khaki thread lot with
+work already on a machine. The auto cutter is fast and already worn. The second cutter
+is slow and healthy. Three sewing operators do not all have the same skill on the bartack
+machine. Embroidery has a single head. Inspection and packing share people with the
+hardware bench. A planner who treats this shop as a list of jobs and a list of machines
+will build a schedule that looks feasible on paper and then loses the afternoon to a colour
+change, a missing operator, or a cutter that was asked to run past a sensible wear limit.
+The scheduling literature already contains powerful answers to pieces of this picture.
+Flexible job shops, dispatching rules, evolutionary multi-objective search, and, more re-
+cently, graph neural networks trained by reinforcement learning, all decide which operation
+should run on which machine. A second literature, built around cyber-physical systems,
+digital twins, and remaining-useful-life models, decides what a machine’s present health
+means for the next hour. Textile research has started to treat operators as a second re-
+source. Almost none of these lines decides the school-bag problem as it actually arrives:
+several targets, a resource bundle around every operation, and a machine state that is
+allowed to change the plan.
+This chapter reviews those lines in the order the thesis uses them. Section 1.1 reviews
+scheduling technology, from classical job shops to heterogeneous graph policies, and states
+what that technology still does not represent. Section 1.2 reviews machine-status technol-
+ogy, from degradation models to digital twins that influence a schedule, and states where
+9
+
+===== PAGE 13 =====
+
+the loop is still open. Section 1.3 puts the two gaps on the same factory, writes the problem
+the rest of the thesis solves, and names the two technologies proposed for it.
+1.1 Research on graph-based multi-target scheduling
+1.1.1 The job shop and the flexible job shop
+The classical job shop asks for a sequence of operations on each machine. Jobjhas
+operationsO 1j,O 2j,...in a fixed order. OperationO ij has a processing timep ij and a
+single eligible machine. Two operations cannot occupy one machine at the same time, and
+an operation cannot start before its predecessor in the same job has finished. The usual
+objective is the makespan
+Cmax = max
+j
+Cj,(1.1)
+whereC j is the completion time of the last operation of jobj. Garey, Johnson, and Sethi
+showed that even strongly restricted flow shops and job shops are NP-hard, so a practical
+factory cannot expect a polynomial algorithm that always returns an optimal sequence [1].
+The integer-programming tradition begins with Manne’s assignment of binary order vari-
+ables to pairs of operations that share a machine [2]. Surveys of the deterministic problem
+run from the shifting-bottleneck procedure of Adams, Balas, and Zawack [5] through the
+review of Jain and Meeran [6] to the textbook treatment in Pinedo [7].
+A school bag factory is not a classical job shop. The body of a backpack can be sewn on
+either lockstitch machine. A strap can go to the bartack machine or, more slowly, to a lock-
+stitch. Cutting can go to the automatic cutter or to the manual cutter. Brucker and Schlie
+named this the job shop with multi-purpose machines [8]. The version studied throughout
+later work is the flexible job shop scheduling problem, in which each operationOij has an
+eligible setM ij and a processing timepijk on each machinek∈M ij. Brandimarte solved
+it with tabu search on a routing-and-sequencing representation [9]. Kacem, Hammadi, and
+Borne made the objective multi-objective, combining makespan with machine workload,
+and used a localisation heuristic followed by an evolutionary search [10]. Genetic algo-
+rithms with careful encodings became a standard benchmark family [11, 12, 13]. Chaudhry
+and Khan reviewed the technique catalogue and showed how large it had become: dispatch-
+ing rules, shifting bottlenecks, genetic algorithms, particle swarm methods, and hybrids,
+almost all of them aimed at makespan on static instances [14].
+10
+
+===== PAGE 14 =====
+
+The mathematical skeleton that later learning methods still use is the disjunctive graph
+of Roy and Sussmann [4]. Operations are nodes. A conjunctive arc fixes the route inside
+a job. A disjunctive pair connects two operations that might share a machine, and a
+schedule is a choice of one direction for every pair, plus an assignment of flexible operations
+to machines. Giffler and Thompson had already given a constructive way to build active
+schedules, in which no operation can be moved earlier without pushing another operation
+later [3]. Almost every genetic algorithm and every reinforcement-learning policy in this
+chapter is, at bottom, a way of choosing those directions.
+cut sew pack
+cutter lockstitch bench
+Figure 1.1: The classical flexible-job-shop picture. Solid arcs are the route of one school-bag
+order. Dashed arcs are a machine assignment. Operators, dies, thread lots, colour setups,
+and machine health are not nodes in this graph.
+Figure 1.1 is the picture that most of the papers in this section optimise. It is already
+enough to make the problem hard. It is not enough for the factory in Section 1.3. The
+cutter node does not know that a die is required, the lockstitch node does not know which
+operator is free, and no node carries a wear value. The rest of this section follows the
+research that made Figure 1.1 smarter, and stops at the point where the missing nodes
+become the first technology of the thesis.
+1.1.2 Dispatching rules and why they are still the factory default
+Before metaheuristics and before learning, factories scheduled with priority rules. Pan-
+walkar and Iskander collected more than a hundred of them [15]. Blackstone, Phillips,
+and Hogg compared the rules that shops actually use [16]. Four of them matter for the
+estimation in Chapter 3, because they are the baselines a production manager will believe.
+First-in-first-out releases work in the order it became ready. It is fair and it is blind.
+Shortest processing time clears small operations and often keeps the mean flow time down,
+at the cost of starving a long trolley-bag shell. Earliest due date sorts by the order’s promise
+date and is the natural rule when tardiness is the complaint that reaches the planner. The
+apparent-tardiness-cost rule of Vepsalainen and Morton combines the two ideas [17]. For
+11
+
+===== PAGE 15 =====
+
+an operation with processing timepand slacksit uses a priority of the form
+Z= 1
+p exp
+(
+−max(0,s)
+k¯p
+)
+,(1.2)
+where¯pis an average processing time andkis a look-ahead parameter. A tight, short
+operation ranks first. A long operation with a comfortable slack waits. Equation (1.2) is
+still one of the strongest hand-written rules for weighted tardiness, and it is the strongest
+of the classical rules one would expect to meet on a due-date-driven bag order book.
+Rules have three structural limits that no tuning ofkremoves. They score one operation
+at a time, so they do not see that assigning the navy body to Lockstitch-1 also blocks the
+only operator who can run the bartack. They do not carry a vector of targets: a weight in
+front of tardiness and a weight in front of energy are not part of the rule. And they do not
+look at health. A worn automatic cutter remains the shortest-processing-time choice until
+it fails, because the rule’spis the nominal time, not the time at the current wear. The
+learning methods reviewed next were invented to replace hand-written scores with scores
+discovered from the shop’s own transitions. They inherit the same three limits unless the
+state is deliberately enlarged.
+1.1.3 Evolutionary search for several targets
+When a schedule can be encoded as a chromosome, a population can search it. The flexible-
+job-shop encodings of Pezzella, Morganti, and Ciaschetti [11], Gao, Sun, and Gen [12], and
+Li and Gao [13] assign each operation a machine and a priority, then decode the chromosome
+with a list schedule that respects precedence. Hybrids of genetic search and tabu search or
+variable-neighbourhood descent improve the makespan on the standard Brandimarte and
+Kacem sets. They are offline procedures. A population of thirty individuals, each decoded
+by a full shop simulation, is a reasonable night-time calculation and a poor answer to an
+order that arrives at 10:15 with a same-day promise.
+Multi-objective evolutionary algorithms changed the question from “the best schedule”
+to “the set of schedules that are not beaten on every target.” Deb, Pratap, Agarwal,
+and Meyarivan’s NSGA-II sorts a population into nondominated fronts and uses crowding
+distance to keep the front spread out [18]. Zitzler and Thiele’s strength Pareto approach,
+and the later hypervolume indicator, gave the field a way to say whether one front is better
+than another [19, 20]. When the number of objectives passes three, crowding in NSGA-
+12
+
+===== PAGE 16 =====
+
+II stops spreading the population well. Deb and Jain’s NSGA-III replaces crowding with
+reference directions [21]. Gong, De Pessemier, Martens, and Joseph used that algorithm
+on a flexible job shop whose five objectives were makespan, energy cost, labour cost, peak
+workload, and total workload, under a time-varying electricity price [22]. Their result is
+important for this thesis for two reasons. It shows that labour is a real objective, not a soft
+constraint hidden inside the processing time. And it shows that a many-objective genetic
+algorithm can expose the conflict between energy and labour, because the cheap electricity
+hours are often the expensive wage hours.
+Energy had already been brought into scheduling by Mouzon, Yildirim, and Twomey,
+who showed that simply turning idle machines off is not the whole problem: the schedule
+itself decides when the large loads run [23]. Dai, Tang, Giret, and Salido added trans-
+portation time and energy to a flexible job shop and solved the bi-objective model with an
+enhanced genetic algorithm [24]. Sequence-dependent setups, surveyed by Allahverdi and
+co-authors across two large reviews, sit in the same family [25, 26]. A colour change on a
+sewing machine is exactly such a setup. None of these papers, however, treats the setup,
+the operator, the energy, and a live wear state as inputs of one online decision.
+The practical objection to the evolutionary line, for the factory considered here, is not
+that the algorithms are weak. On a frozen instance they are often the quality ceiling. The
+objection is that the ceiling is computed for a shop that holds still. A school-bag week does
+not hold still. Health moves with every minute of cutting. A rush trolley order is released
+at mid-morning. A thread lot runs out. Re-evolving a population at every one of these
+events is possible and usually too slow for the dispatch decision, which is “what should
+the free operator start now.” The learning policies of the next subsection are attractive
+because, after training, that decision is a forward pass.
+1.1.4 Reinforcement learning for dispatching
+Reinforcement learning treats scheduling as a sequence of decisions. The state is the shop.
+The action is the next dispatch. The reward is progress toward the objective. Sutton and
+Barto’s framework is the one used throughout [27]. Mnih and co-authors showed that a
+deep network can learn an action value from raw high-dimensional states [28]. Schulman
+and co-authors’ proximal policy optimisation then became the default stable policy-gradient
+method for continuous training runs: a clipped ratio keeps a new policy from moving so far
+that the data just collected become useless [29]. Haarnoja and co-authors’ soft actor-critic
+13
+
+===== PAGE 17 =====
+
+adds an entropy bonus so that the policy does not collapse early [30]. Scheduling papers
+use these algorithms; they do not need to reinvent them. The design problem is the state
+and the action.
+Zhang, Song, Cao, Zhang, Tan, and Xu trained a graph network to dispatch a classical
+job shop [31]. The disjunctive graph is the state. A graph neural network embeds every
+operation. The policy picks the next operation at a machine. Because the network shares
+weights across nodes, a policy trained on modest instances can be applied to larger ones.
+That size-agnostic property is the reason later factory work preferred graphs to fixed-length
+vectors. Park, Chun, Kim, Kim, and Park reported a related graph-and-reinforcement-
+learning design for job shops [32]. Luo studied the flexible job shop when new jobs are
+inserted, and showed that a deep policy can react without rebuilding a genetic population
+[33]. Lei, Guo, Zhao, Wang, Qian, Meng, and Tang separated the flexible-job-shop action
+into several heads, so that operation choice and machine choice are not forced through a
+single flat list [34].
+These papers moved the field from “learn a rule for a fixed shop” to “learn a rule on
+a graph that can grow.” They still optimise, in the typical experiment, one time-based
+objective, and the graph still contains operations and machines only.
+1.1.5 Heterogeneous graphs and multi-target policies
+Flexibility makes the graph heterogeneous. An operation is not the same kind of node as
+a machine, and the relation “can be processed on” is not the same relation as “precedes.”
+Song, Chen, Li, and Cao used that fact directly [35]. Their IEEE Transactions on Industrial
+Informatics model extends the disjunctive graph with machine nodes, defines an action as
+a composite choice of an operation and a machine, and encodes the state with a two-
+stage heterogeneous graph network. Proximal policy optimisation trains the policy. The
+published result is that the learned rule beats hand-written rules and still runs quickly on
+instances larger than the training set. This is the closest ancestor of the first technology in
+this thesis. It solves the representation problem that plain job-shop graphs do not solve: a
+machine has its own embedding, and the action is a pair rather than an operation index.
+Two limits of that ancestor matter here. The machine node carries scheduling status,
+such as the time it becomes free, but it does not carry a degradation state that changes
+the processing time. And there is still no node for the operator or for a shared token.
+14
+
+===== PAGE 18 =====
+
+A composite action(operation,machine)is one resource short of a school-bag assignment,
+which is(operation,machine,operator)and, when the operation needs it, a die or a thread
+lot.
+Wang, Jing, Gu, He, and Chen pushed the same graph idea toward several targets [36].
+Their Internet of Things Journal model puts transportation time and energy, together with
+makespan, into one flexible-job-shop simulation, encodes tasks and machines with a graph
+network, and trains a multi-agent proximal policy optimisation with a vector-valued critic.
+The experimental claim is higher solution quality than strong baselines at a small online
+computing cost. Zeng, Yang, Du, Yang, Wang, and Lv added a dynamic dual-attention
+network so that a multi-agent policy can react to new jobs and urgent insertions while
+balancing makespan and average tardiness [37]. Li, Li, He, and Li reported a collaborative
+multi-agent method whose reward is split across makespan and energy, with hypervolume
+used as the comparison metric [38]. Attention itself, as a trainable weighted pool of neigh-
+bours, comes from the sequence model of Vaswani and co-authors [39], the graph attention
+network of Velickovic and co-authors [40], and the routing policies of Kool, van Hoof,
+and Welling [43]. Graph convolutional networks [41] and GraphSAGE [42] are the earlier
+message-passing tools that these attention schedulers refine.
+Table 1.1 places the lineage against the decision a bag factory actually needs.
+Table 1.1: What recent scheduling models decide, and what they leave out of the school-bag
+assignment.
+Work Decision Targets Live health Shared tokens
+Brandimarte [9] route and se-
+quence
+makespan no no
+Kacem et al. [10] route and se-
+quence
+time and load no no
+Gong et al. [22] route, sequence,
+labour
+five, includingen-
+ergy and labour
+no labour hours
+Zhang et al. [31] next operation makespan no no
+Song et al. [35] operation and
+machine
+makespan no no
+Wang et al. [36] operation and
+machine
+makespan, trans-
+port, energy
+no no
+Zeng et al. [37] two agents makespan and
+tardiness
+no no
+This thesis operation, ma-
+chine, operator,
+token
+time, due date,
+energy, balance,
+failures
+yes, through
+Chapter 2’s twin
+dies and thread
+lots
+The last row is not a claim that earlier rows are incomplete as papers. Each of them
+15
+
+===== PAGE 19 =====
+
+answers the question it asked. The row says that the question asked by a school-bag planner
+is wider than any one of those questions, and that the widening is specific: the action must
+name a resource bundle, and one of the node features must be allowed to come from a
+machine-status model. That is the design brief of resource-coupled heterogeneous graph
+attention scheduling, written out in Section 2.1.
+1.1.6 Textile shops and the second resource
+General flexible-job-shop benchmarks are machining benchmarks. A school bag is closer to
+a sewing shop. Chen, Xie, Ma, Chen, and Wang formulated a textile flexible job shop and
+modified ant-colony optimisation so that the pheromone remembers the product as well as
+the machine, with a heuristic that lifts machines which the search would otherwise ignore
+[44]. The objective is balance of machine time across the operations of the textile route.
+The paper is useful because it shows that a textile route is not an arbitrary chain: machines
+and product types constrain each other, and a search that ignores the product will over-use
+the convenient machine. It does not model operators as competing resources, and it does
+not model health.
+Sewing research has a name for the operator constraint. A dual-resource-constrained
+shop is one in which a station needs both a machine and a worker, and workers are fewer or
+less flexible than machines. Xu, Xu, and Xie reviewed that literature [45]. The consequence
+for dispatching is immediate. A machine that is free in the data table may be unusable
+because the only qualified operator is inside another operation. Sequence-dependent setups
+apply to the operator as well as to the machine: a change of colour, of needle, or of bag style
+costs minutes of the person, not only of the head. Gong and co-authors’ labour-aware model
+[22] prices this effect. It still plans labour as a cost accumulated by a static chromosome,
+not as a token the online policy must seize and release.
+Rework belongs in the same practical family. Flapper, Fransoo, Broekmeulen, and In-
+derfurth reviewed planning when a quality failure sends work back [46]. A school-bag
+inspection can fail a zipper or a crooked strap. The estimation shop in Chapter 3 keeps in-
+spection as a required operation rather than a random rework loop, so that the comparison
+of schedulers is not mixed with a second random process. The formulation in Chapter 2
+leaves a place for a rework arc; the numerical shop does not draw one.
+16
+
+===== PAGE 20 =====
+
+1.1.7 The gap that the first technology is built to close
+The scheduling literature, read against a school-bag route, supports five conclusions.
+The problem is a flexible job shop, and it is reasonable to keep the disjunctive-graph view
+of precedence and machine choice [4, 35]. The action, however, is larger than a machine
+assignment. It includes an operator whose skill changes the processing time, and a token
+whose capacity is one or two, not the number of machines. A graph that has no operator
+node and no token node cannot attend to the contention that actually blocks the hardware
+bench and the khaki lot.
+The targets are plural. Makespan research [9, 11, 31, 35] is the right foundation and
+the wrong single number. Energy [23, 24, 22, 36], due dates [17, 37], and workload balance
+[10, 44, 22] have each been studied. A factory policy has to carry them together, and a
+manager has to be able to move the emphasis without training an entirely new system.
+Preference-conditioned decisions are the natural shape of that requirement. The recent
+multi-agent critics [36, 38, 37] move in this direction and still do not condition a resource-
+bundle action on a preference vector tied to bag-factory tokens.
+Theusefulonlineobjectisalearneddispatchpolicy, notapopulationthatisre-evolvedat
+every breakdown. Graph policies are the ones that transfer across order-book sizes [31, 35].
+They are also the ones that can accept an extra node type without a new hand-written
+feature hierarchy.
+Setups are sequence dependent and, in this factory, mostly colour changes [26]. A policy
+that does not see the previous colour on the machine will pay the setup in the simulation
+and never in the decision.
+No paper in this section writes the machine’s wear into the same graph that chooses the
+operator and the thread lot. That omission is not a small missing feature. It is a second
+technology, reviewed next, which this thesis couples to the first instead of leaving it as a
+report beside the plan.
+17
+
+===== PAGE 21 =====
+
+1.2 Research on machine status and digital twins
+1.2.1 Status is a signal, not a label
+A machine status that a scheduler can use is a number with a clock. “The cutter is fine” is
+not such a number. The cutter’s vibration, the current of its feed motor, the temperature
+at the knife, the count of thread breaks on a sewing head, and the hours since the last knife
+change are such numbers. They arrive from a controller, they are noisy, and they are late
+by whatever period the collector uses.
+Two standards make this more than a vendor choice. IEC 62264, the standard built
+on ISA-95, separates the enterprise plan from the control system and defines the objects
+that pass between them: equipment, material lots, personnel, and process segments [47].
+IEC 62541, OPC Unified Architecture, is the usual way those equipment objects expose
+live values to a client outside the programmable controller [48]. A scheduler that claims to
+react to machine status is, in factory terms, a client of this stack. It does not need to own
+the sensors. It needs a defined place where a health value enters the decision.
+Lee, Bagheri, and Kao organised the same idea as a five-level architecture for cyber-
+physical manufacturing: a smart connection, conversion of data to information, a cyber
+model, cognition, and configuration of the physical system [49]. Monostori and co-authors
+reviewed cyber-physical production systems as the place where this loop has to be closed,
+and listed scheduling among the decisions that still sit too far from the physical state [50].
+Xu, Xu, and Li’s survey of Industry 4.0 makes the same point at the level of the whole plant:
+connectivity is no longer the scarce piece, and decision models that use the connectivity are
+[51]. KorenandShpitalni’sreconfigurablemanufacturingsystemsaddadesignconsequence.
+Iftheplantcanchangeitsrouting, thescheduleispartoftheconfiguration, notafilewritten
+once per shift [52].
+The school-bag factory does not need a new network architecture. It needs the cognition
+level of Lee’s stack to be a scheduler, and the cyber level to be a degradation model whose
+output is a feature of that scheduler. The next subsections review the models that can sit
+at that cyber level.
+18
+
+===== PAGE 22 =====
+
+1.2.2 Digital twins of a production system
+A digital twin is a living model paired with a particular physical system, updated by
+that system’s data, and used to make a decision about that system. Grieves and Vickers
+stated the idea as a way to see undesirable behaviour before the physical system has to
+exhibit it [53]. Tao, Zhang, Liu, and Nee reviewed industrial practice and separated a
+digital twin from a plain simulation by the requirement of ongoing synchronisation [54].
+Qi and Tao compared the twin with big-data manufacturing and argued that the twin is
+the structure that makes data actionable [55]. Negri, Fumagalli, and Macchi reviewed the
+role of twins inside cyber-physical production and found a wide spread of meanings, from
+geometric models to scheduling models [56]. Cimino, Negri, and Fumagalli followed the
+manufacturing applications and found the same spread [57]. Fuller, Fan, Day, and Barlow
+listed enabling technologies and the open problems, among them the difficulty of keeping
+the model and the asset in step [58]. Lu, Liu, Wang, Huang, and Xu proposed a reference
+model for a twin-driven manufacturing system and again placed production planning among
+the applications that the reference model must be able to host [59].
+For this thesis the word “twin” is used in a narrow way. The twin of a school-bag machine
+is not a three-dimensional drawing of the cutter. It is a statehk(t)for each machinek, a
+rule that updateshk from the latest signals, and a pair of maps fromhk to the quantities
+the scheduler needs: a processing-time multiplier and a probability that the next cycle is
+interrupted. If those maps are not in the scheduling decision, the factory has a dashboard,
+not a twin of the plan.
+Physical
+machine
+Signals
+OPC UA
+Health
+stateh k
+Schedule
+decision
+Figure 1.2: The twin loop required by a status-aware schedule. The return arrow is the
+part most digital-twin case studies leave as a manual action by the planner.
+Figure 1.2 is deliberately small. The research question is the return arrow. Many twin
+deployments stop at the health state and show it to a person. The person then edits the
+plan. That can be the right engineering choice for a rare failure. It is a poor choice for a
+wear process that moves a little on every backpack, because the plan is then permanently
+out of date by the amount the person has not yet typed.
+19
+
+===== PAGE 23 =====
+
+1.2.3 Degradation and remaining useful life
+Remaining useful life is the time left until a machine crosses a failure threshold. Si, Wang,
+Hu, and Zhou reviewed the statistical approaches and separated models that regress a
+health indicator from models that write an explicit stochastic process for the degradation
+[60]. Lei, Li, Guo, Li, Yan, and Lin reviewed the path from sensors to a life prediction,
+including the feature extraction that a factory must get right before any scheduler sees a
+number [62]. This thesis does not compete with that extraction literature. It assumes a
+scalar health indicator has already been formed, and it spends its effort on the use of the
+scalar.
+A Wiener process is the usual explicit model when degradation can be treated as a drift
+plus noise. In the linear form,
+h(t) =h(0) +ηt+σB t,(1.3)
+whereηis the wear rate,σis a diffusion scale, andB t is standard Brownian motion.
+The increment over a cycle of length∆is Gaussian with meanη∆and varianceσ 2∆. Si,
+Wang, Hu, Zhou, and Pecht extended the idea to nonlinear drift, which matters when wear
+accelerates near failure [61]. Gebraeel, Lawley, Li, and Ryan put a Bayesian update on the
+residual-life distribution so that each new degradation signal revises the life left, rather than
+only the point estimate [63]. Kalman filtering is the classical linear-Gaussian way to carry
+such a revision [64]. Particle filters cover the non-Gaussian case at a higher computational
+cost [65].
+The scheduling consequence of Equation (1.3) is a chance constraint, not a single pre-
+dicted day of failure. Charnes and Cooper introduced chance constraints as a way to keep
+a random inequality feasible with a chosen probability [66]. Birge and Louveaux place that
+idea inside stochastic programming [67]. For a machine, the natural statement is
+P
+(
+hk(t+ ∆)≥h ⋆
+)
+≤ε,(1.4)
+withεchosen by the factory. If the increment is Gaussian, Equation (1.4) becomes a
+deterministic threshold on the current health, the cycle length, andε. Chapter 2 writes
+that threshold down. The point for the present review is that the constraint is old, the
+degradation model is mature, and their appearance inside a graph-attention dispatcher is
+20
+
+===== PAGE 24 =====
+
+not.
+Nguyen and Medjaher connected a deep prognostic model to a dynamic predictive-
+maintenance decision, so that the maintenance action, rather than only the life number, is
+the output [68]. Wang, Li, and Zhao built multi-objective maintenance schedules that take
+a remaining-useful-life prediction as an input and trade maintenance duration against cost
+[69]. Both papers treat maintenance as the decision. A production schedule, if present, is
+outside the model or is a fixed demand the maintenance plan must serve.
+1.2.4 Maintenance inside the production schedule
+The closer line of work inserts maintenance into the job shop itself. A 2024 study of bi-
+objective flexible job shop scheduling with condition-based maintenance updates the degra-
+dation parameters by Bayesian inference after each maintenance, and uses an evolutionary
+algorithm with an insertion step so that a maintenance window disturbs the production
+plan less than a naive split would [70]. The objectives are production and maintenance
+together. The algorithm is offline. Machine health changes the feasibility of a chromosome;
+it is not a feature of a learned online policy, and operators are not part of the chromosome.
+Pandhare, Negri, Ragazzini, Cattaneo, Macchi, and Lee described a prognostics-enabled
+twin that schedules a flow shop while equipment is degrading [71]. Field data, reduced
+by principal components, drive a discrete-event model. A genetic algorithm searches the
+schedule. The reported comparison is that a twin which knows the degraded state estimates
+makespan more realistically than a twin which pretends the equipment is nominal, and that
+the resulting schedule is better for that reason. The paper is the clearest statement that
+health belongs inside scheduling. It is a flow shop, so routing flexibility is absent. It has
+no operator tokens and no thread lots. The search is a genetic algorithm, so a rush order
+or a sudden jump in a health residual means another population, not a masked action in a
+policy that is already trained.
+An online joint scheme for predictive maintenance and production planning, of the kind
+discussed by Zhu, Wang, and Yuan, uses a rolling horizon: at each period the latest
+remaining-useful-life estimate and the latest demand forecast are written into a shorter
+optimisation, and only the first period is implemented [72]. Rolling horizons are the right
+operational pattern for a planner who re-solves. They are heavy if the inner model is a full
+flexible job shop with resource tokens, and they are unnecessary if a trained policy can be
+21
+
+===== PAGE 25 =====
+
+evaluated at the epoch when the twin says the residual has moved enough.
+The maintenance literature and the scheduling literature therefore meet, but they meet
+in evolutionary or rolling-horizon optimisers. They do not meet in the heterogeneous graph
+policy of Song, Chen, Li, and Cao [35] or in the multi-target policy of Wang, Jing, Gu,
+He, and Chen [36]. The second technology of this thesis is that meeting. It is specified in
+Section 2.2 as a status-synchronized twin whose health, failure probability, and maintenance
+action are features and actions of the same dispatcher.
+1.2.5 The gap that the second technology is built to close
+Four observations close the review.
+Health is a state variable with a stochastic increment, not a static penalty. Wiener and
+Bayesian residual-life models already supply the increment [60, 61, 63]. A scheduler that
+reads a health value once per shift is ignoring the model it paid to build.
+The map from health to the shop has two outputs, and both belong in the decision. The
+processing time grows as the machine leaves its nominal condition, and the probability of
+an interruption grows with it. Energy grows as well, because a worn drive draws more for
+the same piece. A makespan model with nominal times will prefer the fast worn cutter and
+then spend the saved minutes on a repair.
+The maintenance action has to be cheap enough, and visible enough, to be chosen by
+the same policy that chooses the backpack. A separate maintenance optimiser that runs
+overnight will insert windows that the morning rush has already invalidated. A chance
+constraint of the form (1.4), evaluated at the dispatch epoch, is the lightest coupling that
+still refuses a dangerous assignment [66].
+The twin must be allowed to force a new decision. Synchronisation that only refreshes
+a dashboard does not changeCj. Event-triggered rescheduling, called when the predicted
+failure probability or a newly released order crosses a threshold, is the configuration step
+in the cyber-physical stack of Lee, Bagheri, and Kao [49]. The trigger condition is part of
+the technology, not an implementation detail.
+22
+
+===== PAGE 26 =====
+
+1.3 Problem set
+1.3.1 The school-bag route
+The product family in this thesis is the ordinary school bag: a soft-sided pack carried by
+a student, together with two cousins that share the same shop, a trolley bag and a sports
+sack. The factory is imagined as a single-site cell, not a supply chain. Cloth, webbing,
+zippers, and hardware arrive as lots. Finished bags leave in cartons. The planning horizon
+of the estimation is one congested day, long enough for wear and colour changes to matter
+and short enough that the order book is a list rather than a season.
+A classic student backpack crosses eight steps. The main shell is cut. The lining is cut. A
+logo is embroidered or printed. The body, including the compartment seams, is sewn. The
+shoulder straps and handle are sewn, preferably on a bartack or heavy lockstitch because the
+webbing is thick. The zipper, buckles, and adjusters are attached at the hardware bench.
+The bag is inspected. It is packed. The two cutting steps both need a die. Embroidery and
+the sewing steps need a thread lot of the order’s colour. Hardware, inspection, and packing
+do not.
+A trolley bag crosses seven steps: cutting the shell, reinforcing the base, sewing the shell,
+fitting the frame, fitting the wheels, inspection, and packing. The frame and the wheels
+share the hardware bench, so a trolley order holds that bench longer than a backpack
+does. A sports sack is the short route: cut, print, sew, drawstring, inspect, and pack. It
+is the order a shortest-processing-time rule will always prefer, and the order that fills the
+embroidery head while a trolley shell waits.
+The eligible machines are deliberately uneven. Two cutters share the cutting group.
+The automatic cutter is fast, high-powered, and, in the case studied in Chapter 3, already
+worn at the start of the day. The manual cutter is slow, cheap in power, and healthy.
+One embroidery head serves every logo. Two lockstitch machines and one bartack machine
+serve the sewing and reinforcement steps, with a strap allowed to fall back from the bartack
+onto a lockstitch. One hardware bench, one inspection table, and one packing table finish
+the route. This mix is a partial flexible job shop in the sense of Brandimarte [9]: some
+operations have a real choice, and some have only one machine.
+Colour is a setup, not only a bill-of-material attribute. If a sewing machine or the
+embroidery head moves from navy to red, the operator changes thread and the machine
+23
+
+===== PAGE 27 =====
+
+cut
+shell
+cut
+lining logo sew
+body
+sew
+strap hardware inspect pack
+Figure 1.3: Route of one classic school backpack. Trolley bags and sports sacks use shorter
+or longer chains on the same cells. Cutting and colour-sensitive sewing are the steps that
+seize a shared token.
+loses a setup of about eleven minutes in the case data. A repeated colour pays a short
+warm-up only when the machine has been idle and cleared. Allahverdi’s setup surveys
+describe exactly this structure [26]. In a bag factory the setup is large relative to a small
+sports sack and small relative to a heavy trolley shell, so a policy that groups colour is
+not automatically a policy that protects the trolley due date. That conflict is one reason a
+single rule is not enough.
+Quantity and size scale the cycle. The nominal times in Chapter 3 are written for a
+batch of eighty bags of size M. A batch of one hundred and twenty, or a size L pattern,
+takes longer on every step and occupies the token for longer. The die and the thread lot
+are therefore not only feasibility constraints. They are congestion multipliers.
+1.3.2 Resources and the information the scheduler is allowed to
+see
+The shop is dual-resource constrained [45]. Eight operators are modelled in the estimation
+cell. Two can cut, and the second of them is slower. One runs embroidery and can help
+at inspection. Three sew; only two of those three are qualified on the bartack, and their
+skills differ. One operator owns the hardware bench and can pack. One owns inspection
+and can also pack or, slowly, work the hardware bench. An operation is feasible only if at
+least one qualified operator is free at the same moment as an eligible machine. Skill scales
+the processing time. A weak pairing is legal and expensive.
+Shared tokens sit on top of the operator constraint. Two cutting dies can be out at
+once, so the two cutters can run together only when two dies are free. Thread lots are
+counted per colour: two concurrent users for navy, black, red, and grey, and one concurrent
+user for khaki. A shortage scenario in Chapter 3 drops navy, red, and khaki to a single
+lot. The token is seized when the operation starts and released when it ends. A scheduler
+that ignores the token will recommend two khaki bodies at once and then discover that the
+second cannot start.
+The information model is intentionally modest. At a decision epoch the scheduler may
+24
+
+===== PAGE 28 =====
+
+see the released orders, their routes, colours, sizes, quantities, and due dates; the eligibility
+and skill tables; the previous colour and the free time of each machine and operator; the
+token counts; and a scalar health for each machine. It may not see the future rush order
+before its release time. It may not see a breakdown that has not yet been implied by
+the health model. This is the information a manufacturing-execution client can actually
+subscribe to under IEC 62264 and OPC UA [47, 48]. It is also enough, as Chapter 2 shows,
+to build the graph.
+1.3.3 Targets
+The planner does not have one number to minimise. Five quantities describe a finished
+scheduleS.
+The makespanC max(S)is the clock time at which the last bag of the released book is
+packed. It measures the length of the day.
+The total tardiness
+T(S) =
+∑
+j
+max(0,Cj−dj)(1.5)
+measures broken promises. A sports sack that finishes an hour early does not cancel a
+trolley bag that finishes an hour late. On-time rate, the fraction of orders withCj≤d j, is
+reported besideTbecause a single very late order can dominate the sum.
+EnergyE(S)is the electrical energy of processing, setup, preventive maintenance, and
+the expected energy of a repair. Power is a property of the machine. A worn machine
+draws more for the same minute. The automatic cutter dominates this sum when it is used
+carelessly.
+Workload imbalanceB(S)is the standard deviation of busy time across machines. A
+schedule that parks almost all cutting on one cutter will look acceptable on makespan until
+that cutter becomes the wear problem of the next day. Balance is therefore both a fairness
+target and a leading indicator of tomorrow’s health.
+Expected failuresΦ(S)sum, over every executed cycle, the probability that the cycle is
+interrupted. The estimation uses this expectation rather than a single random breakdown
+draw, so that two schedulers are compared on the risk they chose and not on a lucky or
+unlucky random seed. Expected repair delay is accumulated into the timeline for the same
+reason.
+25
+
+===== PAGE 29 =====
+
+These five numbers conflict. The fast cutter reduces the nominal cutting time and
+increases energy, wear, and failure probability. Grouping navy orders reduces setups and
+can increase the tardiness of a red order. Preventive maintenance spends sixteen minutes
+now to avoid an expected repair of several times that, and to restore a faster, cooler cycle. A
+preference vectorω, with non-negative components summing to one, tells the policy which
+of the conflicts matters for the present shift. Changingωis a management action. It should
+not require a new research project.
+1.3.4 Why the previous methods do not close this problem
+Put an earliest-due-date rule on this shop and it will protect promises better than first-
+in-first-out, as Chapter 3 confirms. It will also send the logo of every urgent order to the
+single embroidery head without seeing the queue it is building, and it will keep the worn
+automatic cutter busy because the rule has no health input. The apparent-tardiness-cost
+rule improves the local ranking and still has no token, no skill, and no wear.
+PutNSGA-IIorNSGA-IIIonafrozensnapshotandthefrontcanbeexcellentbymorning
+[18, 21, 22]. At 10:15 a rush order and a jumped health residual make the snapshot false.
+Rebuilding the front is a batch computation. The dispatch decision is not.
+Put the heterogeneous graph policy of Song, Chen, Li, and Cao on the shop and the
+operation-machine choice becomes learned and fast [35]. The operator may still be double-
+booked by a later repair of the action, because the operator was never in the graph. The
+khaki lot may be double-booked for the same reason. Health may be displayed on a screen
+in the same room and never enter the embedding.
+Put a condition-based maintenance optimiser beside the plan [70, 71, 69] and the cutter
+will be maintained on a sensible wear threshold. The maintenance window will not know
+that the operator it needs is the only person who can start the urgent strap, and the
+production policy will not know, in its features, that the maintenance has just made the
+cutter fast again.
+Theproblemsetofthisthesisisthejointproblemthesemethodseachsolvehalfof. Finda
+dispatchpolicythat, ateveryepoch, selectsafeasiblebundle(operation,machine,operator,token)
+so that a preference-weighted combination of makespan, tardiness, energy, imbalance, and
+expected failures is small, with processing times and failure probabilities written by a health
+state that is updated from machine status, and with a maintenance action available in the
+26
+
+===== PAGE 30 =====
+
+same decision when a chance constraint would otherwise be broken.
+1.3.5 The two technologies, stated as contributions
+The first technology is resource-coupled heterogeneous graph attention scheduling (RCH-
+GAT). The shop graph contains four node types that the assignment actually touches: the
+operation, the machine, the operator, and the shop-level contention for tokens. Relation-
+specific attention pools those nodes into a score. The score is conditioned on the preference
+vectorω. Infeasible bundles, including bundles that fail skill, precedence, machine capacity,
+or token capacity, are masked before the score is used. The training objective in the
+full model is proximal policy optimisation of this masked, preference-conditioned policy.
+The estimation system of Chapter 3 implements the same score in a one-hop form whose
+coefficients are identified by cross-entropy search, so that every reported number comes
+from an executable policy rather than from an unreported training run. Section 2.1 writes
+the full model. The identification procedure is part of the system build.
+The second technology is the status-synchronized digital twin with chance-constrained
+rescheduling (SSDT-CC). Each machine carries a health state. The state scales processing
+time and energy, and it supplies the failure probability of the cycle about to be started.
+If that probability exceeds a toleranceε, or if the predicted health at the end of the cycle
+exceeds a wear ceiling, the decision inserts a short preventive maintenance, renews the
+health, and recomputes the cycle. The policy is an online policy, so a new health value is
+visible at the next dispatch without a separate rescheduling project. The chance constraint
+is what turns the twin from a display into a veto. Section 2.2 writes the state, the constraint,
+and the coupling back into the graph features of the first technology.
+The two technologies are one system. RCH-GAT without the twin can still prefer a
+healthy machine, but it cannot renew a worn one. The twin without RCH-GAT can still
+maintain the cutter, but it will maintain whatever machine a shortest-processing-time rule
+happens to overload. Chapter 3 estimates them separately and together for that reason.
+1.3.6 Questions the estimation is required to answer
+The estimation is not a collection of illustrations. It is required to answer four questions
+about the problem just stated.
+First, on a nominal school-bag book, does the coupled system reduce makespan, energy,
+27
+
+===== PAGE 31 =====
+
+imbalance, and expected failures relative to first-in-first-out, shortest processing time, ear-
+liest due date, and apparent tardiness cost, without giving those rules a large advantage
+on tardiness? A system that saves energy by missing every due date has not solved a
+multi-target problem.
+Second, when the day is stressed, does the same system hold up? The stresses used in
+Chapter 3 are a mid-day rush release, an accelerated wear regime, and a thread-lot shortage.
+These are the three ways the problem set says the shop escapes a static flexible-job-shop
+benchmark.
+Third, which technology produces which part of the gain? Removing resource features
+and removing status-and-maintenance are the two ablations. If both removals do nothing,
+the technologies are not doing the work the model description claims.
+Fourth, does the chance-constraint tolerance behave like a real knob? Tighteningε
+should buy fewer expected failures at the price of more preventive maintenance. If the
+estimation cannot show that exchange, the constraint is only a story.
+A fifth, softer question is how stable the tardiness comparison is. Total tardiness is a
+sum of a few late orders, so its standard deviation across random books is expected to be
+large. The estimation reports that spread instead of treating a small difference in the mean
+as a ranking.
+1.3.7 How the remaining chapters answer the problem set
+Chapter 2 answers the problem set with formulas. Section 2.1 writes objectives, constraints,
+the heterogeneous graph, the attention score, the masked action, and the policy-gradient
+training of RCH-GAT, and it walks one numerical assignment. Section 2.2 writes the health
+dynamics, the Kalman revision of that health, the chance constraint and its Gaussian
+threshold, the maintenance map, and the way the renewed health re-enters the graph.
+Chapter 3 answers the problem set with a system and a measurement. Section 3.1
+describes the shop that was built, the data it accepts, and the executable form of the two
+technologies. Section 3.2 reports the four scenarios, the ablations, the tolerance sweep, and
+the limits of what those runs can support. The program that produced the tables is the
+program in the thesis directory. The numbers were not taken from an external factory and
+they were not taken from the papers reviewed in this chapter.
+28
+
+===== PAGE 32 =====
+
+Chapter 2
+The Two Technologies
+The problem set in Section 1.3 asks for one system and names two technologies inside
+it. This chapter specifies both of them at the level a second implementation could follow.
+Section 2.1 specifies resource-coupled heterogeneous graph attention scheduling: the objec-
+tives, the resource constraints, the graph, the attention score, the masked policy, and the
+way that policy is trained. Section 2.2 specifies the status-synchronized digital twin: the
+health dynamics, the revision of health from a noisy reading, the chance constraint, the
+preventive-maintenance action, and the write-back of the renewed health into the graph of
+Section 2.1. Each section ends with the same numerical assignment, a navy backpack shell
+on the two cutters, so that the formulas are not left as symbols only.
+The estimation in Chapter 3 uses a one-hop executable form of the score and a hazard
+form of the chance constraint. Those forms are stated here as the operational model. The
+multi-layer network and the Kalman revision are stated as the plant model one would run
+when real sensor streams, rather than a simulator that already knows its own wear, are the
+source ofhk.
+2.1 Resource-coupled heterogeneous graph attention
+2.1.1 Sets, routes, and the decision that is actually taken
+LetJbe the set of released orders andMthe set of machines. Each orderj∈Jhas a
+release timer j, a due datedj, a colourcj, a size, a quantityqj, and an ordered route of
+operationsO 1j,...,O njj. OperationO ij has a base durationτij defined at the reference
+quantityq 0 = 80and reference size M, an eligible set of machine groupsGij, and a token
+29
+
+===== PAGE 33 =====
+
+typeu ij∈{die,colour,none}.
+LetKbe the set of operators. Operatorohas a skillσok >0only for the machine groups
+that person is allowed to run, andσok = 0otherwise. LetQbe the set of token pools. The
+die pool has capacityndie. The colour pool of colourchas capacitync. A pool of capacity
+zero would make every operation of that colour infeasible; the factory data do not contain
+such a pool.
+A dispatch at timetis a bundle
+a= (i,j,k,o),(2.1)
+meaning that operationOij starts on machinekwith operatoro. Ifu ij is a die or a colour,
+the bundle also seizes one unit of that pool for the whole occupation of the machine. The
+bundle is the action of the policy. It is larger than the operation-machine pair of Song,
+Chen, Li, and Cao [35], and the extra components are the reason the graph in this section
+has more than two node types.
+2.1.2 Objectives
+A complete scheduleSis the set of bundles that were started, together with the clock times
+at which they started and finished. Five functions ofSare kept separate until a preference
+vector combines them. The makespan is
+f1(S) =C max = max
+j∈J
+Cj.(2.2)
+Total tardiness is
+f2(S) =
+∑
+j∈J
+max(0,Cj−dj).(2.3)
+Energy sums every occupation, including setup minutes and preventive-maintenance min-
+utes, and adds the expected energy of an interruption,
+f3(S) =
+∑
+a∈S
+Pk
+∆a
+60
+(
+1 +γEhk
+)
++
+∑
+a∈S
+ϕaP rep
+k
+∆rep
+60
+(
+1 +γEhk
+)
+.(2.4)
+HereP k is the nameplate power of machinekin kilowatts,∆a is the occupation in minutes,
+hk is the health used for that occupation,γE = 0.45is the wear surcharge on power,ϕa is
+the failure probability of the cycle, and the repair term uses half the nameplate power for
+30
+
+===== PAGE 34 =====
+
+∆rep = 48minutes. The half-power repair is a modelling choice: a stopped head does not
+cut, but the drive and the recovery move are not free.
+Workload imbalance is the standard deviation of busy minutes,
+f4(S) =
+
+ 1
+|M|
+∑
+k∈M
+(
+Bk− ¯B
+)2
+
+
+1/2
+, B k =
+∑
+a:k(a)=k
+∆a.(2.5)
+Expected failures are the sum of the cycle probabilities,
+f5(S) =
+∑
+a∈S
+ϕa.(2.6)
+A preferenceω∈R 4 withω≥0and
+∑4
+m=1ωm = 1defines the scalar that a single policy
+optimises,
+Jω(S) =
+4∑
+m=1
+ωm ˜fm(S) +λ Φ ˜f5(S),(2.7)
+where a tilde denotes division by the same function evaluated on the first-in-first-out sched-
+ule of the same order book. The ratio keeps a minute of makespan from being added to
+a kilowatt-hour. The failure term keeps a weightλΦ even when the manager’s four-way
+preference does not mention breakdowns, because a schedule that fails machines is not
+an admissible way to win the other four numbers. In the estimation,λΦ = 0.12during
+identification and the reported tables always show the five raw functions, not onlyJω.
+Equation (2.7) is a scalarisation, not a claim that the five functions have a single opti-
+mum. Changingωis how the factory moves along the conflicts described in Section 1.3.
+NSGA-II remains available as an offline reference precisely because a scalarisation can miss
+a region of the front [18]. The online system is allowed to be a scalarisation because the
+dispatch decision cannot wait for a front.
+2.1.3 Constraints
+Letx ijko ∈{0,1}be one when bundle(i,j,k,o)is the bundle that executesO ij. Every
+operation is executed once,
+∑
+k∈Mij
+∑
+o∈Kij
+xijko = 1,(2.8)
+31
+
+===== PAGE 35 =====
+
+whereM ij ={k: group(k)∈G ij}andK ij is the set of operators with positive skill on the
+chosen machine. Precedence inside the route is
+Si+1,j≥C ij, C ij =S ij + ∆ij,(2.9)
+and the release date isS1j≥r j.
+Machinecapacityandoperatorcapacityaredisjunctive. Foranytwodistinctoccupations
+of the same machine, one finishes before the other starts, and the same statement holds for
+an operator. With a binary order variabley,
+Ca≤S a′ +H(1−y aa′), C a′≤S a +Hy aa′,(2.10)
+for a horizon constantHlarge enough to dominate any feasible day. Token capacity is a
+knapsack at every time. For the die pool, and likewise for each colour with its own capacity,
+∑
+a∈A(t)
+1{ua = die}≤n die,(2.11)
+whereA(t)is the set of occupations that cover timet. Skill is a hard mask rather than a
+penalty:x ijko = 0wheneverσ o,group(k) = 0.
+Setups are sequence dependent on colour. If machinekhas just run colourcand the
+next occupation has colourcj̸=c, a setup ofscol = 11minutes is inserted before processing.
+The first occupation of a colour-sensitive machine after a cleared state pays a warm-up of
+swarm = 4minutes. Hardware, inspection, and packing do not pay a colour setup. The
+setup occupies both the machine and the operator, and it occupies the token, because the
+die or the thread is the thing being changed.
+These constraints are the integer program a solver would be given if the health state
+were frozen and no new order could appear. The shop does not offer those two favours.
+Health is a function of the schedule, so∆ij depends on a state that the binaries themselves
+change, and orders appear at release dates the morning plan does not know. The integer
+program is the definition of feasibility. The policy below is the object that constructs a
+feasiblexonline.
+32
+
+===== PAGE 36 =====
+
+2.1.4 Processing time at a given health
+The duration of the processing part of a bundle, before setup and before any maintenance,
+is
+pijko(hk) =τ ij
+qj
+q0
+ζj
+1 +αhβ
+k
+vkσok
+.(2.12)
+The quantity ratioqj/q0 and the size factorζj ∈{0.88,1.00,1.16}scale the batch. The
+machine speedvk and the operator skillσok scale the rate. The factor1 +αhβ
+k is the status
+effect, withα= 0.85andβ= 1.15. The exponent above one makes the last part of the wear
+more expensive than the first, which is the empirical shape of a knife and of a needle that
+has started to heat. Athk = 0the factor is one and the formula collapses to an ordinary
+flexible-job-shop time. At the health values used in the case, the factor is about1.45on the
+worn automatic cutter and about1.15on the healthy manual cutter. Those two numbers
+are computed in the worked example at the end of this section.
+Equation (2.12) is the first place the twin enters the scheduler. A policy that treatsp
+as a constant stored in a routing table is usingα= 0, whether or not a screen on the wall
+showsh k.
+2.1.5 The heterogeneous graph of one decision
+At timetthe ready setR(t)contains every operation whose predecessor in the same order
+is finished and whose order has been released. A candidate is a triple(O ij,k,o)with
+Oij∈R(t), machinekeligible and free, operatoroskilled and free, and the required token
+available. Candidates that fail any of those tests are not scored. Masking them is part of
+the model, not a cleanup after the network.
+Each candidate induces a four-node heterogeneous graph. The operation node carries the
+time and due-date pressure of this bundle. The machine node carries health, load, energy,
+and failure. The operator node carries the skill gap. The shop node carries contention
+for the colour, the die, and the machine group. Edges are typed. A precedence edge
+is not drawn inside the candidate graph, because precedence has already been enforced
+by membership ofR(t). The typed edges that remain are eligibility (operation–machine),
+assignment (operation–operator), seizure (operation–token, summarised on the shop node),
+and context (each node–shop). Figure 2.1 draws one candidate.
+33
+
+===== PAGE 37 =====
+
+op machine
+operator shop
+eligible
+skill
+load
+pool
+token
+Figure 2.1: One-hop heterogeneous graph of a single candidate bundle. The full shop graph
+is the union of these candidate graphs at the current ready set. Attention pools the four
+nodes; it does not mix two candidates before the scores are compared.
+The twelve raw costs of a candidate, all scaled to lie near the unit interval, are
+ρ1 =p/45, ρ 2 =s/11, ρ 3 = max(0,−ℓ)/180,(2.13)
+ρ4 = (p+W)/max(30,d j−t), ρ 5 =h k, ρ 6 = max(0,Bk− ¯B)/80,(2.14)
+ρ7 =E cycle, ρ 8 =ϕ, ρ 9 =n col/ncj,(2.15)
+ρ10 =n die/ndie, ρ 11 =n group/3, ρ 12 = max(0,1.05−σ ok).(2.16)
+Slackℓis the due date minus the earliest plausible completion of the rest of the route.W
+is the base work remaining after this operation. The three contention countsncol,n die, and
+ngroup are the numbers of ready operations that want the same colour lot, the die pool,
+or the same machine group. They are the graph readout of the shop node: a mean, over
+neighbours, of demand. A candidate that looks short onρ1 and disastrous onρ9 is a khaki
+body started while two other khaki bodies are already waiting for the single lot.
+The four node keys collapse the twelve costs along the node types,
+κop =ρ 1 +ρ 2 + 1.4ρ3 +ρ 4,(2.17)
+κm =ρ 5 +ρ 6 + 0.35ρ7 + 1.6ρ8,(2.18)
+κo =ρ 12 + 0.3ρ11,(2.19)
+κs =ρ 9 +ρ 10 + 0.5ρ11.(2.20)
+34
+
+===== PAGE 38 =====
+
+Positive learned weightsw1,...,w 12 form the node costs
+cop =w 1ρ1 +w 2ρ2 +w 3ρ3 +w 4ρ4,(2.21)
+cm =w 5ρ5 +w 6ρ6 +w 7ρ7 +w 8ρ8,(2.22)
+co =w 12ρ12,(2.23)
+cs =w′
+8ρ9 +w 9ρ10 +w 10ρ11,(2.24)
+where the shop-node weights arew8,w 9,w 10 in the parameter vector (the prime in (2.24) is
+only there to keep the failure weightw8 of (2.22) visually distinct; the implementation stores
+twelve weights and does not share them). Positivity is obtained by storing the logarithm
+and exponentiating, so a coordinate descent cannot flip a cost into a reward by accident.
+2.1.6 Attention and the preference
+Leta op,a m,a o,a s be attention biases and letg∈R4 be a gate vector. The preference opens
+each node by
+πop = 0.55 +g 1(ω1 +ω 2),(2.25)
+πm = 0.55 +g 2(ω3 + 0.5ω1),(2.26)
+πo = 0.45 +g 3ω4,(2.27)
+πs = 0.45 +g 4(ω2 + 0.25).(2.28)
+Time and due-date weight open the operation node. Energy, and part of the makespan
+weight, open the machine node, because health and failure destroy makespan as well as
+kilowatt-hours. Balance opens the operator node. Due-date weight also opens the shop
+node, because token contention is how a due date is missed when the machine itself is free.
+The attention weights are a softmax over the opened keys,
+αu = exp(au +πuκu)
+∑
+u′∈{op,m,o,s} exp(au′ +πu′κu′).(2.29)
+The candidate score, which the policy minimises, is the opened, attention-weighted node
+cost
+ψ(a) =
+∑
+u
+αuπucu.(2.30)
+35
+
+===== PAGE 39 =====
+
+Equation (2.29) is one-head, one-hop graph attention [40]. It is the operational policy.
+The multi-layer form used as the scalable model replaces the hand-grouped keys by learned
+maps. For each relationrand layerℓ,
+e(r,ℓ)
+uv = LeakyReLU
+(
+b⊤
+r
+[
+W (ℓ)
+r z(ℓ)
+u ∥W (ℓ)
+r z(ℓ)
+v
+])
+,(2.31)
+α(r,ℓ)
+uv = exp(e(r,ℓ)
+uv )
+∑
+v′∈Nr(u) exp(e(r,ℓ)
+uv′ )
+, z (ℓ+1)
+u =σ
+
+∑
+r
+∑
+v∈Nr(u)
+α(r,ℓ)
+uv W (ℓ)
+r z(ℓ)
+v
+
+.(2.32)
+The candidate score of the full model is a linear map of the concatenated final embeddings of
+the four nodes, again gated byω. Equation (2.30) is what Chapter 3 runs. Equations (2.31)
+and (2.32) are what a larger plant would train with the proximal policy method below,
+once more than a few dozen order books exist as logged transitions. Both are the same
+technology: a preference-conditioned attention pool over a resource-typed graph, followed
+by a masked choice of bundle.
+2.1.7 Markov decision process
+The dispatch process is a Markov decision process(S,A,P,R,γ). A states t∈Scontains
+the ready set, the free times and previous colours of machines and operators, the residual
+token capacities, the health vector, and the preferenceω. An actionat is a feasible bundle,
+or a bundle preceded by preventive maintenance when Section 2.2 says so. The transition
+Padvances the clock to the next moment at which a machine and an operator are free,
+releases tokens of finished work, inserts any order whose release time has arrived, and
+updates health by the wear map of Section 2.2. The reward is the change in the scalar cost.
+WithJ ω evaluated on the partial schedule,
+rt =−
+(
+Jω(St+1)−J ω(St)
+)
+,(2.33)
+so that a step which lengthens the day, the tardiness, the energy, the imbalance, or the
+failure sum returns a negative reward. The discountγ∈(0,1)is kept close to one because
+a setup avoided now pays its tardiness much later. The estimation identifies coefficients by
+the totalJω of the finished day, which is the undiscounted, finite-horizon form of the same
+objective.
+36
+
+===== PAGE 40 =====
+
+The policyπθ(a|s,ω)is a softmax over the negative scores of the feasible candidates,
+πθ(a|s,ω) = exp(−ψθ(a)/τ)
+∑
+a′∈F(s) exp(−ψθ(a′)/τ),(2.34)
+whereF(s)is the masked feasible set andτis a temperature. At execution,τ→0and the
+policy takes the minimiser ofψ. During stochastic training, a positive temperature supplies
+the exploration that a cross-entropy search gets instead from its sampling distribution.
+2.1.8 Training the full model with proximal policy optimisation
+The full model is trained by proximal policy optimisation [29]. Letθcollect the mapsWr,
+the attention vectors, the gates, and the value-function weights. Along a trajectory the
+probability ratio of a new policy to the policy that collected the data is
+ηt(θ) = πθ(at|s t,ω)
+πθold(at|s t,ω).(2.35)
+The clipped surrogate is
+Lclip(θ) =E t
+[
+min
+(
+ηt(θ) ˆAt,clip(η t(θ),1−ϵ,1 +ϵ) ˆAt
+)]
+,(2.36)
+withϵtypically0.2. The advantage ˆAt is the generalised advantage estimate of the scalar
+reward (2.33). A value headV ϕ(s,ω)is trained by squared error against the discounted
+return, and an entropy bonusβHH(πθ)keeps (2.34) from collapsing to a single bundle before
+the resource features have been used. The parameter step maximisesLclip−cVLvalue+βHH.
+Preference conditioning is trained by samplingωwith each episode, not by training four
+unrelated networks and hoping their weights happen to be comparable. A single network
+that has seen manyωis what Equation (2.25)–(2.28) approximate when the gatesgare
+identified at one operating preference and then reused. Chapter 3 is explicit about which of
+these two regimes the numbers come from: the coefficients were identified at the balanced
+preferenceω= (0.34,0.33,0.18,0.15), and the gate formulas were not re-fit for every corner
+of the simplex. The tolerance sweep of the twin, not the gate formulas, is the knob the
+estimation shows moving cleanly.
+37
+
+===== PAGE 41 =====
+
+2.1.9 Identification used in the estimation system
+The executable score has twenty coefficients: twelve log-weights, four attention biases,
+and four gates. Direct policy-gradient training of a deep network is not required to identify
+twenty numbers on a shop of this size, and it would make the tables depend on an optimiser
+trajectorythatareadercannotsee. Theestimationthereforeusesthecross-entropymethod.
+A GaussianN(µ,diag(σ 2))proposes a population of coefficient vectors. Each vector is
+scored by the mean ofJω on a fixed set of training order books, always relative to first-
+in-first-out on the same book. The elite fraction updatesµandσ. The search starts from
+a logarithmic prior that already resembles a blend of shortest processing time, slack, and
+health, so the first generation is a scheduler rather than a random permutation. Algorithm 1
+states the loop. The training curve is reported in Chapter 3.
+Algorithm 1Cross-entropy identification of the RCH-GAT score
+1:Initialiseµfrom the short-time, slack, and health prior; setσ←0.35
+2:forgeneration= 1,...,Gdo
+3:forsample= 1,...,Ndo
+4:Drawθ∼N(µ,diag(σ 2))
+5:For each training book, run Algorithm 2 and recordJ ω
+6:Set the fitness to the meanJ ω across the training books
+7:end for
+8:Keep the elite fraction ofθ
+9:Setµto their mean andσto their standard deviation, floored by a small positive
+constant
+10:end for
+11:returnthe eliteθwith the best fitness observed
+Algorithm 2Online dispatch with a masked resource bundle
+1:t←0; mark every operation unfinished; set health to the measuredhk(0)
+2:whilesome operation is unfinisheddo
+3:Release any order withr j≤t, and release tokens of occupations that have ended
+4:Build the feasible setFof bundles at timet
+5:ifFis not emptythen
+6:Score each bundle by (2.30), applying the maintenance test of Algorithm 3
+7:Start the minimiser; update free times, colour memory, tokens, health, energy,
+andϕ
+8:else
+9:Advancetto the next completion or the next release
+10:end if
+11:end while
+38
+
+===== PAGE 42 =====
+
+2.1.10 What the mask guarantees
+Proposition 2.1.Suppose every order has a finite route, every operation has at least one
+eligible machine group, every machine group has at least one operator with positive skill,
+and every token pool that an operation requires has capacity at least one. Then Algorithm 2
+finishes every released order in finite time, and every started bundle satisfies precedence,
+machine capacity, operator capacity, and token capacity.
+Proof.Every started bundle is taken fromF, andFcontains only bundles whose prede-
+cessor is finished, whose machine and operator are free, whose skill is positive, and whose
+token pool has a free unit. Capacity and precedence therefore hold by construction of the
+mask. A started bundle occupies its machine, operator, and token for a finite duration,
+because base times, size factors, and health factors are finite and health is clipped. At the
+occupation’s end the three resources are released. IfFis empty and work remains, either a
+resource is occupied, in which case the clock advances to a release, or an order is unreleased,
+in which case the clock advances to its release time. The state cannot cycle: each advance
+of the clock to a completion finishes one operation, and there are finitely many operations.
+Hence the loop ends with every operation finished.
+The proposition is about feasibility, not about optimality. A first-in-first-out policy
+satisfies it and still produces the poor tardiness reported in Chapter 3. The proposition
+is what makes the comparison in that chapter a comparison of decisions rather than a
+comparison of repair heuristics. Every method in the estimation, including the classical
+rules, dispatches through the same mask. They differ only in the score that ranksF.
+2.1.11 A numerical assignment without the twin’s veto
+Consider one ready operation, the shell cut of a navy backpack, quantity80, size M, so
+thatq j/q0 = 1andζ j = 1. The base time isτ= 24minutes. Cutter-A has speedv= 1.28,
+power6.8 kW, wear rate0.00115per minute, and healthh= 0.58. Cutter-B has speed0.74,
+power2.4 kW, and healthh= 0.22. Operator Cut-1, with skill1, is free for either machine.
+No setup is charged in this comparison. Equation (2.12) on Cutter-A gives
+1 +αhβ = 1 + 0.85×0.58 1.15 = 1.4543,(2.37)
+pA = 24×1.4543/1.28 = 27.268 minutes.(2.38)
+39
+
+===== PAGE 43 =====
+
+On Cutter-B,
+1 +αhβ = 1 + 0.85×0.22 1.15 = 1.1490,(2.39)
+pB = 24×1.1490/0.74 = 37.265 minutes.(2.40)
+A shortest-processing-time rule sees27.268<37.265and assigns Cutter-A. The energy of
+that cycle, from the first term of (2.4) and before the failure term, is
+EA = 6.8× 27.268
+60 ×(1 + 0.45×0.58) = 3.896 kWh,(2.41)
+against
+EB = 2.4× 37.265
+60 ×(1 + 0.45×0.22) = 1.638 kWh.(2.42)
+The fast machine is more than twice as hungry. The failure probability, computed in
+Section 2.2 from the hazard at these health values, is0.106on A and0on B. Expected
+repair delay on A is0.106×48 = 5.09minutes, so the occupation that shortest processing
+time thought was27.3minutes is32.4minutes once the risk is priced, and it leaves Cutter-A
+at a predicted health of0.58 + 0.00115×27.268 = 0.611.
+The attention score does not have to choose B every time. If the due date is already
+broken and the other cutter is the bottleneck of a later order, paying3.9 kWhon A can be
+the lower score under a time-heavyω. The point of the numbers is narrower. Any rule that
+ranks on nominal or even on health-scaled processing time alone will take A. Any score
+that includesρ 5,ρ 7, andρ 8 is allowed to refuse A. That refusal is the resource-and-status
+content ofψ. Whether the refusal should instead be a sixteen-minute maintenance of A is
+the twin’s decision, made with the same candidate in the next section.
+2.1.12 Attention arithmetic on the two cutters
+The preceding subsection stopped at the physical times. This one applies the identified
+score, so that Equation (2.30) is a number rather than a shape. The coefficient vector is
+the one stored by Algorithm 1 and used for every table in Chapter 3. Exponentiating the
+twelve log-weights gives
+w= ( 0.288,1.029,0.731,0.235,0.606,5.660,
+0.912,1.269,0.133,0.917,0.353,1.657 ).
+(2.43)
+40
+
+===== PAGE 44 =====
+
+The order is processing time, setup, slack penalty, critical ratio, health, load deviation,
+energy, failure probability, colour contention, die contention, group contention, and skill
+gap. Two facts are already visible. The load weight5.660is several times any other weight,
+so a machine that has already run far ahead of its neighbours is expensive even when it
+is healthy. The colour-contention weight0.133is the smallest of the twelve, which is the
+coefficient-level reason the resource ablation in Chapter 3 moves the day only a little.
+Atthebalancedpreferenceω= (0.34,0.33,0.18,0.15)theopenings(2.25)–(2.28)evaluate
+to
+π= (1.121,0.908,0.734,−0.490).(2.44)
+The shop-node opening is negative. The identified gate on that node learned to shrink,
+rather than enlarge, the contention term under this preference. A negative opening does
+not delete the node. Multiplied into the key, it reduces attention when contention is high;
+multiplied into the cost, it can even change the sign of that node’s contribution. In the
+cutter arithmetic below the attention mass on the shop node is about0.03, so the sign
+changes the score by roughly a hundredth. Token pressure is a weak voice, not an inverted
+one in any way that moves a schedule. That is an empirical outcome of the identification,
+reported here so that the ablation is not a surprise.
+Construct two candidates for the navy shell, both with Cut-1 free, no setup, no slack
+penalty, and the same token pressure: one other cutting operation is also ready, and the
+navy pool is half used. Critical ratios are0.80on A and0.95on B, because B’s longer cycle
+eats more of the remaining due-date margin. Load deviation is0on A and0.10on B. The
+twelve raw costs are then
+ρA = (0.606,0,0,0.800,0.580,0,3.896,0.106,0.500,0.500,0.667,0),(2.45)
+ρB = (0.828,0,0,0.950,0.220,0.100,1.638,0,0.500,0.500,0.667,0).(2.46)
+Node keys and node costs follow (2.17)–(2.24). For Cutter-A,
+κA = (1.406,2.113,0.200,1.333), c A = (0.363,4.038,0,0.760).(2.47)
+The machine-node cost4.038is almost entirely energy:0.912×3.896 = 3.55, with health
+and failure making up the rest. For Cutter-B,
+κB = (1.778,0.893,0.200,1.333), c B = (0.462,2.193,0,0.760).(2.48)
+41
+
+===== PAGE 45 =====
+
+Softmax attention (2.29) with the biasesa= (1.082,0.969,−0.707,0.672)puts mass
+αA = (0.422,0.531,0.017,0.030), α B = (0.742,0.203,0.020,0.035).(2.49)
+On the worn cutter, attention sits on the machine node, because that node’s key is large.
+On the healthy cutter, attention sits on the operation node, because the machine key has
+collapsed. The scores are
+ψ(A) = 2.108, ψ(B) = 0.776.(2.50)
+The policy takes B. Shortest processing time, using27.3<37.3, takes A. The difference is
+not a hidden rule. It is the machine-node cost of6.8 kWat health0.58, amplified by an
+attention weight of0.531.
+Table 2.1 is the same vector, written so a reader can see which physical effect survived
+identification.
+Table 2.1: Identified positive weights on the twelve costs, from (2.43). A large weight means
+the identification was willing to avoid that cost even when other costs rose.
+Cost Weight Node What a large value punishes
+Processing time 0.288 operation a long cycle
+Setup 1.029 operation a colour change
+Slack penalty 0.731 operation an already broken due date
+Critical ratio 0.235 operation a route that still has a lot left
+Health 0.606 machine a worn tool
+Load deviation 5.660 machine a machine far ahead of the others
+Energy 0.912 machine a hungry cycle
+Failure probability 1.269 machine a likely interruption
+Colour contention 0.133 shop a crowded thread lot
+Die contention 0.917 shop a crowded die pool
+Group contention 0.353 shop a crowded machine group
+Skill gap 1.657 operator a weak pairing
+The ranking inside the table is the design story of the first technology after it has been
+fit, rather than before. Balance of machine load dominates, which is why imbalance falls in
+every scenario of Chapter 3. Skill gap is the next strongest single weight, so the operator
+node is not decorative: a slow pairing is refused when a qualified operator is free. Failure
+probability outweighs raw processing time. Colour contention, the feature that sounds most
+like a school-bag factory, is almost silent. Die contention is not silent. The two token types
+are not interchangeable, and a model that had used one “resource” weight for both would
+42
+
+===== PAGE 46 =====
+
+have blurred a real difference. Setups are punished about as strongly as energy. A navy-to-
+red change of eleven minutes is allowed to break a tie between two otherwise similar sewing
+machines.
+2.1.13 A strap, two machines, and one missing skill
+The cutter example has a free specialist. Sewing often does not. Consider the strap of the
+same backpack. The base time is30minutes. Bartack-1 has speed1.00, power1.15 kW,
+and health0.34. Lockstitch-1 has speed1.05, power0.75 kW, and health0.24. Sew-2 is the
+bartack specialist, skill1.08on the heavy machine and0.96on a lockstitch. Sew-3 can run
+only a lockstitch, at skill1.00. Sew-1 can run the bartack at skill0.78, which is legal and
+poor.
+Equation (2.12) at these health values, for Sew-2 on the bartack, has health factor
+1+0.85×0.34 1.15. Thefactorisabout1.25, andtheprocessingtimeisabout30×1.25/1.08≈
+34.7minutes. The same operator on Lockstitch-1 is slower in skill and faster in machine
+speed, andthehealthfactoriscloserto1.16, givingacyclenear30×1.16/(1.05×0.96)≈34.5
+minutes. The two cycles are almost the same length. Shortest processing time will treat
+them as a tie and then break the tie by setup or by order identity. The score will not,
+because the skill gap, the load, and the failure probability are different features.
+Sew-3 on the bartack is not a candidate. The mask of Proposition 2.1 removes it before
+ψis computed. This is the dual-resource constraint in one line [45]. A chromosome that
+picks “bartack” and then looks for an operator afterwards can discover the infeasibility only
+in the decoder. The graph never scores the infeasible pair, so the attention cannot waste
+mass on it.
+If Sew-2 is already inside a trolley shell, the only legal bartack operator left is Sew-1 at
+skill0.78. The skill-gap cost ismax(0,1.05−0.78) = 0.27, and the weight on that cost
+is1.657, so the operator node alone contributes about0.45before attention and opening.
+The cycle also lengthens by the ratio1.08/0.78. The policy will often leave the strap on a
+lockstitch rather than staff the bartack with the weak pairing, unless the lockstitches are
+the congested group. That choice is exactly what the operator node was added to make. A
+machine-only graph of the kind in Song, Chen, Li, and Cao [35] would assign the bartack
+whenever it is free, and the simulator would then have to repair the assignment by waiting
+for Sew-2. The wait is a hidden setup. Here it is a term inψ.
+43
+
+===== PAGE 47 =====
+
+2.1.14 How a preference would have to be re-fit
+Equation (2.44) is not a family of policies. It is one policy, at oneω, whose gates were
+identified jointly with the weights. Changingωin the opening formulas without repeating
+Algorithm 1 does not trace a reliable front, and Chapter 3 does not claim that it does. The
+correct way to ask for an energy-heavy shift is to change the scalar (2.7) and identify again.
+On this cell that identification is a few dozen generations of a twenty-dimensional Gaussian,
+which is cheap beside a day of production and is still a different vector from (2.43).
+What the openings do provide, even at a single fit, is an audit. A reader can see that
+the shop node was driven toward silence, that the machine node stayed open, and that the
+operation node carries makespan and due date together. If a later fit at a due-date-heavyω
+raised the colour weight from0.133and flipped the shop gate from negative to positive, the
+resource ablation would be expected to grow. Until that fit is run, the honest description of
+RCH-GAT on this cell is: load, skill, failure, setup, and energy are the active costs; colour
+contention is specified and nearly inactive.
+2.1.15 Scaling, and what would break it
+The divisors in (2.13)–(2.16) are not natural constants. Processing time is divided by45
+minutes because a typical sewing or cutting cycle on this cell lies between15and60. Slack
+is divided by180minutes because a due-date miss of half a shift should be the same order
+of magnitude as a processing-time cost near one. Energy is left in kilowatt-hours because a
+cutter cycle is already a few units and a sewing cycle is a fraction of a unit. If the cell were
+rescaled to single bags instead of batches of eighty, every divisor would be wrong and the
+weights in (2.43) would have to be identified again. The graph and the mask would not.
+This is the usual separation between a representation and a calibration. The thesis treats
+the divisors as part of the calibration of this cell, and it does not present them as universal.
+A second breakage is a health indicator that is not on the unit interval. Equation (2.12)
+withα= 0.85assumeshnear0is a new tool andhnear1is a failed one. A raw motor
+current must be mapped onto that interval before it entersρ5. The map is the feature
+extraction reviewed by Lei and co-authors [62]. Putting the current in directly would make
+the health weight meaningless and would make the chance constraint fire on the wrong
+cycles.
+A third breakage is a token pool whose capacity changes during the day, for example
+44
+
+===== PAGE 48 =====
+
+a khaki lot that is discovered to be short at noon. The shop node can represent the new
+capacity immediately, becausenc is read at the decision epoch and is not compiled into
+the weights. The weights do not have to be identified again for a shortage. The shortage
+scenario of Chapter 3 uses exactly that property. The small movement in that scenario is
+then not a failure of the data path. It is a consequence of the small colour weight.
+2.2 Status-synchronized chance constraints
+2.2.1 What is synchronised
+The twin of machinekis the scalarh k(t)together with the two maps that the dispatcher
+reads: the duration factor in Equation (2.12) and the failure probabilityϕbelow. Syn-
+chronisation means thath k used at a dispatch epoch is the health implied by the work
+the machine has already done and by the latest accepted sensor reading, not the health
+written on the morning sheet. In the estimation plant the simulator is the sensor, so the
+wear recursion is exact. In a physical cell the recursion is the drift, and a Kalman update
+absorbs the residual of the sensor. Both are specified, and the chapter does not pretend
+that the estimation ran a noisy sensor.
+2.2.2 Drift, diffusion, and the sensor
+Between decisions the design model is the Wiener process reviewed in Section 1.2,
+dhk =η k dt+σ k dBt,(2.51)
+with a machine-specific wear rateηk. Over a cycle of processing lengthp, the increment
+has meanηkpand varianceσ 2
+kp. A sensor does not observehk. It observes
+yk =h k +ϵk, ϵ k∼N(0,ρ 2
+k),(2.52)
+whereρ k is the noise of the health indicator after the feature extraction that Lei and
+co-authors survey [62]. The indicator itself, whether it is a current, a temperature, or a
+thread-break rate, is assumed already reduced to the unit interval on whichhk = 0is a new
+tool andhk = 1is a tool the maintenance standard calls failed.
+45
+
+===== PAGE 49 =====
+
+The Kalman filter is the revision of this linear-Gaussian pair [64]. Predict, over a cycle
+just completed,
+ˆh− = ˆh+η kp, v − =v+σ 2
+kp.(2.53)
+Update, when the readingyarrives,
+K= v−
+v− +ρ 2
+k
+, ˆh= ˆh− +K(y− ˆh−), v= (1−K)v −.(2.54)
+The dispatcher usesˆh, noty. A single noisy spike therefore cannot throw the cutter into
+maintenance, and a slow drift cannot hide behind one optimistic reading. Particle filters
+replace (2.53)–(2.54) if a later plant shows that the residual is heavy-tailed [65]. The
+estimation does not need that replacement, because its plant applies the drift directly:
+hk←min
+(
+1.25, hk +ηkp
+)
+,(2.55)
+withη k equal to the wear coefficient of the machine (for the automatic cutter,0.00115per
+minute). Equation (2.55) is (2.53) with the posterior variance held at zero. Reporting it
+this way keeps the tables reproducible and keeps the Kalman equations available for the
+cell in which the variance is not zero.
+2.2.3 Failure probability as a hazard
+Given a health at the start of a cycle, the intensity used by the dispatcher is
+λ(h,p) =λ 0
+(
+max(0,h mid−h fail)
+)γ
+,(2.56)
+withλ 0 = 2.4,h fail = 0.40,γ= 1.35, and the mid-cycle health
+hmid =h+ 1
+2η0p.(2.57)
+The constantη 0 = 0.0004in the mid-cycle shift is a small look-ahead, not the full machine
+wear rate. The failure probability of a cycle ofpminutes is the exponential formula for a
+constant intensity,
+ϕ(h,p) = 1−exp
+(
+−λ(h,p)p/60
+)
+.(2.58)
+46
+
+===== PAGE 50 =====
+
+Below the thresholdhfail the intensity is zero andϕ= 0. Above it, intensity grows faster
+than linearly becauseγ >1. This is the operational chance model. It is monotone in health
+and in cycle length, it is cheap to evaluate inside the inner loop of Algorithm 2, and it is
+theϕthat Chapter 3 sums intof 5.
+The Gaussian derivation that justifies a threshold of this shape starts from (2.51). The
+probability of crossing a ceilingh⋆ during a cycle is
+P(h+ηp+σ √pZ≥h ⋆) = 1−Φ
+(
+h⋆−h−ηp
+σ√p
+)
+,(2.59)
+whereZis standard normal andΦis its distribution function. Requiring (2.59) to be at
+mostεis equivalent to
+h+ηp+σ √pΦ−1(1−ε)≤h ⋆.(2.60)
+Equation (2.60) is the classical chance constraint [66] specialised to a Wiener increment.
+The hazard (2.58) is the form used when the plant’s interruption process is defined by an
+intensity rather than by a single Gaussian crossing, which is the case in the estimation.
+Both forms give the dispatcher the same kind of object: a monotone function of(h,p,ε)
+that can veto an assignment. The estimation’s veto is (2.58), compared withε, together
+with a hard ceiling on the predicted health at the end of the cycle,
+h+η kp≤h ceil = 0.90.(2.61)
+If either (2.58) exceedsεor (2.61) fails, the bundle is not started as it stands.
+2.2.4 The maintenance action
+A vetoed bundle is not deleted. Deleting it would remove the fast cutter fromFexactly
+when the order book most needs a cutter, and Proposition 2.1 would then depend on
+the second cutter happening to be free. The twin instead offers the same bundle with a
+preventive maintenance prefixed,
+hk←0.30h k + 0.04,∆←∆ + ∆ pm,(2.62)
+with∆ pm = 16minutes. The processing time and the failure probability are recomputed
+at the renewed health. The maintenance occupies the machine and the operator. It does
+47
+
+===== PAGE 51 =====
+
+not seize the die or the thread lot: the tool change on a cutter is not a fabric-die change.
+Energy of the combined occupation uses the renewed health, because the renewed machine
+is the one that runs.
+The coefficient0.30is a partial renewal, not a new machine. A knife change or a needle
+change and a short check bring the indicator most of the way down and leave a small
+residual, the0.04. This is the opposite of an as-good-as-new assumption. It is also the
+reason maintenance remains attractive on a worn cutter and useless on a healthy one: ifh
+is already0.10, Equation (2.62) barely moves it,ϕwas already zero, and the veto does not
+fire.
+The score of a maintained bundle is the score of the renewed cycle plus a maintenance
+penalty proportional to the machine-node openingπm, minus a credit for the failure and
+health costs that the renewal removes. The penalty keeps the policy from maintaining a
+machine whoseϕexceedsεby a negligible amount when another feasible bundle is clean.
+The credit keeps the policy from refusing a renewal that removes a largeρ8. Both terms
+are part ofψ, so maintenance is not an external rule glued on after the attention. It is a
+second version of the same candidate.
+2.2.5 When the decision is taken again
+Because Algorithm 2 rebuildsFwhenever a resource is free, the twin does not need a
+separate rescheduling solver. A health value that changed at the last completion is already
+insideρ 5 andρ 8 of the next score. A rush order, once its release time is reached, entersR(t)
+and therefore entersF. This is event-triggered rescheduling in the operational sense: the
+trigger is “a resource became free, or an order became released, or a maintenance ended,”
+and the response is a new masked argmin ofψ.
+A heavier trigger is available and is not required for correctness. If a sensor residual
+|y− ˆh|from Equation (2.54) exceeds a band, the cell may discard the ranking it has been
+following and recompute immediately, even in the middle of a planned idle. The estimation
+plant has no such residual, so its trigger is the resource-free event alone. The effect that the
+literature calls closed-loop rescheduling is still present. No priority list is frozen att= 0.
+The classical rules in the comparison are given the same courtesy: earliest due date, at time
+t, sees the orders that have been released byt, including a rush order after its release. The
+comparison does not handicap the baselines with a stale list.
+48
+
+===== PAGE 52 =====
+
+Algorithm 3Chance-constrained maintenance test inside a candidate
+1:Computepby (2.12) at the currenth k, thenϕby (2.58)
+2:Predict the ending health byhk +ηkp
+3:ifϕ>εorh k +ηkp>0.90then
+4:Apply (2.62); recomputepandϕ; charge∆ pm
+5:Mark the candidate as maintained
+6:end if
+7:Return the occupation length, the energy,ϕ, and the maintained flag to the scorerψ
+2.2.6 Coupling the twin back into the graph
+The two technologies share nodes. The machine node of Figure 2.1 is where the twin writes.
+After every completion, Equation (2.55) or the Kalman pair (2.53)–(2.54) replaceshk. The
+next time that machine appears in a candidate,ρ5,ρ 7, andρ 8 are different numbers, so
+κm andc m are different numbers, so the softmax (2.29) can put more or less mass on the
+machine node, soψcan change the chosen bundle. After a maintenance, the same write-
+back happens immediately, before the processing part of the occupation, which is why the
+processing time of a maintained cycle is the time at the renewed health.
+There is a second, quieter coupling. Expected failure delay is added to the machine’s
+free time. A policy that sends work to a worn machine does not only risk a future repair
+in the abstract. It blocks that machine, and the operator standing at it, for the expected
+repair. Subsequent candidates see a later free time. Status therefore changes contention,
+not only the row of the table that storeshk. This is why an ablation that zeroes the health
+features but still runs the plant’s breakdown delay is not the same thing as an ablation that
+removes maintenance. Chapter 3 runs both: one policy sees health and may maintain, one
+policy sees health and may not maintain, and one policy does not see health and may not
+maintain.
+Healthh k ϕandp(h) Scoreψ
+Bundle or
+maintenance
+Wear or
+Kalman update
+Figure 2.2: Coupling of SSDT-CC into RCH-GAT. The score never reads a raw sensor. It
+reads a health state that maintenance and ordinary wear both rewrite.
+49
+
+===== PAGE 53 =====
+
+2.2.7 The same cut, with the veto turned on
+Return to the navy shell of Section 2.1. On Cutter-A,h= 0.58andp= 27.268. The
+mid-cycle health in (2.57) is0.5855. The intensity is
+λ= 2.4×(0.5855−0.40) 1.35 = 0.2468 per hour,(2.63)
+and
+ϕA = 1−exp(−0.2468×27.268/60) = 0.1061.(2.64)
+On Cutter-B, mid-cycle health0.227lies below0.40, soλ= 0andϕ B = 0. The predicted
+ending health on A is0.611, which does not exceed0.90. The failure test does exceed a
+tolerance ofε= 0.10. Algorithm 3 therefore maintains Cutter-A before the cut.
+The renewal givesh′ = 0.30×0.58 + 0.04 = 0.214. The health factor ath′ is1.1443, and
+the processing time falls to
+p′
+A = 24×1.1443/1.28 = 21.456 minutes.(2.65)
+With the sixteen-minute maintenance the occupation is37.456minutes, andϕat the
+renewed health is zero because0.214<0.40. Energy of the maintained occupation is
+4.654 kWh. Compare the three options on this single cycle, ignoring setup.
+Table 2.2: One navy shell cut, three ways of treating Cutter-A. Times are minutes. Energy
+is kilowatt-hours. Failure delay is the expectation48ϕ.
+Option Process Extra Total Energy
+Cutter-A, no maintenance 27.268 5.09 32.36 3.90 + repair share
+Cutter-A, maintenance first 21.456 16.00 37.46 4.65
+Cutter-B, no maintenance 37.265 0.00 37.27 1.64
+Table 2.2 is the whole argument of the twin in one row. Maintenance is not a free im-
+provement of the immediate cycle. It is slower than running the worn cutter and accepting
+the expected repair, and it uses more energy than the manual cutter. What it buys is a
+failure probability of zero on this cycle and a cutter whose next cycles run at health0.214
+rather than at a health that has stepped to0.611. The day-level effect of that purchase
+cannot be seen in one row. It is the content of the wear scenario in Chapter 3, where the
+same sixteen-minute action, repeated when the test fires, cuts the expected failure count
+from about thirty to under one and pulls the makespan down with it.
+50
+
+===== PAGE 54 =====
+
+A tolerance of0.10is a management choice. Atε= 0.20this particular cycle would not
+be vetoed byϕ, because0.106<0.20, and the ceiling0.90would not veto it either. The
+cutter would run worn. Section 3.2 sweepsεfor that reason. The formula that decides is
+(2.58), not a hidden list of machines that must be maintained.
+2.2.8 Feasibility of the maintained bundle
+Maintenance does not break Proposition 2.1. The maintained bundle uses the same machine
+and the same operator, for a longer finite duration, and then releases them. Token capacity
+is unchanged because the token is not held during the tool change. The renewed processing
+time is finite. A shop in which every cutter is worn and every operator is free will maintain
+and then cut, not deadlock. A shop in which the only cutter operator is busy will not start
+the maintenance until that operator is free, because the candidate was never inF. The
+twin does not invent capacity.
+There is a real cost that the proposition does not limit. Ifεis set absurdly low, the test
+fires on mild health and the day fills with sixteen-minute renewals. The scalarJω punishes
+the makespan of those renewals, and the estimation’s sweep shows the resulting exchange
+betweenϕandmaintenancecount. Thetechnologyincludesεasavisibleparameterbecause
+hiding it inside the network would make that exchange impossible to audit.
+2.2.9 Three cycles of the same cutter
+One veto does not explain a day. Three identical navy shell cuts, back to back on Cutter-
+A, with Cut-1 free and no setup, show the horizon the twin is actually buying. Without
+maintenance the plant follows Equation (2.55). With the tolerance at0.10, the first cycle
+is vetoed, the tool is renewed once, and the next three cycles run at the renewed drift.
+Table 2.3 uses the same formulas as the single-cycle example.
+The unrepaired path charges32.36+34.12+35.99 = 102.5minutes and finishes the third
+cycle at health0.676, with failure probabilities0.106,0.132, and0.159. The repaired path
+pays16 + 21.46 = 37.46minutes on the first cycle, which is slower than the unrepaired first
+cycle, and then21.82and22.19minutes with failure probability zero, because health stays
+below0.40. The three-cycle total is81.5minutes. The saving is about twenty-one minutes,
+and the cutter that remains is still a healthy fast machine rather than a machine heading
+toward0.68.
+51
+
+===== PAGE 55 =====
+
+Table 2.3: Three successive shell cuts on Cutter-A. “Charged” time is processing plus
+expected repair delay, or processing plus the single sixteen-minute maintenance on the
+renewed path. Health is the value at the start of the cycle.
+Path Cycle StarthProcess (min) Charged (min)
+No maintenance 1 0.580 27.27 32.36
+No maintenance 2 0.611 27.80 34.12
+No maintenance 3 0.643 28.35 35.99
+Renewed once 1 0.214 21.46 37.46
+Renewed once 2 0.239 21.82 21.82
+Renewed once 3 0.264 22.19 22.19
+Figure 2.3 draws the two health paths. The maintenance step is the discontinuity.
+Everything after it is ordinary wear at the cutter’s drift of0.00115per minute. A planner
+who looks only at the first cycle, where maintenance is the slower option in Table 2.2, will
+refuse the twin. A planner who looks at the third cycle will not. The estimation in the wear
+scenario is the third-cycle view, repeated across every machine that crosses the tolerance.
+1 2 30
+0.2
+0.4
+0.6
+0.8
+Shell cut
+Health at the start of the cut
+No maintenance
+Renewed before the first cut
+Figure 2.3: Health of Cutter-A at the start of three identical shell cuts. The renewed path
+begins after Equation (2.62). Neither path is a failure time. Both are the state the next
+score will read.
+The energy accounting moves the same way and is easier to underestimate. The unre-
+paired first cycle draws about3.90 kWhplus a share of the repair. The repaired first cycle
+draws4.65 kWhbecause the maintenance minutes are charged. By the third cycle the unre-
+paired cutter is both slower and hotter, and the nameplate6.8 kWis multiplied by a larger
+health surcharge. The day-level energy gaps in Chapter 3, on the order of100 kWh, are this
+third-cycle effect summed over every occupation, not a property of one row of Table 2.2.
+52
+
+===== PAGE 56 =====
+
+2.2.10 How many decisions a day contains
+A book of sixteen orders has, on the routes of Section 1.3, somewhere between six and eight
+operations each, so the cell starts on the order of one hundred and twenty bundles. Each
+bundle is one call to the scorer. At a typical call the feasible set is not one hundred and
+twenty. Precedence keeps only the next operation of each released order, and capacity keeps
+only the free machines and free operators. A call with eight ready operations, two legal
+machines, and two legal operators is a few dozen scores, each a constant-time evaluation of
+Equations (2.13)–(2.30) and, when the twin is on, Algorithm 3. The day is a few thousand
+such scores. That is why identification, which repeats the day a few thousand times, finishes
+as a batch job, and why dispatch, which does it once, is not the thing a planner waits for.
+The multi-layer model changes the constant, not the number of decisions. Each layer
+costs a pass over the edges of the candidate graph. Four nodes and a handful of typed
+edges remain a small graph. The reason to defer that model is not computer time. It is the
+absence, in this thesis, of a plant large enough for the hand-grouped keys to be the wrong
+inductive bias. Twenty identified coefficients already expose which costs matter. A deeper
+network would hide that exposure unless its attention weights were read back out, which is
+possible and was not necessary here.
+The evolutionary reference pays a different bill. A population of eighteen, decoded twelve
+times and then doubled inside the generational pool, is a few hundred full days of simulation
+for one book, and it returns a front for that book only. Repeating it at every rush release
+is the cost Section 1.1 objected to. The online score pays the identification once and then
+pays one argmin per free resource.
+2.2.11 Where the disjunctive graph went
+It is reasonable to ask whether the four-node candidate graph replaced the disjunctive
+graph or merely decorated it. Precedence is still a chain of conjunctive arcs: an operation
+entersR(t)only when its predecessor has finished. Machine capacity is still disjunctive:
+two bundles share a machine only in sequence, because a busy machine is not inF. The
+same sentence holds for an operator. The token inequality (2.11) has no classical disjunctive
+counterpart, because a die is not a machine and two operations can hold two dies at the
+same time. The candidate graph is the disjunctive graph at the moment a decision is taken,
+restricted to the operations that could actually start, and extended by the operator and
+53
+
+===== PAGE 57 =====
+
+the shop node.
+What was given up is an explicit binaryyaa′ for every pair of operations that might
+ever conflict. Those binaries are the right variables for a solver that wants a certificate of
+optimality on a frozen instance. They are the wrong variables for a policy that must act
+when the instance is not frozen. Proposition 2.1 is the certificate this construction offers
+instead: every executed bundle was feasible when it started, and every operation eventually
+starts. It is not a certificate that no other feasible schedule has a smallerJω. The thesis
+does not claim that certificate. The tables measure the distance to four rules and to two
+ablations, which is a different and, for a running cell, a more relevant distance.
+2.2.12 A sensor reading, worked as a Kalman step
+The estimation plant writes health with Equation (2.55) and never opens Equation (2.54).
+This subsection runs the filter once, on the same cutter, so the sensor path is not only a
+citation. Take the posterior before a shell cut to beˆh= 0.58with variancev= 0.010. The
+drift is the cutter’s ownη= 0.00115per minute. The diffusion scale is taken asσ= 0.015
+per square-root minute, a design value for the indicator noise, not a fitted plant parameter.
+The cycle length is the unrepairedp= 27.268minutes.
+Predict:
+ˆh− = 0.58 + 0.00115×27.268 = 0.6114,(2.66)
+v− = 0.010 + (0.015)2×27.268 = 0.01614.(2.67)
+Suppose the indicator, after the feature map, readsy= 0.64, a little worse than the drift
+expected, with noise varianceρ2 = 0.008. The gain and the update are
+K= 0.01614
+0.01614 + 0.008 = 0.6685,(2.68)
+ˆh= 0.6114 + 0.6685×(0.64−0.6114) = 0.6305,(2.69)
+v= (1−0.6685)×0.01614 = 0.00535.(2.70)
+Thereadingmovedthestatefromthepure-driftvalue0.611to0.631, anditcutthevariance.
+A second reading will move it less, becausevis now smaller and the gain will fall. That
+is the filter doing the job Gebraeel and co-authors asked of a Bayesian residual: one bad
+minute does not become the new truth, and a persistent bias does not stay outside the
+54
+
+===== PAGE 58 =====
+
+state [63].
+Now apply the Gaussian ceiling (2.60) atε= 0.10, soΦ −1(0.90)≈1.282, with ceiling
+h⋆ = 0.90, to the question “may this same cycle be repeated.” Using the updated health,
+0.6305 + 0.00115×27.268 + 0.015
+√
+27.268×1.282 = 0.762.(2.71)
+The value0.762is under0.90. The Gaussian one-step ceiling would allow another cycle.
+The hazard (2.58) at health0.6305and the same cycle length is0.144, which is above
+ε= 0.10. Algorithm 3 would veto. The two forms, which Section 2.2 presented as the same
+kind of object, disagree on this borderline cycle.
+The disagreement is useful and it is not a bug in the arithmetic. Equation (2.60) asks
+whether the health at the end of the cycle is likely to have crossed0.90. Equation (2.58) asks
+whether an interruption intensity, which turns on at0.40, has accumulated enough hazard
+to exceed the tolerance. A machine can be likely to survive the cycle without hitting0.90
+and still be likely enough to suffer a stop that the factory does not want. The estimation
+uses the hazard, because the cell’s interruption model is an intensity, not a first hitting time
+of0.90. A plant whose maintenance standard is literally “stop at indicator0.90” should
+use the Gaussian ceiling instead, and should expect fewer vetoes on this cutter. Publishing
+both formulas, and one numerical case where they split, is what makes the tolerance a
+parameter rather than a story.
+The variance also says when the filter is not yet allowed to veto. At the start of a shift,
+ifvis large,Kis near one and a single noisyycan throw ˆhacrossε. The practical rule is
+to withhold Algorithm 3 untilvhas fallen below a band, or to inflateεby a term in√v.
+Neither guard is in the estimation, because the plant variance is zero. Both belong in the
+specification for a cutter whose indicator is new.
+2.2.13 What Chapter 3 is allowed to claim about these formulas
+2.2.14 Failure modes of the score
+The score can be wrong in ways the mask will not catch, because the mask only enforces
+feasibility. Four failure modes are worth naming before the estimation, so that a bad table
+can be traced to a cause.
+The first is a stale divisor. If batch quantities move from around eighty to around
+55
+
+===== PAGE 59 =====
+
+twenty,ρ 1 =p/45becomes a small number for every candidate and the processing-time
+weight stops discriminating. The policy then leans on whatever cost is still order-one,
+which on this vector is load deviation. The shop will look balanced and late. The fix is to
+re-identify, not to edit5.660by hand.
+The second is a health indicator that saturates. If every machine reportshnear one
+because the feature map was fit on a different tool, thenρ5 andρ 8 are large for every
+candidate and the maintenance test fires on every cycle. The day fills with sixteen-minute
+renewals that do not change a saturated indicator, because Equation (2.62) pullshdown
+and the next reading, if it is still saturated, puts it back. The twin then oscillates. The fix
+is the feature map, upstream of the scheduler.
+The third is an opening that was identified at one preference and then used at another.
+Section 2.1 already recorded that the shop-node opening at the balancedωis negative and
+nearly silent. Feeding an energy-heavyωthrough Equations (2.25)–(2.28) without a new
+identification does not create an energy policy. It rescales a policy that was fit to balance
+load. Chapter 3 therefore does not draw a Pareto front from those openings.
+The fourth is a token capacity of zero that the data claim is one. The mask will refuse
+every operation of that colour, the clock will advance only when some other colour can
+run, and an order of the missing colour will wait until the end and then, if no other work
+remains, deadlock is avoided only because capacity one was assumed in Proposition 2.1. A
+capacity of zero violates the hypothesis of the proposition. The cell should reject such a
+book at load time rather than discover it as a stuck clock.
+None of these modes appeared in the estimation books, because the divisors match the
+batch sizes, the health values start inside(0,1)and move by the wear recursion rather than
+by a saturated sensor, the preference is the one that was identified, and every token pool
+has capacity at least one. They are listed because a transfer of the same code to a different
+bag line will hit them in that order.
+Table 2.4: What to check when a transferred cell misbehaves. The estimation books did
+not trip these checks.
+Symptom Likely cause Check
+Balanced and late stale time divisor re-identify after rescalingρ 1
+Maintenance every cycle saturated health inspect the feature map, notε
+Energy weight ignored oldωin the openings rerun Algorithm 1
+Clock stuck on one colour token capacity zero reject the book before dispatch
+56
+
+===== PAGE 60 =====
+
+An implementation that follows this chapter, rather than the estimation program, has
+a definite order of work. First the routes, the skill matrix, the token capacities, and the
+nameplate powers are tables, not code. Second the mask is written and tested on a first-in-
+first-out ranking, because Proposition 2.1 can be checked before any weight exists: every
+order must finish, and no token count may go negative. Third the twelve raw costs are
+logged for a single candidate and checked against a hand calculation of the kind in the
+cutter example. Fourth the weights are identified, and the log-weights are inspected. A
+colour weight near zero, as in Equation (2.43), is a result to be reported, not a bug to be
+patched by hand. Fifth the maintenance test is switched on at a statedε, and a one-machine
+trace like Table 2.3 is checked before any full book is compared. Sixth, and only if a sensor
+exists, the Kalman step is put in front of the wear recursion and the variance guard is set so
+that a new indicator cannot veto on its first noisy hour. Skipping to a multi-layer network
+at step two would make every later check harder and would not change the mask.
+The two technologies, stripped of the surrounding discussion, are small enough to restate.
+RCH-GAT builds, at each free resource, the feasible bundles of Equation (2.1), scores them
+by the preference-weighted attention of Equation (2.30), and starts the minimiser. The
+graph has four node types because the bundle names an operation, a machine, an operator,
+and a token. The weights in Equation (2.43) say which of those nodes the identification
+actually used: load, skill, failure, setup, and energy, with colour contention nearly silent.
+SSDT-CC writes the health that those failure and energy costs read. It lengthens processing
+time by Equation (2.12), assigns an interruption probability by Equation (2.58), and, when
+that probability exceedsεor the predicted health exceeds0.90, renews the machine by
+Equation (2.62) before the cycle. The renewal is not free on the cycle that pays it. Three
+cycles later, on the numbers of Table 2.3, it is cheaper than letting the cutter drift. A sensor
+path, when one exists, revises the same health by Equations (2.53) and (2.54), and it can
+disagree with the hazard on a borderline cycle, as the numerical Kalman step showed. The
+estimation is allowed to speak only for the subset it ran.
+The formulas of this chapter define the system. The next chapter measures an executable
+subset of them on a simulated school-bag cell. The subset includes Equations (2.12), (2.13)–
+(2.30), (2.58), (2.62), and Algorithms 1–3. The subset does not include a trained multi-layer
+network (2.31)–(2.32) and does not include a noisy sensor around (2.54). Claims about
+makespan, energy, and failures in the next chapter are claims about the subset. Claims
+about the multi-layer network and the Kalman filter are claims about the model that the
+57
+
+===== PAGE 61 =====
+
+subset instantiates, and they are not given extra experimental authority.
+58
+
+===== PAGE 62 =====
+
+Chapter 3
+System Build and Estimation
+The formulas of Chapter 2 do not, by themselves, say whether the two technologies move the
+five targets. This chapter builds the smallest system that can be run, and then estimates it.
+Section 3.1 describes the cell, the data, the programs, and the way RCH-GAT and SSDT-
+CC sit inside them. Section 3.2 reports what those programs produced on four stresses of
+the order book, on two ablations, and on a sweep of the chance-constraint tolerance. The
+estimates are means and standard deviations over paired random order books. They are
+not measurements from a physical sewing line, and the text does not treat them as if they
+were.
+3.1 System build
+3.1.1 What was built
+The system is a discrete-event shop cell and a dispatcher that share one state. The cell
+holds orders, machines, operators, dies, and thread lots. The dispatcher is called whenever
+the cell has a free feasible bundle. It returns one bundle, optionally prefixed by preventive
+maintenance. The cell advances that bundle, writes the new health, releases the resources
+at the end, and calls the dispatcher again. There is no nightly plan file. Figure 3.1 is the
+whole architecture.
+Four programs implement the figure. The shop generator builds an order book from
+a seed and a scenario name. The cell executes Algorithm 2. The scorer evaluates Equa-
+tion (2.30) and Algorithm 3. The identification program runs Algorithm 1 and stores the
+coefficient vector. A comparison driver repeats the cell for every method, every scenario,
+59
+
+===== PAGE 63 =====
+
+Order book
+releases, routes
+Shop cell
+machines, people, tokens
+Twin
+health andϕ
+RCH-GAT
+masked score
+KPI log
+five targets
+Figure 3.1: Executable architecture. The policy reads the twin and writes one bundle back
+into the cell. The KPI log is the only path from a run to the tables in Section 3.2.
+and every seed, and writes the means. The driver is deterministic given the seed. Re-
+running it reproduces the tables.
+The cell is the plant. It is also the sensor, in the sense of Section 2.2: health is updated
+by the wear recursion (2.55) rather than by a Kalman correction of a noisy current trace.
+That choice is deliberate. It removes sensor luck from the comparison. It does not remove
+the status effect, because wear, the duration factor, the hazard, and the maintenance map
+are all active.
+3.1.2 The cell
+Nine machines form seven groups. Table 3.1 lists the quantities that enter Equations (2.12)
+and (2.4). Health at the start of the day is part of the scenario, not a warm-up artefact.
+Cutter-A is fast, powerful, and already at0.58. Lockstitch-2 is at0.52. The embroidery
+head is at0.46. A scheduler that ignores status is ignoring the largest machines in the cell,
+not a rounding error on a healthy fleet.
+Table 3.1: Machines in the estimation cell. Wear is the driftηk in health per processing
+minute. Healthh 0 is the nominal-scenario initial state.
+Machine Group Power (kW) Speed Wearh 0
+Cutter-A cut 6.8 1.28 0.00115 0.58
+Cutter-B cut 2.4 0.74 0.00055 0.22
+Embroidery-1 print 3.4 1.00 0.00050 0.46
+Lockstitch-1 sew 0.75 1.05 0.00038 0.24
+Lockstitch-2 sew 0.75 0.98 0.00040 0.52
+Bartack-1 sew, heavy 1.15 1.00 0.00048 0.34
+Hardware-1 hardware 1.45 1.00 0.00028 0.20
+QC-1 inspect 0.35 1.00 0.00008 0.08
+Pack-1 pack 0.55 1.00 0.00008 0.12
+Eight operators staff the nine machines, which is the dual-resource constraint. Table 3.2
+is the skill matrix. A blank entry is a hard zero and is masked. Cut-2 can pack slowly
+60
+
+===== PAGE 64 =====
+
+and is the only second cutter. Print-1 is the only embroidery operator and can stand in
+at inspection. Sew-3 cannot run the bartack. The hardware operator and the inspection
+operator both reach the packing table, so packing is rarely the resource that deadlocks, and
+hardware sometimes is.
+Table 3.2: Operator skills. The number multiplies machine speed in Equation (2.12). A
+dash is an infeasible pairing.
+Operator Cut Print Sew Heavy Hardware Inspect Pack
+Cut-1 1.00 – – – – – –
+Cut-2 0.82 – – – – – 0.55
+Print-1 – 1.00 – – – 0.45 –
+Sew-1 – – 1.06 0.78 – – –
+Sew-2 – – 0.96 1.08 – – –
+Sew-3 – – 1.00 – – – –
+Hard-1 – – – – 1.00 – 0.70
+QC-1 – – – – 0.62 1.00 0.95
+Tokens are few on purpose. Two dies cover two cutters. Thread lots allow two concurrent
+users of navy, black, red, and grey, and one user of khaki. In the shortage scenario the navy,
+red, and khaki pools drop to one. Colour setup is eleven minutes on cutting, embroidery,
+and sewing when the previous colour differs, and four minutes when the machine has no
+remembered colour. The repair expectation, when a failure probability is priced, is forty-
+eightminutesathalfnameplatepower. Preventivemaintenance, whenthechanceconstraint
+fires, is sixteen minutes and applies Equation (2.62).
+Routes are those of Section 1.3. A backpack has eight operations, a trolley bag seven,
+and a sports sack six. Base minutes at quantity 80 and size M are stored with the route. A
+random order draws a style, a colour, a size in{S,M,L}, a quantity in{40,60,80,100,120},
+a release time in{0,40,90,150}minutes, and a due date equal to the release time plus a
+multiple of the route’s base work. The multiple is drawn uniformly from3.6to6.4, which
+is wide enough that a good schedule can finish a substantial share of orders on time and a
+poor schedule cannot. Sixteen orders form a book, except in the rush scenario, which adds
+four more at time220.
+3.1.3 Methods that share the cell
+Every method uses the same cell, the same mask, and the same health plant. They differ
+in the ranking of feasible bundles and in whether Algorithm 3 is allowed to maintain.
+61
+
+===== PAGE 65 =====
+
+First-in-first-out ranks by release time, then by order identity, then by operation index.
+Shortest processing time ranks by processing time plus setup, using the health-scaled time
+of Equation (2.12), because hiding health inside the baseline’s clock and not inside its
+ranking would invent a gain. The baselines are allowed to see the true processing time.
+They are not given the failure features, the token-contention features, or the maintenance
+action. Earliest due date ranks bydj. Apparent tardiness cost uses Equation (1.2) with
+look-aheadk= 2and a forty-minute average processing time.
+RCH is Equation (2.30) with the identified coefficients and with the maintenance test
+switched off. RCH-SSDT is the same score with the test switched on atε= 0.10. The
+no-resource ablation zeroes the contention costsρ 9,ρ 10,ρ 11 and the shop-node key, and
+still allows maintenance. The no-status ablation zeroes health and failure in the score and
+switches maintenance off. The plant’s wear and the plant’s expected repair delay remain
+active for every method, including the ablations. Otherwise a method that “ignores status”
+would be running a different factory.
+An evolutionary reference is reported separately and is not given maintenance. On four
+nominal books a small NSGA-II [18], with a population of eighteen and twelve generations,
+searches a priority key per operation and a machine bias. The decoder is the same cell.
+The front it returns is a static search on one book, not an online policy. It is there to show
+what a short population search can move when it is allowed to look at the whole book at
+once, and what it does not move when it cannot renew a machine.
+3.1.4 Identification
+Coefficients were identified on four books, seeds11,23,37, and41, which are not in
+the estimation seeds. The preference during identification was the balanced vectorω=
+(0.34,0.33,0.18,0.15), ordered as makespan, tardiness, energy, and imbalance, with the
+failure ratio added at weight0.12as in Equation (2.7). The cross-entropy search used a
+population of36, an elite of8, and28generations. Figure 3.2 shows the best and the mean
+fitness. Fitness isJ ω relative to first-in-first-out, so a value of one is a tie with that rule
+and a value below one is an improvement on the scalar.
+The curve falls quickly and then flattens. Most of the scalar gain is present by gen-
+eration ten. Later generations trim the best value from about0.39to0.366and do not
+change the identity of the method. This is the behaviour one expects when the score is
+62
+
+===== PAGE 66 =====
+
+−2 0 2 4 6 8 10 12 14 16 18 20 22 24 26 280.3
+0.4
+0.5
+0.6
+Generation
+Scalar cost relative to FIFO
+Best in generation
+Population mean
+Figure 3.2: Identification of the twenty score coefficients. The vertical axis is the preference-
+weighted cost divided, term by term, by first-in-first-out on the same training books. The
+search was stopped at generation 27. The coefficient vector used in the tables is the best
+vector observed, at0.366.
+a low-dimensional monotone function of sensible costs and the mask already carries the
+combinatorial structure. It is not evidence that a deep multi-layer network would be un-
+necessary on a plant with hundreds of machines. It is evidence that, on this cell, the
+attention score of Section 2.1 can be identified without hiding the result inside an opaque
+training run.
+3.1.5 Scenarios and the statistics that are reported
+Four scenarios stress the problem set.
+The nominal scenario is the cell as tabulated, with sixteen orders and the standard token
+capacities. It is the fair day.
+The rush scenario releases four extra orders at minute220, with due dates at2.15times
+their base work after that release. They are tighter than the ordinary multiple of3.6to6.4.
+Every online method, including the classical rules, can see them only after minute220. The
+scenario asks whether rebuilding the feasible set, which all online methods do, is enough,
+or whether the score and the twin still matter once the book has grown.
+The wear scenario multiplies every wear rate by1.85and adds0.10to every initial health.
+Cutter-A then starts at0.68, already deep into the hazard. This is the scenario the twin is
+for.
+The shortage scenario leaves wear nominal and cuts the navy, red, and khaki pools to
+one concurrent user. This is the scenario the shop node is for.
+63
+
+===== PAGE 67 =====
+
+Each scenario is run on twenty books, seeds1000through1019, paired across methods.
+Tables report the mean and, in the text, the standard deviation. Total tardiness has a
+large standard deviation because one late trolley bag dominates the sum. A difference of a
+few tens of minutes in mean tardiness, against a standard deviation of a few hundreds, is
+reported as a point estimate and is not promoted to a ranking. Differences that exceed the
+spread, in particular makespan, energy, and expected failures for the full system against
+the classical rules, are treated as the estimation’s actual findings.
+The failure column is an expectation, summed from Equation (2.58). Two methods can
+be compared on it without a second random draw. Expected repair minutes are inserted
+into the timeline so that a method which accepts a highϕalso accepts the blocking time
+that follows.
+3.2 Estimation
+3.2.1 Nominal book
+Table 3.3 is the main estimate. Times are minutes. Energy is kilowatt-hours. Failures
+are the expected countf5. On-time rate is the fraction of orders with no tardiness. The
+twenty-book standard deviation of makespan is about166minutes for first-in-first-out and
+about83minutes for the full system. The standard deviation of tardiness is several hundred
+minutes for every method.
+Table 3.3: Nominal order books, twenty paired seeds. Lower is better except for the on-time
+rate.
+Method Makespan Tardiness On time Energy Imbalance Failures PM
+FIFO 1520.7 2761.4 0.519 303.2 377.7 18.02 0
+SPT 1547.6 512.8 0.816 268.3 366.0 15.56 0
+EDD 1545.4 212.1 0.891 299.3 377.4 16.95 0
+ATC 1631.8 274.7 0.863 299.1 393.8 17.44 0
+RCH 1234.4 260.9 0.853 211.0 260.4 10.13 0
+RCH-SSDT 1051.6 165.1 0.903 167.5 222.1 0.91 5.35
+No resource 1050.6 135.4 0.903 168.2 218.6 0.89 5.70
+No status 1260.4 268.5 0.875 207.7 263.8 10.22 0
+Read the classical block first. First-in-first-out finishes about half the orders on time
+and accumulates2761minutes of tardiness. Shortest processing time and earliest due date
+cut that tardiness sharply, to513and212minutes, and they do not cut the makespan. All
+64
+
+===== PAGE 68 =====
+
+four rules finish the day in roughly1520to1632minutes and burn roughly268to303 kWh.
+Expected failures sit between15.6and18.0. Apparent tardiness cost does not beat earliest
+due date on this book. The look-ahead in Equation (1.2) is a good idea on a pure tardiness
+problem and is not, here, a substitute for health and tokens.
+RCH, which is the graph score without maintenance, is the estimate of the first technol-
+ogy alone. Makespan falls from1520.7to1234.4minutes, a reduction of286minutes against
+first-in-first-out and of about310minutes against earliest due date. Energy falls from the
+best classical value, the268.3 kWhof shortest processing time, to211.0 kWh. Imbalance
+falls from about370to260. Expected failures fall from about16to10.1. Tardiness, at
+260.9minutes, is better than shortest processing time and worse, as a point estimate, than
+earliest due date’s212.1. The on-time rates are0.85and0.89. Given tardiness standard
+deviations of250and356minutes, that ordering is not a stable ranking. The honest nom-
+inal statement about RCH is that it shortens the day, saves energy, balances the machines,
+and avoids some failures, while staying in the same tardiness band as the due-date rules.
+RCH-SSDT is the estimate of the two technologies together. Makespan falls further,
+to1051.6minutes. Energy falls to167.5 kWh. Expected failures fall to0.91, with5.35
+preventive maintenances on an average book. Expected breakdown delay, which is865
+minutes under first-in-first-out and486minutes under RCH, is44minutes under the full
+system. Tardiness’ point estimate,165minutes, is below earliest due date, and the on-time
+rate is0.90. The tardiness standard deviation is still205minutes, so the due-date claim
+is the weak one. The makespan, energy, failure, and balance claims are not weak: the full
+system’s makespan spread (±83) and the classical makespan spread (±150or more) do not
+cover a gap of about470minutes, and the failure gap is from the teens to under one.
+The ablations split the gain. Removing status features and maintenance returns the
+result to the RCH band: makespan1260, energy208, failures10.2. The twin, not the
+attention biases, is what drives failures from ten to under one. Removing resource features
+and keeping maintenance does not hurt the nominal book. The point estimates of makespan
+and energy stay inside a few minutes of the full system, and the tardiness point estimate is
+even lower. Token pools of two, on a sixteen-order nominal book, are not tight enough for
+the shop node to earn its keep. That is a finding about this scenario, not a reason to delete
+the node. The shortage and rush scenarios are where the node was supposed to matter,
+and they are reported next.
+Figure 3.3 repeats the four headline means so the gap is visible without the full table.
+65
+
+===== PAGE 69 =====
+
+Makespan Energy x5 Failures x50
+0
+500
+1,000
+1,500Value on the nominal book
+FIFO EDD RCH RCH-SSDT
+Figure3.3: Nominalmeansrescaledontooneaxis. Energyismultipliedbyfiveandexpected
+failures by fifty, so that a kilowatt-hour and a failure can sit beside a minute of makespan.
+The scaling is only for the drawing. Table 3.3 has the unscaled numbers.
+3.2.2 Rush release
+Table 3.4 adds four orders at minute220. The day is longer for every method, and tardiness
+grows because the new due dates are tight and because the embroidery head and the
+hardware bench were not idle.
+Table 3.4: Rush release at minute 220, twenty paired seeds. The book contains twenty
+orders after the release.
+Method Makespan Tardiness On time Energy Failures PM
+FIFO 2013.0 7701.6 0.415 416.9 30.24 0
+SPT 1928.5 3090.4 0.515 356.0 24.30 0
+EDD 2001.5 2716.0 0.425 408.2 27.39 0
+ATC 2008.1 2871.0 0.410 403.1 27.11 0
+RCH 1676.1 1577.6 0.495 302.4 17.93 0
+RCH-SSDT 1264.6 735.5 0.685 214.6 1.02 7.85
+No resource 1274.9 805.8 0.708 213.0 1.02 7.70
+No status 1597.5 1473.6 0.557 298.0 17.15 0
+Earliest due date, which won the nominal tardiness point estimate, now records2716
+minutes of tardiness and an on-time rate of0.43. The rule does see the rush orders. Seeing
+them is not the same as placing them onto a machine that will still be healthy when they
+arrive. Shortest processing time is similar, with a slightly shorter day and slightly less
+energy, and with tardiness still near3100minutes. Standard deviations of rush tardiness
+are about900to1300minutes for the classical rules and522minutes for the full system.
+The gap from2716to736is large beside those spreads. The on-time rate moves from0.43
+66
+
+===== PAGE 70 =====
+
+to0.69.
+The full system finishes in1265minutes instead of about2000, at215 kWhinstead of
+about400, with one expected failure instead of about twenty-seven, using7.9maintenances.
+RCH without maintenance already reaches1676minutes,302 kWh, and17.9expected fail-
+ures, so the graph score is doing part of the work before the twin renews anything. The
+no-status ablation sits next to that RCH result. The no-resource ablation sits next to the
+full system and is a little worse on makespan and on the tardiness point estimate (1275and
+806against1265and736). The resource features point the right way under a rush, and
+the difference is much smaller than the difference made by maintenance. A rush overloads
+machines and health before it overloads token pools.
+3.2.3 Accelerated wear
+Table 3.5 is the twin’s scenario. Initial health is higher and every processing minute writes
+more wear.
+Table 3.5: Accelerated wear, twenty paired seeds. Initial health is shifted up by0.10and
+every wear coefficient is multiplied by1.85.
+Method Makespan Tardiness On time Energy Failures PM
+FIFO 2097.7 5898.7 0.397 388.2 42.26 0
+SPT 2034.0 2093.5 0.641 351.7 36.24 0
+EDD 2059.3 1849.0 0.584 384.3 38.75 0
+ATC 2120.8 2252.4 0.547 382.0 38.91 0
+RCH 1782.0 895.1 0.697 310.0 30.58 0
+RCH-SSDT 1121.7 287.2 0.850 176.1 0.81 11.95
+No resource 1109.8 279.5 0.831 174.6 0.83 11.85
+No status 1676.9 1054.7 0.706 283.6 28.88 0
+Without maintenance the day runs away. Classical makespans sit near2100minutes,
+with36to42expected failures and about1700to2000minutes of expected repair delay
+charged into the timeline. RCH, which can see health and still cannot renew it, improves
+the book to1782minutes and30.6expected failures. Seeing the worn cutter and preferring
+the healthy one is worth several hundred minutes. It is not worth what renewal is worth.
+With the chance constraint on, the same books finish in1122minutes, at176 kWh, with
+0.81expected failures and12.0maintenances. The no-status ablation, at1677minutes and
+28.9expected failures, confirms that the score’s health features without the maintenance
+action do not reproduce this result. The no-resource ablation is statistically the same as
+67
+
+===== PAGE 71 =====
+
+the full system on this scenario. Wear does not act through the khaki lot.
+Twelve maintenances of sixteen minutes are192minutes of tool-change time. The ex-
+pected repair delay avoided, relative to earliest due date, is about1860−39 = 1821minutes.
+The arithmetic of Table 2.2 was that one maintenance does not pay for itself inside one
+cycle. The arithmetic of Table 3.5 is that the same action, applied when the test fires,
+pays for itself across the day by a wide margin. Both statements are true. They refer to
+different horizons, which is why the twin is a day-level technology even though its test is a
+cycle-level test.
+Tardiness follows the makespan. The full system’s point estimate is287minutes and
+its on-time rate is0.85, against1849minutes and0.58for earliest due date. The tardiness
+standard deviation is364minutes for the full system and1009for earliest due date. The
+gap remains large beside those spreads. This is the scenario in which the due-date claim is
+actually supported, because the failures that the due-date rule accepts are what make the
+orders late.
+3.2.4 Thread-lot shortage
+Table 3.6 restores nominal wear and tightens three colour pools to a single concurrent user.
+Table 3.6: Thread-lot shortage, twenty paired seeds. Navy, red, and khaki allow only one
+concurrent user.
+Method Makespan Tardiness On time Energy Failures PM
+FIFO 1456.0 2329.7 0.544 295.5 15.85 0
+SPT 1462.0 350.7 0.850 260.0 13.47 0
+EDD 1515.9 162.6 0.925 290.8 14.74 0
+ATC 1564.0 219.2 0.916 289.2 15.01 0
+RCH 1225.4 171.4 0.887 208.2 9.29 0
+RCH-SSDT 1038.7 106.3 0.925 163.5 0.76 5.15
+No resource 1074.6 113.0 0.938 165.4 0.79 5.30
+No status 1204.6 220.6 0.891 203.2 9.01 0
+The pattern of the nominal book returns, with one extra detail. The full system is again
+shorter, cooler, and almost free of expected failures:1039minutes,164 kWh,0.76failures,
+on-time rate0.93. Earliest due date matches the on-time rate and loses more than470
+minutes of makespan and about127 kWh. RCH without maintenance sits in between, as
+before.
+The resource ablation is the detail. Without contention features the makespan point
+68
+
+===== PAGE 72 =====
+
+estimate rises from1038.7to1074.6and tardiness from106.3to113.0. The standard
+deviations are about90minutes of makespan and about150minutes of tardiness, so a
+36-minute makespan gap is a shift of the mean, not a separation that a single book would
+reliably show. It is, however, in the direction the shop node was built for, and it appears
+under shortage and, with a similar size, under rush, while it does not appear under nominal
+tokens or under pure wear. The estimation therefore supports a limited claim. Resource
+features are a small, correctly signed correction when lots are tight, and they are not the
+source of the large gains in makespan, energy, and failures. Those gains survive the ablation.
+A factory that already has ample dies and thread, and that is trying to justify the shop
+node alone, will not see them in a one-day book of this size. A factory whose khaki lot is
+a single spool will see a modest tightening of the day, on top of the much larger tightening
+that comes from not running the cutter into a repair.
+3.2.5 The tolerance as a knob
+The wear scenario was repeated on eight further books for five values ofε. These seeds
+are not the twenty books of Table 3.5, so the rowε= 0.10does not reproduce that table’s
+mean exactly. The sweep is a curve, not a second copy of the main experiment. Table 3.7
+and Figure 3.4 report it.
+Table 3.7: Chance-constraint tolerance on eight accelerated-wear books. The policy is
+RCH-SSDT. Maintenance count is the mean number of times Algorithm 3 fires.
+εMakespan Failures Energy Maintenances
+0.02 1145.3 0.046 182.0 15.00
+0.05 1151.3 0.238 182.3 13.88
+0.10 1170.2 0.813 195.7 12.63
+0.20 1187.2 2.741 198.2 10.38
+0.50 1335.7 9.773 228.6 7.00
+Tighteningεfrom0.50to0.02cuts expected failures from9.77to0.05and raises the
+maintenance count from7.0to15.0. Makespan moves from1336minutes down to1145,
+not up. Energy moves with it, from228.6 kWhdown to182.0 kWh. On this wear param-
+eterisation, a sixteen-minute renewal is cheap relative to the repair delay and the slowed
+cycles it prevents, all the way to the tightest tolerance tested. The knob behaves as a knob.
+It does not, inside the tested interval, produce the rising makespan that a much longer
+maintenance, or a much healthier fleet, would produce. That qualification belongs in the
+69
+
+===== PAGE 73 =====
+
+0 5·10 −2 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.5 0.550
+5
+10
+Toleranceε
+Expected failures
+Figure 3.4: Expected failures against the chance-constraint tolerance on the eight-book
+wear sweep. Loosening the veto lets the worn machines run and the failure count returns.
+result. The technology exposesεso that a plant with different renewal costs can set it from
+its own curve rather than from this one.
+3.2.6 A static evolutionary reference
+On four nominal books the small NSGA-II, without maintenance, produced nondominated
+sets of size14,16,7, and18. The best makespan in those four sets was1002,1274,1081,
+and1219minutes. The best tardiness was649,131,571, and326minutes. The best energy
+was204,263,237, and238 kWh. These are four separate single-book searches. A point
+that holds the best makespan of a front is not the point that holds the best tardiness of
+that front.
+The reference is useful as a ceiling check and as a warning against a sloppy comparison.
+On one book, a population that can see every order at time zero can reach a makespan near
+1000minutes without any maintenance, which is in the neighbourhood of the full system’s
+twenty-book mean of1052. The energy attached to the evolutionary fronts does not enter
+the neighbourhood of168 kWh, and the search has no failure action to bring it there. Giving
+the evolutionary method the maintenance map and a long enough population would be a
+different experiment. It was not run. The online system does not need that population at
+dispatch time, which is the operational distinction drawn in Section 1.1 and left intact by
+these four fronts.
+3.2.7 Where the gain comes from
+The four scenarios support a single decomposition.
+70
+
+===== PAGE 74 =====
+
+The classical rules are not close to each other, and the estimation does not replace them
+with a vague “heuristic baseline.” Earliest due date is the tardiness rule. Shortest processing
+time is the energy rule among the four, because it happens to favour shorter occupations
+on lighter machines more often than earliest due date does. First-in-first-out is the rule
+that shows the cost of having no score at all. Apparent tardiness cost does not dominate
+earliest due date once health-scaled processing times and colour setups are in the cell.
+The graph score without maintenance, RCH, is responsible for a first cut of roughly250
+to350minutes of makespan and roughly50to100 kWh, depending on the scenario, together
+with a partial reduction in expected failures. It does this while remaining competitive with
+earliest due date on nominal tardiness and clearly better than earliest due date on rush
+and wear tardiness. That is the estimate of resource-coupled attention on this cell. The
+resource half of the name is the smaller half. The attention is mostly using health, energy,
+slack, and processing time. Contention features add a modest, correctly signed shift when
+lots are short.
+The twin is responsible for the second cut: failures from about ten, or about thirty in the
+wear scenario, down to about one, and a further several hundred minutes of makespan. The
+mechanism matches Table 2.2 extended over the day. Maintenance is a local cost. Avoided
+repair delay and restored machine speed are a global saving. The no-status ablation shows
+thatmerelypenalisinghealthinsideψ, withouttheauthoritytorenewthemachine, captures
+only the first cut.
+Preference conditioning was not re-identified at the corners of the simplex, and a gate
+sweep at the balanced coefficients did not move energy and tardiness in clean opposite
+directions. The estimation does not claim a traced Pareto front from those gates. What
+it claims is a scalarised policy at a statedω, plus a toleranceεthat does trace a front
+betweenfailuresandmaintenancecount. Aplantthatwantsadifferentcompromisebetween
+makespan and energy can re-run Algorithm 1 at a newω. The identification is short on this
+cell. Pretending that the present gates already provide that compromise would not match
+the runs.
+3.2.8 Spreads, and which gaps survive them
+Means without spreads invite a false ranking. Table 3.8 gives the twenty-book standard
+deviations for the nominal scenario. The same qualitative pattern holds in the other three
+71
+
+===== PAGE 75 =====
+
+scenarios: makespan and energy under the full system are tighter as well as smaller, and
+tardiness is wide for everyone.
+Table 3.8: Standard deviations on the twenty nominal books. Compare with the means in
+Table 3.3.
+Method Makespan Tardiness Energy Failures
+FIFO 165.5 703.0 35.0 3.29
+SPT 229.6 571.9 40.8 3.81
+EDD 175.2 355.5 39.7 3.48
+ATC 188.2 410.7 37.6 3.29
+RCH 146.3 250.5 28.6 2.25
+RCH-SSDT 83.4 204.5 19.4 0.15
+No resource 106.8 139.2 21.1 0.15
+No status 179.2 282.8 24.3 2.00
+A gap survives the spread when it is large next to both standard deviations, not when a
+t-test has been performed. No paired test is reported, and one should not be invented from
+the two margins. The comparisons that survive on that rough standard are these.
+Makespan of RCH-SSDT against any classical rule, in every scenario. The nominal gap
+is about470minutes against a classical spread of150to230and a full-system spread of
+83. The wear gap is about900minutes. The rush gap is about700minutes.
+Energy of RCH-SSDT against any classical rule, in every scenario. The nominal gap
+againstthebestclassicalenergy, shortestprocessingtime, isabout100 kWh, againstspreads
+of41and19.
+Expected failures of RCH-SSDT against every method that is not allowed to maintain.
+The nominal drop is from the teens to0.91, with a full-system spread of0.15. This is the
+cleanest column in the thesis.
+Imbalance of RCH and of RCH-SSDT against the classical rules. The nominal drop
+is from about370to222or260, and the full-system spread is27minutes of standard
+deviation. The load weight5.660in Equation (2.43) is the coefficient that produces this
+column.
+RCHwithoutmaintenanceagainstfirst-in-first-outonmakespanandenergy. Themakespan
+gap of286minutes is larger than either spread, though less dramatic than the gap that
+appears once maintenance is allowed.
+The comparisons that do not survive are equally part of the estimate. Nominal tardiness
+of RCH-SSDT against earliest due date is165against212, with spreads205and356. The
+72
+
+===== PAGE 76 =====
+
+point estimate favours the full system. A single unlucky book can reverse it. Nominal
+on-time rate,0.90against0.89, is a tie. The resource ablation against the full system
+on the nominal book is a tie, and on the shortage book it is a shift of about36minutes
+of makespan against spreads near90. Calling that shift a proved saving would over-read
+twenty books. Calling it noise would ignore that the sign is the same under rush and under
+shortage and is absent under wear, which is the pattern a real but small token effect would
+leave.
+The full system is also more repeatable. Its makespan spread is about half the classical
+spread. Part of that tightness is mechanical: preventive maintenance removes the long
+random-looking repair delays that inflate some books and not others, even though those
+delaysareexpectationsratherthandraws. Amethodthatsometimesacceptseightexpected
+failures and sometimes accepts twenty-five will have a wide makespan. A method that holds
+the expected count near one will not. Repeatability is a target the problem statement did
+not list, and the tables give it anyway.
+3.2.9 What the weights say about the tables
+Equation (2.43) and Table 2.1 were identified before any estimation book was generated.
+They predict the tables more specifically than the architecture diagram does.
+The largest weight is load deviation. Every scenario shows a lower imbalance for RCH
+than for the classical rules, and the full system lowers it further because renewed machines
+can take work that a worn machine would otherwise hoard and then lose to a repair. The
+second-largest relevant weights, skill gap and failure probability, are why a machine-only
+reading of the graph is the wrong reading. Skill never enters the classical rules except as a
+longer processing time after a weak pairing has already been chosen. Failure never enters
+them at all.
+The smallest weight is colour contention. The shortage scenario was built to make that
+weight visible, and the visibility is modest. This is consistent rather than contradictory.
+A weight of0.133cannot move a day by the same amount as a weight of5.660or as a
+sixteen-minute renewal that deletes a forty-eight-minute expected repair. Die contention,
+at0.917, is large enough to matter when both cutters want a die, and the nominal cell
+has two dies for two cutters, so the feature is often slack. A cell with one die would be a
+different estimate.
+73
+
+===== PAGE 77 =====
+
+Setup weight1.029shows up as fewer colour changes:57.8under first-in-first-out and
+57.6under earliest due date, against43.2under the full system on the nominal book.
+Earliest due date groups nothing by colour. The score does, unless a due date or a health
+veto says otherwise. The reduction is about fifteen setups, each eleven minutes, which is
+165minutes of setup time returned to the day. That is a real slice of the makespan gap and
+it is not the whole gap. The rest is routing toward healthier, less loaded machines, and, for
+the full system, the repair time that is no longer charged.
+3.2.10 What a factory would instrument first
+The estimate implies an order of instrumentation, and the order is not the order in which
+the technologies were named.
+The first instrument is a health indicator on the automatic cutter, the embroidery head,
+and the more worn lockstitch, mapped onto the unit interval that Equation (2.12) expects.
+Those three machines dominate power or dominate the route. A health number that cannot
+veto a cycle is a dashboard. The veto is Algorithm 3, and it needs a maintenance action the
+operator is allowed to start without a separate work order. Sixteen minutes is the action
+this cell used. A plant whose knife change takes forty minutes should rerun the tolerance
+sweep before copyingε= 0.10.
+The second instrument is the operator skill table and a live free-time for each person.
+The skill weight is large, and the mask is what keeps Sew-3 off the bartack. A scheduler that
+knows machines and not people will reproduce the hidden wait described in Section 2.1.
+The third instrument is the die pool and the thread lots. They are cheap to count and
+they are already in the graph. On a one-day book of this size they are not where the hours
+are. They become first-priority only if a colour is routinely single-sourced and the due
+dates on that colour are the ones the planner is missing. The shortage table is the test:
+if a factory’s own version of that table shows a large gap between the full score and the
+no-resource score, the lots are the constraint. If the gap looks like the thirty-minute shift
+reported here, the lots are not the constraint.
+The network of Equations (2.31) and (2.32) is not on this list. Nothing in the twenty-
+book cell is large enough to need a multi-layer embedding. The list is health with authority
+to maintain, then people, then tokens, and a deeper network only when the identification of
+twenty coefficients stops being enough. That is a smaller system than a generic Industry 4.0
+74
+
+===== PAGE 78 =====
+
+diagram, and it is the system the numbers support.
+3.2.11 A note on the clock
+All times in the tables are minutes from the release of the first order. A nominal makespan
+of1052minutes is about17.5hours, longer than a single staffed shift. The cell as param-
+eterised is a congested day-and-evening load: one embroidery head, one hardware bench,
+and a worn fast cutter. The absolute clock is a property of those capacities and of the batch
+sizes, not a claim that a school-bag plant cannot finish sixteen orders in a shift. A plant
+with two embroidery heads would show a shorter clock and, if the cutter were healthy, a
+smaller maintenance effect. The ratios are what the estimate is for. The full system is
+about thirty percent shorter than first-in-first-out on the nominal book (1521to1052) and
+about forty-five percent shorter on the wear book (2098to1122). Those ratios are the
+quantities a different capacity would be expected to preserve in direction, not in minutes.
+Energy should be read the same way. One hundred and sixty-eight kilowatt-hours for the
+nominal full system is the cutter, the embroidery head, and the sewing machines over that
+long clock, including setups and the few maintenances. It is not a utility bill for a named
+factory. It is the integral of the nameplate powers in Table 3.1 under the wear surcharge.
+Moving work off Cutter-A is the main reason the integral falls. A plant whose automatic
+cutter is efficient when worn would see a smaller energy gap and would still see the failure
+gap, because the hazard does not depend on the nameplate.
+3.2.12 The four questions, answered in one table
+Section 1.3 asked four questions. Table 3.9 answers them as ratios, so the four scenarios
+can sit on one page. The ratio is the full system divided by the named baseline. A ratio
+below one is an improvement.
+The first question was whether the coupled system could cut makespan, energy, and
+failures without giving the due-date rule a large tardiness advantage. On the nominal book
+the makespan ratio is0.69, the energy ratio is0.62, and the failure ratio is0.05. The
+tardiness ratio against earliest due date is0.78as a ratio of means, and Section 3.2 has
+already said that this particular ratio sits inside a wide spread. The system does not buy
+its energy by missing the promises the due-date rule was keeping. It also does not earn a
+precise claim to have beaten that rule on tardiness.
+75
+
+===== PAGE 79 =====
+
+Table 3.9: RCH-SSDT divided by a baseline, four scenarios. Makespan and failures are
+against first-in-first-out. Energy is against shortest processing time, the best classical en-
+ergy. Tardiness is against earliest due date, the best classical due-date rule. Ratios use the
+means of Tables 3.3–3.6.
+Scenario Makespan / FIFO Tardiness / EDD Energy / SPT Failures / FIFO
+Nominal 0.69 0.78 0.62 0.05
+Rush 0.63 0.27 0.60 0.03
+Wear 0.53 0.16 0.50 0.02
+Shortage 0.71 0.65 0.63 0.05
+The second question was whether the same system holds under stress. The wear row is
+the strongest answer: makespan ratio0.53, tardiness ratio0.16, energy ratio0.50, failure
+ratio0.02. The rush row is the next strongest, especially on tardiness, where earliest due
+date sees the new orders and still finishes them late because the machines it prefers are the
+ones accumulating repair delay. The shortage row looks like the nominal row. Tight thread
+lots change the feasible set. They do not change the ranking of the technologies.
+The third question was which technology produces which gain. The ratios in Table 3.9
+are the coupled system. The ablations, which do not fit in the ratio table, split it. Removing
+maintenance returns failures from about one to about ten on the nominal book and to about
+thirty on the wear book, and it gives back a few hundred minutes of makespan. Removing
+resource features does not. The first technology, as identified, is a load-aware, skill-aware,
+health-aware score. The second technology is the action that renews health. Both are
+required for the failure column. Only the first is required for a large part of the imbalance
+column.
+The fourth question was whetherεis a real knob. Table 3.7 is the answer, and it
+is monotone in the direction the chance constraint predicts: a tighter tolerance, more
+maintenances, fewer expected failures, and, on this wear parameterisation, a shorter rather
+than a longer day. A plant with a slower tool change would be expected to find a bottom
+in that curve. This plant, inside the tested range, did not.
+A fifth question was left soft on purpose. Tardiness ratios in the nominal and shortage
+rowsshould be readas “no damageto the due-date rule, inside a largebook-to-book spread.”
+Tardiness ratios in the rush and wear rows are large enough to survive that spread. The
+soft question is therefore not one answer. It depends on whether the day is being lost to
+wear and rush, or only to ordinary congestion.
+76
+
+===== PAGE 80 =====
+
+3.2.13 Limits of the estimate
+The cell is a simulator with a known wear recursion. A physical embroidery head has a
+health indicator that must be built from thread-break counts, temperature, and current,
+with the measurement path reviewed by Lei and co-authors [62], and it has a Kalman
+residual that this estimate sets to zero. If that residual is large, the veto will chatter, and
+the sixteen-minute maintenance will be applied to noise. The formula for dealing with the
+residual is Equation (2.54). It was not exercised.
+The order books contain sixteen or twenty orders and nine machines. Graph policies are
+attractive in the literature because they transfer to larger books [31, 35]. This estimate
+does not test that transfer. A coefficient vector identified on sixteen-order books is not, on
+the evidence here, a policy for a plant with two hundred machines. The multi-layer model
+of Equations (2.31) and (2.32) is the form proposed for that plant, and it is untested in
+these tables.
+Expected failures are not random failures. Inserting the mean repair delay makes meth-
+ods comparable and removes the variance of a single Bernoulli draw. It also makes the
+timeline optimistic about clustering. Two failures that the expectation treats as indepen-
+dent half-repairs can, in a real morning, land on the same operator and block the bartack
+for a full repair plus the queue behind it. A stochastic replication would widen the spreads.
+It would not, unless the intensity model is badly wrong, reverse a gap between one expected
+failure and thirty.
+Tardiness is a noisy sum. The nominal comparison with earliest due date should be
+read as “no harm, within a large spread,” not as a precise percentage. The wear and rush
+comparisons are the ones in which tardiness actually moves.
+Resource coupling is real in the model and small in the estimate. That is the right
+outcome to publish. Inflating it to match the size of the maintenance effect would mislead
+a factory into instrumenting thread lots before instrumenting cutter wear. The instrumen-
+tation order implied by these tables is the other way around: health and the authority to
+act on health first, token contention second, and a deeper network only when the cell is
+larger than the one these coefficients were fit to.
+The evolutionary reference is too small to be a competitor. It is a sanity check. A
+serious NSGA-III run of the kind Gong and co-authors used for five objectives [22], with
+maintenance included in the chromosome, remains an open comparison and would be the
+77
+
+===== PAGE 81 =====
+
+right offline partner for the online policy.
+The questions in Section 1.3 can be answered in one further sentence each, now that the
+ratiosandthespreadsarebothonthepage. Thecoupledsystemdoescutmakespan, energy,
+imbalance, and expected failures relative to the four rules, and on a nominal book it does
+not hand those rules a tardiness advantage that survives the spread. Under rush and under
+accelerated wear the same system holds, and tardiness moves with the makespan because
+the lateness was being produced by repair delay. The ablation that removes maintenance
+gives back the failure column and a large part of the makespan; the ablation that removes
+resource features does not. The toleranceεtrades maintenances against expected failures
+in the predicted direction. Those four sentences are the estimate. Everything else in the
+section is the condition under which they were measured.
+Table 3.10 fixes the seeds so that a rerun is a comparison and not a new experiment.
+Changing a seed changes the order book. Changing a parameter changes the cell. Either
+change is allowed, and neither is what the tables already report.
+Table 3.10: Seeds used by the driver. Estimation seeds are paired across every method.
+Role Seeds
+Identification books 11, 23, 37, 41
+Nominal, rush, wear, shortage 1000 to 1019
+Tolerance sweep, wear only 4000 to 4007
+Evolutionary reference 5000 to 5003
+The runs are reproducible from the thesis directory. The cell, the score, the identifi-
+cation, and the comparison driver are the programsimulation/shop_sim.py. Training
+books are seeds11,23,37, and41. Estimation books are seeds1000through1019. The
+tolerance sweep uses seeds4000through4007on the wear scenario. The evolutionary ref-
+erence uses seeds5000through5003. The coefficient vector is written beside the tables in
+data/results.json. A reader who changesε, a wear coefficient, or a token capacity and
+reruns the driver will get a different table, and that is the intended use of the program.
+The numbers in this chapter are the numbers that driver produced for the parameterisation
+written down in Section 3.1.
+Nothing in the tables comes from a school that can be visited. The routes, the powers,
+and the wear rates are a constructed cell, documented so that the runs can be repeated.
+The technologies are estimated on that cell. The estimate supports the design: a masked
+resource-bundle score shortens and cools the day, and a chance-constrained renewal of
+78
+
+===== PAGE 82 =====
+
+machine health is what keeps the day from being spent inside expected repairs. It does not
+support a claim about a particular factory’s next quarter.
+What the cell does support is a decision about where to spend the next engineering
+month. Put a health indicator and a sixteen-minute maintenance authority on the worn,
+high-power machines before building a deeper network and before instrumenting every
+thread lot. Keep the operator skill table in the mask, because an infeasible bartack assign-
+ment is a hidden wait. Treat colour contention as a feature that is present and, on this
+book, nearly inactive, and re-identify if a future book shows the shortage gap growing past
+the spreads in Table 3.8. Leaveεvisible. The wear sweep is the evidence that the number
+matters, and it is also the evidence that the right number depends on how long a renewal
+takes. A scheduler that hides the tolerance inside a trained weight cannot be retuned when
+the knife-change time changes. The system in this thesis can.
+79
+
+===== PAGE 83 =====
+
+Bibliography
+[1] M. R. Garey, D. S. Johnson, and R. Sethi. The complexity of flowshop and jobshop
+scheduling.Mathematics of Operations Research, 1(2):117–129, 1976.
+[2] A. S. Manne. On the job-shop scheduling problem.Operations Research, 8(2):219–223,
+1960.
+[3] B.GifflerandG.L.Thompson.Algorithmsforsolvingproduction-schedulingproblems.
+Operations Research, 8(4):487–503, 1960.
+[4] B. Roy and B. Sussmann. Les problèmes d’ordonnancement avec contraintes disjonc-
+tives. Note DS no. 9 bis, SEMA, Paris, 1964.
+[5] J. Adams, E. Balas, and D. Zawack. The shifting bottleneck procedure for job shop
+scheduling.Management Science, 34(3):391–401, 1988.
+[6] A. S. Jain and S. Meeran. Deterministic job-shop scheduling: Past, present and future.
+European Journal of Operational Research, 113(2):390–434, 1999.
+[7] M. L. Pinedo.Scheduling: Theory, Algorithms, and Systems. Springer, 5th edition,
+2016.
+[8] P. Brucker and R. Schlie. Job-shop scheduling with multi-purpose machines.Comput-
+ing, 45(4):369–375, 1990.
+[9] P. Brandimarte. Routing and scheduling in a flexible job shop by tabu search.Annals
+of Operations Research, 41(3):157–183, 1993.
+[10] I. Kacem, S. Hammadi, and P. Borne. Approach by localization and multiobjective evo-
+lutionary optimization for flexible job-shop scheduling problems.IEEE Transactions
+on Systems, Man, and Cybernetics, Part C, 32(1):1–13, 2002.
+80
+
+===== PAGE 84 =====
+
+[11] F. Pezzella, G. Morganti, and G. Ciaschetti. A genetic algorithm for the flexible
+job-shop scheduling problem.Computers and Operations Research, 35(10):3202–3212,
+2008.
+[12] J. Gao, L. Sun, and M. Gen. A hybrid genetic and variable neighborhood descent algo-
+rithm for flexible job shop scheduling problems.Computers and Operations Research,
+35(9):2892–2907, 2008.
+[13] X. Li and L. Gao. An effective hybrid genetic algorithm and tabu search for flexible job
+shop scheduling problem.International Journal of Production Economics, 174:93–110,
+2016.
+[14] I. A. Chaudhry and A. A. Khan. A research survey: review of flexible job shop schedul-
+ing techniques.International Transactions in Operational Research, 23(3):551–591,
+2016.
+[15] S. S. Panwalkar and W. Iskander. A survey of scheduling rules.Operations Research,
+25(1):45–61, 1977.
+[16] J. H. Blackstone, D. T. Phillips, and G. L. Hogg. A state-of-the-art survey of dispatch-
+ing rules for manufacturing job shop operations.International Journal of Production
+Research, 20(1):27–45, 1982.
+[17] A. P. J. Vepsalainen and T. E. Morton. Priority rules for job shops with weighted
+tardiness costs.Management Science, 33(8):1035–1047, 1987.
+[18] K. Deb, A. Pratap, S. Agarwal, and T. Meyarivan. A fast and elitist multiobjec-
+tive genetic algorithm: NSGA-II.IEEE Transactions on Evolutionary Computation,
+6(2):182–197, 2002.
+[19] E. Zitzler and L. Thiele. Multiobjective evolutionary algorithms: A comparative case
+study and the strength Pareto approach.IEEE Transactions on Evolutionary Compu-
+tation, 3(4):257–271, 1999.
+[20] E. Zitzler, L. Thiele, M. Laumanns, C. M. Fonseca, and V. G. da Fonseca. Performance
+assessment of multiobjective optimizers: An analysis and review.IEEE Transactions
+on Evolutionary Computation, 7(2):117–132, 2003.
+81
+
+===== PAGE 85 =====
+
+[21] K. Deb and H. Jain. An evolutionary many-objective optimization algorithm using
+reference-point-based nondominated sorting approach, part I.IEEE Transactions on
+Evolutionary Computation, 18(4):577–601, 2014.
+[22] X. Gong, T. De Pessemier, L. Martens, and W. Joseph. Energy- and labor-aware
+flexible job shop scheduling under dynamic electricity pricing: A many-objective opti-
+mization investigation.Journal of Cleaner Production, 209:1077–1094, 2019.
+[23] G. Mouzon, M. B. Yildirim, and J. Twomey. Operational methods for minimization of
+energy consumption of manufacturing equipment.International Journal of Production
+Research, 45(18–19):4247–4271, 2007.
+[24] M. Dai, D. Tang, A. Giret, and M. A. Salido. Multi-objective optimization for energy-
+efficient flexible job shop scheduling problem with transportation constraints.Robotics
+and Computer-Integrated Manufacturing, 59:143–157, 2019.
+[25] A. Allahverdi, C. T. Ng, T. C. E. Cheng, and M. Y. Kovalyov. A survey of schedul-
+ing problems with setup times or costs.European Journal of Operational Research,
+187(3):985–1032, 2008.
+[26] A. Allahverdi. The third comprehensive survey on scheduling problems with setup
+times/costs.European Journal of Operational Research, 246(2):345–378, 2015.
+[27] R. S. Sutton and A. G. Barto.Reinforcement Learning: An Introduction. MIT Press,
+2nd edition, 2018.
+[28] V. Mnih, K. Kavukcuoglu, D. Silver, A. A. Rusu, J. Veness, M. G. Bellemare,
+A. Graves, M. Riedmiller, A. K. Fidjeland, G. Ostrovski, S. Petersen, C. Beattie,
+A. Sadik, I. Antonoglou, H. King, D. Kumaran, D. Wierstra, S. Legg, and D. Hass-
+abis. Human-level control through deep reinforcement learning.Nature, 518:529–533,
+2015.
+[29] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. Proximal policy
+optimization algorithms. arXiv:1707.06347, 2017.
+[30] T. Haarnoja, A. Zhou, P. Abbeel, and S. Levine. Soft actor-critic: Off-policy maximum
+entropy deep reinforcement learning with a stochastic actor. InProceedings of the 35th
+International Conference on Machine Learning, pages 1861–1870, 2018.
+82
+
+===== PAGE 86 =====
+
+[31] C.Zhang, W.Song, Z.Cao, J.Zhang, P.S.Tan, andC.Xu.Learningtodispatchforjob
+shop scheduling via deep reinforcement learning. InAdvances in Neural Information
+Processing Systems, volume 33, pages 1621–1632, 2020.
+[32] J. Park, J. Chun, S. H. Kim, Y. Kim, and J. Park. Learning to schedule job-shop prob-
+lems: representation and policy learning using graph neural network and reinforcement
+learning.International Journal of Production Research, 59(11):3360–3377, 2021.
+[33] S. Luo. Dynamic scheduling for flexible job shop with new job insertions by deep
+reinforcement learning.Applied Soft Computing, 91:106208, 2020.
+[34] K. Lei, P. Guo, W. Zhao, Y. Wang, L. Qian, X. Meng, and L. Tang. A multi-action
+deep reinforcement learning framework for flexible job-shop scheduling problem.Expert
+Systems with Applications, 205:117796, 2022.
+[35] W. Song, X. Chen, Q. Li, and Z. Cao. Flexible job-shop scheduling via graph neural
+network and deep reinforcement learning.IEEE Transactions on Industrial Informat-
+ics, 19(2):1600–1610, 2023.
+[36] R. Wang, Y. Jing, C. Gu, S. He, and J. Chen. End-to-end multitarget flexible job
+shop scheduling with deep reinforcement learning.IEEE Internet of Things Journal,
+12(4):4420–4434, 2025.
+[37] D. Zeng, W. Yang, Y. Du, X. Yang, Y. Wang, and Y. Lv. Dynamic multi-objective flex-
+ible job-shop scheduling via dynamic dual attention network-based deep reinforcement
+learning.The Journal of Supercomputing, 2025. doi:10.1007/s11227-025-07586-z.
+[38] J. Li, S. Li, P. He, and H. Li. A multi objective collaborative reinforcement learning
+algorithm for flexible job shop scheduling.Scientific Reports, 2025. doi:10.1038/s41598-
+025-03681-6.
+[39] A.Vaswani, N.Shazeer, N.Parmar, J.Uszkoreit, L.Jones, A.N.Gomez, L.Kaiser, and
+I. Polosukhin. Attention is all you need. InAdvances in Neural Information Processing
+Systems, volume 30, 2017.
+[40] P. Velickovic, G. Cucurull, A. Casanova, A. Romero, P. Liò, and Y. Bengio. Graph
+attention networks. InInternational Conference on Learning Representations, 2018.
+[41] T. N. Kipf and M. Welling. Semi-supervised classification with graph convolutional
+networks. InInternational Conference on Learning Representations, 2017.
+83
+
+===== PAGE 87 =====
+
+[42] W. L. Hamilton, R. Ying, and J. Leskovec. Inductive representation learning on large
+graphs. InAdvances in Neural Information Processing Systems, volume 30, 2017.
+[43] W. Kool, H. van Hoof, and M. Welling. Attention, learn to solve routing problems! In
+International Conference on Learning Representations, 2019.
+[44] F. Chen, W. Xie, J. Ma, J. Chen, and X. Wang. Textile flexible job-shop scheduling
+based on a modified ant colony optimization algorithm.Applied Sciences, 14(10):4082,
+2024.
+[45] J. Xu, X. Xu, and S. Q. Xie. Recent developments in dual resource constrained (DRC)
+system research.European Journal of Operational Research, 215(2):309–318, 2011.
+[46] S. D. P. Flapper, J. C. Fransoo, R. A. C. M. Broekmeulen, and K. Inderfurth. Planning
+and control of rework in the process industries: A review.Production Planning and
+Control, 13(1):26–34, 2002.
+[47] International Electrotechnical Commission. IEC 62264: Enterprise-control system in-
+tegration. Geneva. Standard family built on ISA-95.
+[48] International Electrotechnical Commission. IEC 62541: OPC unified architecture.
+Geneva.
+[49] J. Lee, B. Bagheri, and H.-A. Kao. A cyber-physical systems architecture for Industry
+4.0-based manufacturing systems.Manufacturing Letters, 3:18–23, 2015.
+[50] L. Monostori, B. Kádár, T. Bauernhansl, S. Kondoh, S. Kumara, G. Reinhart,
+O. Sauer, G. Schuh, W. Sihn, and K. Ueda. Cyber-physical systems in manufacturing.
+CIRP Annals, 65(2):621–641, 2016.
+[51] L. D. Xu, E. L. Xu, and L. Li. Industry 4.0: state of the art and future trends.
+International Journal of Production Research, 56(8):2941–2962, 2018.
+[52] Y. Koren and M. Shpitalni. Design of reconfigurable manufacturing systems.Journal
+of Manufacturing Systems, 29(4):130–141, 2010.
+[53] M. Grieves and J. Vickers. Digital twin: Mitigating unpredictable, undesirable emer-
+gent behavior in complex systems. In F.-J. Kahlen, S. Flumerfelt, and A. Alves, editors,
+Transdisciplinary Perspectives on Complex Systems, pages 85–113. Springer, 2017.
+84
+
+===== PAGE 88 =====
+
+[54] F. Tao, H. Zhang, A. Liu, and A. Y. C. Nee. Digital twin in industry: State-of-the-art.
+IEEE Transactions on Industrial Informatics, 15(4):2405–2415, 2019.
+[55] Q. Qi and F. Tao. Digital twin and big data towards smart manufacturing and Industry
+4.0: 360 degree comparison.IEEE Access, 6:3585–3593, 2018.
+[56] E. Negri, L. Fumagalli, and M. Macchi. A review of the roles of digital twin in CPS-
+based production systems.Procedia Manufacturing, 11:939–948, 2017.
+[57] C. Cimino, E. Negri, and L. Fumagalli. Review of digital twin applications in manu-
+facturing.Computers in Industry, 113:103130, 2019.
+[58] A. Fuller, Z. Fan, C. Day, and C. Barlow. Digital twin: Enabling technologies, chal-
+lenges and open research.IEEE Access, 8:108952–108971, 2020.
+[59] Y. Lu, C. Liu, K. I.-K. Wang, H. Huang, and X. Xu. Digital twin-driven smart man-
+ufacturing: Connotation, reference model, applications and research issues.Robotics
+and Computer-Integrated Manufacturing, 61:101837, 2020.
+[60] X.-S. Si, W. Wang, C.-H. Hu, and D.-H. Zhou. Remaining useful life estimation —
+a review on the statistical data driven approaches.European Journal of Operational
+Research, 213(1):1–14, 2011.
+[61] X.-S. Si, W. Wang, C.-H. Hu, D.-H. Zhou, and M. G. Pecht. Remaining useful life
+estimation based on a nonlinear diffusion degradation process.IEEE Transactions on
+Reliability, 61(1):50–67, 2012.
+[62] Y. Lei, N. Li, L. Guo, N. Li, T. Yan, and J. Lin. Machinery health prognostics: A
+systematic review from data acquisition to RUL prediction.Mechanical Systems and
+Signal Processing, 104:799–834, 2018.
+[63] N. Z. Gebraeel, M. A. Lawley, R. Li, and J. K. Ryan. Residual-life distributions from
+component degradation signals: A Bayesian approach.IIE Transactions, 37(6):543–
+557, 2005.
+[64] R. E. Kalman. A new approach to linear filtering and prediction problems.Journal of
+Basic Engineering, 82(1):35–45, 1960.
+[65] M. S. Arulampalam, S. Maskell, N. Gordon, and T. Clapp. A tutorial on particle
+filters for online nonlinear/non-Gaussian Bayesian tracking.IEEE Transactions on
+Signal Processing, 50(2):174–188, 2002.
+85
+
+===== PAGE 89 =====
+
+[66] A. Charnes and W. W. Cooper. Chance-constrained programming.Management Sci-
+ence, 6(1):73–79, 1959.
+[67] J. R. Birge and F. Louveaux.Introduction to Stochastic Programming. Springer, 2nd
+edition, 2011.
+[68] K. T. P. Nguyen and K. Medjaher. A new dynamic predictive maintenance framework
+using deep learning for failure prognostics.Reliability Engineering and System Safety,
+188:251–262, 2019.
+[69] L.Wang, B.Li, andX.Zhao.Multi-objectivepredictivemaintenanceschedulingmodels
+integrating remaining useful life prediction and maintenance decisions.Computers and
+Industrial Engineering, 2024.
+[70] L. Li, L. Deng, B. Tang, and F. Wang. Bi-objective flexible job shop scheduling on
+machines considering condition-based maintenance activities.Proceedings of the Insti-
+tution of Mechanical Engineers, Part O: Journal of Risk and Reliability, 238(6):1244–
+1255, 2024.
+[71] V. Pandhare, E. Negri, L. Ragazzini, L. Cattaneo, M. Macchi, and J. Lee. Digital
+twin-enabled robust production scheduling for equipment in degraded state. 2024.
+[72] X. Zhu, H. Wang, and T. Yuan. An online approach for joint optimization of data-
+driven predictive maintenance and production planning. InProceedings of the European
+Safety and Reliability Conference (ESREL), 2024.
+86

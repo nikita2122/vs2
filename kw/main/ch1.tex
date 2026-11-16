@@ -1,0 +1,138 @@
+\chapter{Background and Problem Statement}
+\label{ch:back}
+
+The machine in this thesis is a thresher. The contribution is not a new machine. It is a pair of computations that a fixed setting and a moisture card do not perform: a placement of sensors and a feature model that identify the operating status, and a deep network that turns those features into commands which raise grain recovery while a stability floor, an energy price, an impurity price, and a breakage price remain in force. This chapter says what the plant is, what the published learning systems already do with machines of this kind, and which two problems the later chapters are required to answer.
+
+\section{Structure, Operating Principles, and Types of Threshers}
+\label{sec:plant}
+
+\subsection{What the computer is allowed to mean by the machine}
+
+A thresher frees grain from ears or pods and delivers the grain without the straw. Operators learn a setting on a uniform crop and leave it there while the feed and the moisture change. A moisture card is the same habit written down: wetter grain is given a harder or a longer pass, and the card does not read the load. The computer-science object is the map from a window of measurements to the next command. The metal exists in this thesis only so that the map has inputs, outputs, and a cost.
+
+The topology used from here on has four blocks. A feeder admits biomass. A threshing unit applies impact and rubbing against a concave, and grain that is free can leave through that concave. A cleaner, made of air and oscillating sieves, then accepts grain and rejects chaff. Material that the cleaner does not decide may be offered to the inlet again. Straw leaves at the rear. Figure~\ref{fig:flow} is that topology drawn as a plant, with the quantities the later chapters actually name.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth,node distance=8mm,font=\small]
+  \node[draw,align=center,minimum width=2.5cm,minimum height=1.05cm] (d) {disturbance\\ \(q,\ m,\) crop};
+  \node[draw,align=center,right=11mm of d,minimum width=2.6cm,minimum height=1.05cm] (p) {threshing\\and cleaning};
+  \node[draw,align=center,right=11mm of p,minimum width=2.7cm,minimum height=1.05cm] (y) {measurements\\loads, loss, scalars};
+  \node[draw,align=center,below=11mm of p,minimum width=3.2cm,minimum height=1.05cm] (c) {command \(\mathbf{u}\)\\intensity, residence,\\cleaning, feed trim};
+  \draw[->] (d) -- (p);
+  \draw[->] (p) -- (y);
+  \draw[->] (y.south) ++(0,-0.15) -| (c.east);
+  \draw[->] (c.west) -| (p.south);
+\end{tikzpicture}
+\caption{The thresher as the plant used in this thesis. The learning method sees a disturbance, a measurement window, and a four-dimensional command. It does not redesign the mechanism that realizes the command.}
+\label{fig:flow}
+\end{figure}
+
+\subsection{Operating principle, stated as quantities}
+
+Three failures define a bad pass, and they are different failures. Grain that is still attached when the straw leaves is an unthreshed loss. Free grain that is still in the straw is a separation loss. Grain that the cleaner throws away is a sieve loss. Chaff that stays in the sample is impurity, which is not a loss of grain and must not be added to one. A faster or a longer pass can cut the first two losses and can crack kernels. A more open cleaner can cut the third loss and can raise impurity. Power rises with intensity and with residence. None of these signs is controversial; they are the reason a single knob is not a controller \cite{fu2018,miu2008a,harrison1991}.
+
+Mechanical stability, as the word is used here, is not a stress analysis of a shaft. It is an index of the running machine. The axial load should not pile up at the inlet while the discharge runs light. The peak load should stay clear of a blockage level. Vibration should stay in proportion to the intensity that was asked for. Chapter~\ref{ch:method} writes the index \(S\in[0,1]\) from those three signals and puts a floor under it. A command that buys recovery by crossing the floor is a failed command even if the loss number looks better.
+
+The feed and the moisture do not act as separate additives. A heavy feed on a dry crop and a heavy feed on a wet crop are different plants: the wet, heavy case packs the inlet and raises unthreshed loss together, which is a product, not a sum. A card that is linear in moisture cannot represent a product. That algebraic fact is the reason a linear command map is kept in the study as an ablation rather than assumed to be enough.
+
+\subsection{Types, and why the axial plant is the one that is simulated}
+
+Published descriptions group threshers by the path of the crop \cite{srivastava2006,kepner1978,fu2018}.
+
+A tangential machine presents the crop to a drum for a fraction of one revolution. The concave is short. Separation after the drum is done by a straw walker or by a rotary separator. There is little axial shape to measure on the drum itself, and a single load on the concave is a fair summary of that station. The control problem then collapses toward a choice of drum speed and a single gap.
+
+An axial machine keeps the crop in a cylindrical cage for many revolutions. Helical guides set how fast the mat walks from inlet to discharge. The load then has a shape. The inlet carries the full straw and the still-attached grain. The discharge carries straw and whatever free grain has not yet left. A uniform transport speed makes a front-heavy shape, because grain is leaving along the axis while the straw is not. One load cell on the whole concave sees the sum and misses the shape. A row of stations sees the shape. That row is a placement problem: which stations, and how many, are worth the channels.
+
+A hold-on or stationary thresher changes the feeder and not the maps. The inlet may be a belt or a person rather than a header. Unthreshed loss, separation loss, sieve loss, impurity, and power still move with moisture and with how hard and how long the crop is worked. The sensor question is unchanged whenever the threshing unit is axial.
+
+The numerical plant in Chapters~\ref{ch:method} and~\ref{ch:est} is axial, with eight possible load stations along the cage. The tangential machine is the comparison that explains the placement problem. It is not simulated. The stationary feeder is the reason feed admission is a command at all: the computer may trim the inlet for a short time without claiming to drive a vehicle.
+
+\subsection{The interface the rest of the thesis is allowed to use}
+
+The disturbance is the crop, the offered biomass feed \(q\), and the moisture \(m\). Three crops appear: wheat, rice, and soybean. They differ by grain fraction, by a difficulty multiplier on the loss and breakage maps, and by a multiplier on the load. They do not differ by a change of network architecture.
+
+The command is four numbers in the unit interval. Intensity \(u_I\) stands for how hard the threshing unit hits. Residence \(u_R\) stands for how long the mat is kept over the concave. Cleaning \(u_C\) stands for how aggressively the air-and-sieve stage sorts. Feed admission \(u_F\) trims the inlet over a limited range; it is not a license to shut the machine and call the idle state efficient. The mechanism that turns these four numbers into a rotor speed, a transport setting, a sieve, and a feeder speed is outside the learning method. The simulator in Chapter~\ref{ch:method} is the only place they have a numerical effect.
+
+The measurement window contains the instrumented station loads, a shaft torque, a housing vibration, a sieve-loss proxy, a return flow, shaft power, moisture, and feed. Torque and power see the level of the load. They do not see which station is hot. Vibration is taken at the housing and is modeled as a function of intensity, moisture, and throughput, not of the axial peak. The peak's location is left to the stations. That split is deliberate. If a scalar sensor already contained the shape, a paper about placement would be arguing with its own sensor model.
+
+Grain-recovery efficiency is recovered grain divided by grain offered. Cutting the feed lowers it, so a policy cannot improve the headline number by refusing crop. Grain loss \(L\) is the fraction of admitted grain that is unthreshed, free at the rear, or thrown by the cleaner. When the feed trim is fully open the two statements differ only by rounding. Specific energy \(e\) is shaft energy per tonne of admitted grain. Chapter~\ref{ch:est} also reports the shaft power that this specific energy implies, so the two cannot drift apart unnoticed.
+
+\section{Artificial Intelligence Applied to Threshers}
+\label{sec:review}
+
+\subsection{What the surveys already separate}
+
+Two surveys of learning in agriculture, and one survey of combine control, are enough to locate the gap. Kamilaris and Prenafeta-Bold\'u group deep models in the field by the task the network is asked to perform, and the mass of the work is perception: weeds, fruit, disease, and land cover, with convolutional networks on images \cite{kamilaris2018}. Liakos and co-authors make the same cut from the other direction. Machine learning in agriculture is mostly yield, disease, and species decisions, and the machinery papers are a thin slice beside them \cite{liakos2018}. Chen, Qian, Jin, and Yang review control algorithms on grain combines and find the opposite emphasis: rotor speed, sieve opening, fan speed, and ground speed, closed one loop at a time, with learning used where a model of the cleaner or the header is inconvenient \cite{chen2025}. Perception papers and actuator papers cite each other and solve different problems.
+
+A third survey, on vision for grain crops, makes the perception side concrete. Counting kernels, locating unthreshed heads, and scoring impurity from an image are detection problems, and the published systems treat the detector's output as the product \cite{patricio2018}. A detector can name a loss. It does not by itself choose a command vector under a stability floor.
+
+\subsection{Loss sensing and single-loop control}
+
+Impact plates under a sieve made grain loss a real-time count rather than a bag weighed at the end of a row. Liang, Li, Xu, and Zhao built that sensor for rice and studied where along the sieve a plate has to sit if the count is to stand for the shoe \cite{liang2016}. Zhao, Li, Chen, and Xu had already closed a monitoring loop of the same family \cite{zhao2011}. These papers are about observability of one term. They are not about the axial shape, and they are not about a joint command.
+
+The cleaning controller that still structures the actuator literature is the fuzzy system of Craessaerts, De~Baerdemaeker, Missotten, and Saeys \cite{craessaerts2010a}. It trades sieve loss, return volume, and impurity, and it moves a fan and a sieve opening. Return volume is a penalty in the cost. It is not a delayed state. Shoe frequency, stroke, and a gate are outside the command. The identification underneath the controller was done with the rotor held in one condition, so the axial load never enters the features.
+
+Model-predictive cruise control on the combine, as in the Leuven line, moves ground speed from a process model and a horizon \cite{coen2008b,rawlings2017}. It is the right computation when the command is a speed and the constraint is a capacity. It is a different command from the four setpoints in this thesis, and it assumes a model the designer already trusts at the horizon. The optimizer in Chapter~\ref{ch:method} is in that computational family: a numerical minimization of a scalar cost subject to bounds \cite{nocedal2006}. It is used as a teacher, offline, with the disturbance known. It is not proposed as the program that has to run from a noisy window every control period.
+
+\subsection{What is not in those papers}
+
+The published pieces can be lined up without caricature.
+
+\begin{itemize}
+\item A vision or impact model estimates a loss or an impurity. The estimate is the output.
+\item A fuzzy or predictive loop moves one or two actuators. The axial load shape is not a feature, and a stability floor on that shape is not a constraint.
+\item A threshing balance of the Miu--Kutzbach kind predicts loss along a machine once the rates are known \cite{miu2008a}. It is a plant model. It does not place sensors, and it does not approximate its own optimizer with a network.
+\end{itemize}
+
+Two computational objects are missing from that list. The first is a placement. Eight possible stations and a budget \(K\) are a design of experiments on a shape model \cite{atkinson2007}, followed by a check of whether the status labels that the shape induces are actually recovered by a classifier. The second is a function from the resulting features to the teacher's command. The teacher can afford a numerical solve with the true disturbance in hand. The onboard program cannot. A feedforward network is a standard approximant of a continuous map on a compact set \cite{cybenko1989,hornik1991,goodfellow2016}. Whether this particular map needs the depth, or whether a linear map on the same features already matches it, is an empirical question the study is required to answer rather than to assume. The status boundary is a different question. Front-loaded, blockage-risk, and high-loss share some of the same sensors and are separated by thresholds on different quantities. A linear softmax and a small ReLU network do not have to tie on that boundary \cite{bishop2006,hastie2009}.
+
+Recurrent networks are the right tool when the raw series is the input and the relevant time is long \cite{lecun2015}. Here the window is short and is reduced to statistics before the network sees it. The architecture that matches that choice is feedforward. Chapter~\ref{ch:method} does not train a recurrent net and then claim a comparison it did not run.
+
+\section{Problems Addressed by This Thesis}
+\label{sec:problems}
+
+\subsection{Problem 1: status from a designed placement}
+
+Let \(C\) be a label in
+\[
+\{\text{stable},\ \text{front-loaded},\ \text{under-filled},\ \text{blockage-risk},\ \text{high-loss}\},
+\]
+assigned from the full load shape, the loss, and the mean load by the priority rule in Chapter~\ref{ch:method}. The rule uses the true stations. The classifier does not. It sees a window from a subset \(p\) of the eight stations, together with the scalar channels that are always present.
+
+\textbf{Problem 1.} Choose a placement \(p\) with \(|p|=K\), a feature map \(\mathbf{x}\), and a classifier \(\hat C(\mathbf{x})\), so that \(\hat C\) recovers \(C\) on conditions that were not used to choose \(p\). Report accuracy and macro-F1 against a linear softmax on the same features, and report the same figures for a placement that simply takes the first \(K\) stations from the inlet. A design that raises accuracy by memorizing the training windows is not a solution. The test mixture is drawn again, with new noise.
+
+The label set is part of the problem. Accuracy alone is a weak score because a stable machine is the common case. Macro-F1 gives the rare labels a vote. Under-filled is the thinnest class in the test mixture, and its recall is reported with that fact attached.
+
+\subsection{Problem 2: commands that raise recovery under a priced stability floor}
+
+Let \(\mathbf{u}^\star(q,m,\text{crop})\) be a maximizer of the objective \(J\) defined in Chapter~\ref{ch:method}. The maximizer may use the true disturbance. The network may not. It receives \(\mathbf{x}\) built from a noisy window that was generated under some other command, and it emits \(\hat{\mathbf{u}}(\mathbf{x})\).
+
+\textbf{Problem 2.} Train \(\hat{\mathbf{u}}\) so that the closed-loop plant, under \(\hat{\mathbf{u}}\), improves grain loss relative to a fixed command and relative to a moisture card, keeps the seasonal mean of \(S\) at the floor \(0.70\) rather than under it, and stays close to the teacher's loss, energy, impurity, and breakage. A solution that cuts loss by refusing feed, or by idling the rotor, fails the definition of \(\eta\) and fails \(J\). A solution that matches the teacher on average and misses the wet, heavy row by a wide margin must say so in the point table. The linear map on the same features is the ablation that decides whether depth is doing work on this command or only on the status label.
+
+\subsection{Requirements the later chapters are checked against}
+
+\begin{enumerate}[label=R\arabic*.]
+\item The placement is chosen by a stated criterion on a shape model, and the installed set is written down as station numbers.
+\item The status model and the command model are trained on one sample and scored on another. The seasonal points used in Chapter~\ref{ch:est} are not the training set.
+\item The command model does not receive \(C\) as an input. Status and command are separate networks that share a feature definition. A hidden leak of the true label into \(\hat{\mathbf{u}}\) would make Problem~2 a different problem.
+\item Feed admission may move only inside the trim encoded by the plant. Recovery is computed on grain offered, so a closed trim is a loss of recovery.
+\item Energy, impurity, and breakage are reported beside loss. A table that shows only loss is not an answer to Problem~2.
+\item The onboard program specified in Chapter~\ref{ch:est} is a fixed cyclic schedule: build the window, standardize, evaluate the two networks, and rate-limit the write. It does not call the teacher.
+\item Claims are limited to the reduced-order plant. A field percentage is not among the results.
+\end{enumerate}
+
+\subsection{Assumptions that bound the claims}
+
+\begin{enumerate}[label=A\arabic*.]
+\item The plant maps in Chapter~\ref{ch:method} are smooth, static, and first-order in the losses. A rate that saturated harder at high load would move the wet-rice numbers. It would not remove the product between feed and moisture that the linear card cannot see.
+\item Station noise, torque noise, and the loss-proxy noise are independent and zero-mean at the variances written with the feature map. A shared electrical fault would break the median-free design used here; the program's response to a missing station is specified separately and is not claimed to cover a stuck-at bias that looks like a real load.
+\item The teacher is a local bound-constrained solve started from a coarse grid \cite{nocedal2006}. A better global search could move a point. The network is trained to imitate the teacher that was actually run.
+\item The moisture card is a competent linear policy, not a straw man. It is allowed to beat the fixed setting on wet crops. It is not given the feed or the load shape.
+\item No grain price and no fuel price enter \(J\). The weights are design choices, published so the tables can be read against the cost that produced them. Changing the breakage weight would move residence. The comparison among fixed, card, linear map, network, and teacher is at one published weight vector.
+\item The network is a static map of one window. It has no internal state beyond the rate limit applied at the write. A slower drift of moisture than the window is handled because moisture is itself a feature, not because the network remembers the morning.
+\end{enumerate}
+
+\subsection{What the later chapters owe this statement}
+
+Chapter~\ref{ch:method} writes the plant, the features, the \(D\)-criterion, the two networks, and the offline scores: classification against the linear softmax, and command error against the teacher. Chapter~\ref{ch:est} writes the cyclic program that would run those networks, and the closed-loop numbers on the seasonal mix and on one feed transient. A result that appears only as a training loss is not yet a result of Problem~2. Problem~2 is about the plant after the command is applied.

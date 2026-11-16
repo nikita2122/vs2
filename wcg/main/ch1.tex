@@ -1,0 +1,320 @@
+\chapter{Research on Previous Work}
+\label{ch:previous}
+
+A wooden seed, in the sense used throughout this manuscript, is a hardwood tree seed whose mass and shape are those of a nut rather than those of a cereal grain. The working examples are pin oak, red oak, and bur oak acorns, together with the larger class that includes seeds for which a maize cell is simply the wrong tool. Black walnut sits in that larger class. The seeds are wooden in the ordinary mechanical sense: the shell is hard, the diameter varies inside a lot, the shape is elongated, and two seeds readily lock against each other in a throat. A sowing machine for these seeds has to accept a stream of irregular objects, release them one at a time, and put each one at a commanded spacing and a commanded depth while the vehicle moves.
+
+The silvicultural reason for caring about the machine is direct seeding. Planting a nursery seedling is reliable and expensive. Placing the seed itself can cost about a third as much, which is why direct seeding of oak remains attractive for restoration even though rodents, drought, and handling still make the biological result less certain than transplanting \cite{lof2019,grossnickle2012,stanturf2014,fao2020}. The machine does not solve depredation. It does decide whether the seed arrives at the right place, at the right depth, and without a double or a gap. Those are placement questions. They are also control questions, because the input speed of the seeds and the factors of the machine move together as soon as the vehicle speed, the slope, or the seed lot changes.
+
+Cereal planters already have a large technical literature. Electric drives replace the ground wheel \cite{aces2024,he2017,zhao2024}. Vacuum plates are optimized for hole diameter, pressure, and peripheral speed \cite{yazgi2007,karayel2004,singh2005,onal2012}. Vision has been put inside a corn meter \cite{borja2021}. Vibration has been measured on rapeseed drills and connected to the seed-filling angle \cite{wu2022,zhang2024vib}. A review of intelligent cereal seeders describes actuators, rate control, and depth control as separate subsystems and asks for multi-sensor fusion in the future \cite{liu2025review}. Hardwood metering is older and thinner. A pneumatic meter on a no-till planter delivered about 95 to 97 percent of the expected density for pin oak and red oak and failed on bur oak and black walnut \cite{wells1990}. A rotating drum with a single-seed pickup was built because nursery beds of oak could not be sown by hand at a stable spacing \cite{dinkel1991}. Forestry practice also includes cab-selected spot sowing during site preparation \cite{newforest}. None of that work closes a loop from an image of the wooden seeds to the feed speed, and then from the seed-lot statistics to vibration, vacuum, and depth, in one designed system.
+
+This chapter reviews the two bodies of work that the later designs extend, and then writes the problem those designs are required to solve. Section~\ref{sec:tech1lit} reviews feed-speed control. Section~\ref{sec:tech2lit} reviews factor optimization. Section~\ref{sec:problem} states the indices, the coupled decision, and the requirements. The innovations themselves are designed in Chapter~\ref{ch:design} and estimated in Chapter~\ref{ch:estimate}.
+
+\section{Research on feed-speed control}
+\label{sec:tech1lit}
+
+\subsection{What the feed speed is asked to do}
+
+Precision metering is a rate-matching problem before it is a shape problem. If the machine travels at speed $v$ and the agronomic spacing is $X_t$, the seed input rate that places one seed on each target is
+\begin{equation}
+\lambda^{\star} = \frac{v}{X_t}.
+\label{eq:lambda}
+\end{equation}
+A wheel with $N_c$ cells, turning at $\omega$ radians per second, releases seeds at
+\begin{equation}
+\lambda = \frac{N_c\,\omega}{2\pi}\,\eta,
+\label{eq:lambdaomega}
+\end{equation}
+where the fill ratio $\eta$ is the mean number of seeds that actually leave with each cell. Setting $\lambda=\lambda^{\star}$ and solving for the command gives
+\begin{equation}
+\omega^{\star} = \frac{2\pi\,\lambda^{\star}}{N_c\,\hat\eta} = \frac{2\pi\,v}{N_c\,X_t\,\hat\eta}.
+\label{eq:omegastar}
+\end{equation}
+Every electronic seed meter in the cereal literature is a different way of making $\omega$ track $\omega^{\star}$ when $v$ changes. The difficulty is that $\eta$ is not a constant for wooden seeds, and $v$ is not known perfectly if it is inferred from a wheel that slips.
+
+Equation~\eqref{eq:omegastar} already shows why input speed and machine factors cannot be tuned apart. The fill ratio depends on how well the cell matches the seed, on whether the mass above the cell is bridged, on vibration, and on vacuum. A controller that treats $\hat\eta$ as a number entered by the operator will run at the wrong speed as soon as the lot changes. A controller that only changes vacuum, and leaves $\omega$ on a mechanical ratio, will change $\eta$ and then miss the spacing because $\lambda$ moved. The rest of this section reviews how far published feed-speed control has gone, and where it stops.
+
+\subsection{Ground-wheel drive and slip}
+
+The classical transmission is a ground wheel, a chain, and a gearbox. The cell wheel is geared so that, with no slip and a nominal fill, Equation~\eqref{eq:omegastar} holds. The construction is simple and it needs no electricity. It fails in a specific way. If the drive wheel turns at $(1-s)v$ rather than at $v$, every spacing stretches by $1/(1-s)$. On a slope or on soft ground the slip $s$ is not a small constant. It varies inside a bout. The operator cannot see it in the spacing until plants emerge, and wooden seeds are often not assessed by emergence for a year.
+
+Slip is the reason electronic drives were introduced on row-crop planters. Hydraulic drives first allowed the rate to be set from the cab and allowed a prescription map. Electric drives then removed the shaft and the chain and put a motor on each meter, which adds individual-row shutoff, curve compensation, and a faster change of population \cite{aces2024}. The same reasoning applies to a single-row hardwood planter, with a harsher slip environment: mine spoil, scarified forest soil, and trails are not prepared seedbeds. Wells and colleagues already ran their hardwood meter at modest speeds, 2.4 to 4.0~km/h, and still had to respect slope \cite{wells1990}. A ground wheel on that terrain is a poor speed sensor.
+
+Zhao and colleagues made the same diagnosis for maize and replaced the wheel with an electronic meter whose shaft speed is computed from the set spacing and the measured forward speed \cite{zhao2024}. Their model is the discrete cousin of Equation~\eqref{eq:omegastar}. They report that a fixed-gain proportional--integral--derivative controller was not enough once forward speed kept changing, which is why they scheduled the gains. The hardware lesson carries over. The gain-scheduling lesson only carries over if the disturbance is speed. For wooden seeds the disturbance is also the shape of the next seed.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners=2pt, align=center, minimum height=8mm, inner sep=3pt},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box] (wheel) {Ground wheel\\speed $(1-s)v$};
+\node[box, right=12mm of wheel] (gear) {Fixed ratio\\gear or chain};
+\node[box, right=12mm of gear] (meter) {Cell wheel\\$\omega=(1-s)\omega^{\star}$};
+\node[box, below=14mm of meter] (gap) {Spacing error\\grows as $1/(1-s)$};
+\node[box, below=16mm of wheel] (radar) {Radar or encoder\\on a non-driven wheel};
+\node[box, right=12mm of radar] (law) {Rate law\\$\omega^{\star}(v,X_t,\hat\eta)$};
+\node[box, right=12mm of law] (motor) {Motor\\tracks $\omega^{\star}$};
+\draw[arr] (wheel) -- (gear);
+\draw[arr] (gear) -- (meter);
+\draw[arr] (meter) -- (gap);
+\draw[arr] (radar) -- (law);
+\draw[arr] (law) -- (motor);
+\end{tikzpicture}
+\caption{Ground drive copies slip into every spacing. An electronic rate law uses a speed measurement that is not taken from the driven wheel.}
+\label{fig:slip}
+\end{figure}
+
+\subsection{Proportional--integral--derivative control of the meter shaft}
+
+He and colleagues built a proportional--integral--derivative controller for a maize meter and added integral separation so that a large speed step would not wind the integrator up \cite{he2017}. The plant is the motor and the plate. The setpoint is a plate speed in revolutions per minute. With gains $K_p=16$, $K_i=0.05$, and $K_d=36$ they recorded, for a step from rest to 24~r/min, a rise of about 0.4~s, an overshoot of 1.56 percent, and a steady error of 0.75 percent. On the bench the singulation index reached 98.4 percent at a planting speed of 12~km/h, with multiples and misses not above 1 percent. Those numbers are for graded maize and a plate whose cells match the seed. They show that a well-tuned inner loop can make $\omega$ follow a command. They do not show that the command is the right one when $\eta$ jumps because two acorns have locked in the throat.
+
+The classical tuning route is still the one in Ziegler and Nichols, or a relay experiment, followed by detuning for overshoot \cite{ziegler1942,astrom2006,ogata2010}. For a first-order motor model
+\begin{equation}
+\tau\dot\omega + \omega = K_m u,
+\label{eq:motor1}
+\end{equation}
+a proportional--integral controller $u = K_p e + K_i\int e$ with $e=\omega^{\star}-\omega$ gives the closed-loop characteristic polynomial
+\begin{equation}
+\tau s^2 + (1+K_m K_p)s + K_m K_i = 0.
+\label{eq:pi-char}
+\end{equation}
+Both coefficients are positive for positive gains, so the frozen-gain loop is stable. The design knobs are natural frequency and damping, not a table of fuzzy rules. Fuzzy scheduling is useful when the same gains must cover a stick--slip load as the hopper empties, which is the situation Zhao and colleagues addressed \cite{zhao2024}. Their fuzzy proportional--integral--derivative law, tuned from a Ziegler--Nichols start, shortened the simulated response by 0.23~s. On a soil-bin bench the qualified index was 96.74 percent, the multiple index 2.15 percent, and the miss index 1.10 percent. In the field the qualified index fell to 84.21 percent and the miss index rose to 7.89 percent, still inside the industry specification they cite \cite{jb10293}. The drop from bin to field is the number that matters for a forest machine. A controller identified on a smooth belt will meet a rougher disturbance outdoors, and the specification written for maize is not a specification for acorns.
+
+Dambroz and colleagues showed that a low-cost electric drive can also select which seed lot reaches a horizontal disk, and can vary the rate, on a planter type that is common where expensive row drives are not \cite{dambroz2025}. The computer-science content of that machine is a mode switch and a rate command. It is relevant here because a wooden-seed hopper may hold more than one species, as forestry spot sowers already do \cite{newforest}. This manuscript does not design multi-species switching. It does assume that the controller must survive a change of diameter statistics without a new mechanical plate.
+
+\subsection{Machine vision on the meter}
+
+Speed feedback answers the question ``is the shaft turning at $\omega^{\star}$?''. It does not answer ``is there a seed on the next cell?''. Optoelectronic sensors in the seed tube answer a later question: a seed has already been released, or it has not \cite{kocher1998,lan1999,onal2009}. By the time the tube sensor fires, the empty cell has passed the release point. The spacing error is already committed. That is why a camera looking at the plate, rather than at the tube, is the more interesting sensor for feed-speed control.
+
+Borja and colleagues mounted a camera on a pneumatic corn meter and classified each hole as filled or empty \cite{borja2021}. The mechatronic drive advanced the plate when an empty hole was about to be presented, so that a filled neighbour would arrive at the tube on time. The classifier was accurate: 0.2564 percent error on 780 images. At simulated 2 and 4~km/h the vision meter missed significantly less often than the same meter without vision. At 6~km/h the vision meter missed more. The authors attribute the reversal to the microcontroller, which could not finish the image and the motor update inside the time available. The result is a systems result, not an agronomic curiosity. Perception and actuation need separate time budgets. A design that repeats their architecture on a faster wooden-seed wheel will repeat their failure, even if the classifier is perfect.
+
+The image processing they needed is classical. A gray image of a cell can be thresholded by Otsu's method, which chooses the cut that maximises the between-class variance of the histogram \cite{otsu1979,gonzalez2018}. Edges of a seed against the plate can be extracted by Canny's detector when the threshold is unstable \cite{canny1986}. Connected components then yield area $A$, from which an equivalent diameter
+\begin{equation}
+d = 2\sqrt{\frac{A}{\pi}}
+\label{eq:deq}
+\end{equation}
+is defined even though the seed is not a disk. Circularity $4\pi A/P_{\mathrm{er}}^2$, with $P_{\mathrm{er}}$ the perimeter, is low for an elongated acorn and high for a round pellet. Open-source implementations of these steps are ordinary engineering tools \cite{bradski2000}. A deep detector is not required to decide whether the throat is packed. It would also be the wrong default on a small machine, because the failure mode reported by Borja is latency, and a larger model makes latency worse.
+
+Navid-style image evaluation of a meter on a grease belt is a laboratory cousin of the same idea: the camera grades spacing after the fact \cite{panning2000}. Post-hoc grading is how this manuscript will score its own numerical trials, using the indices of Section~\ref{sec:problem}. It is not a real-time constraint. The real-time use of vision in the first innovation is narrower than a general detector. The camera estimates three scalars---occupancy, mean diameter, and a bridge index---and the constraint layer uses only those scalars. The motor loop never waits for an image.
+
+\subsection{Travel speed as a disturbance, not only as a setpoint}
+
+Equation~\eqref{eq:omegastar} treats $v$ as a known input. Liu and colleagues showed that travel speed also changes the uniformity that a meter can physically deliver \cite{liu2017speed}. Finger-pickup, scoop-wheel, air-pressure, and air-blowing meters for maize were all sensitive to speed, on the bench and in the field. The mechanism is not the control law. At higher peripheral speed the seed has less time to settle in the cell, the release trajectory changes, and bounce in the tube grows. Onal, Degirmencioglu, and Yazgi found an upper seed-release frequency near 16~seeds per second for cotton and maize on their vacuum unit, and an upper peripheral speed near 0.34~m/s, beyond which the qualified index fell \cite{onal2012}. A hardwood planter will not run at maize field speeds. Wells operated near 0.7 to 1.1~m/s. Even in that band, speed remains a disturbance of $\eta$, so a controller that raises $\omega$ in proportion to $v$ can push the cell past the speed at which a heavy seed will still seat.
+
+This is the first place where a pure tracking loop is the wrong optimality condition. Tracking $\omega^{\star}$ minimises $(\omega-\omega^{\star})^2$. Planting efficiency depends on misses and doubles. If raising $\omega$ toward $\omega^{\star}$ increases misses because seeds are bridging, the tracker is faithfully doing harm. The vision constraint in Chapter~\ref{ch:design} exists to break that faithfulness on purpose, for a short time, and then to recover the rate when the bridge index falls.
+
+\subsection{Where feed-speed research stops for wooden seeds}
+
+The reviewed controllers were built for seeds that are small relative to their variation, or that have been graded and coated until they behave like the spherical pellets Yazgi and Degirmencioglu used as a controlled material \cite{yazgi2015}. A wooden seed violates that preparation. Diameter coefficients of variation of 0.12 to 0.20 inside one species, and above 0.30 in a mixed lot, are normal rather than defective. The cell cannot be resized on the move. What can be resized, in effect, is the time allowed for a seed to fall into the cell, and that time is the feed speed.
+
+Published vision adjusts the plate after an empty hole is seen, or grades the result offline. Published fuzzy control adjusts gains so that shaft speed tracks a kinematic command derived from forward speed. Neither computes a bridge index from the shape statistics of the seeds in the throat, and neither treats a reduction of feed speed as a constrained decision rather than as a tracking error. That is the opening for the first innovation. It is an opening in control architecture and in real-time system structure: which computer sees the image, which computer turns the motor, and which quantity is allowed to saturate.
+
+\section{Research on multi-factor optimization}
+\label{sec:tech2lit}
+
+\subsection{The factors that actually move the fill ratio}
+
+Feed speed is one input. The machine has others, and the hardwood problem is that they interact. The factors considered in this manuscript are the following.
+
+\begin{enumerate}
+\item Vibrator frequency at the seed box. Low-frequency agitation can unlock a bridge of large seeds. High-frequency agitation fluidises a mass of small seeds and, past a threshold, destroys the fill.
+\item Assist vacuum at the cell. Vacuum is the main factor in cereal precision meters. For a heavy nut it is a weak force compared with weight, and for a small seed in a large cell it is a way to pick up two seeds.
+\item Opener depth. Depth does not change the meter directly. It changes bounce and the vertical error, and it is the factor a forester means by ``sown properly'' \cite{lof2019}.
+\item Ground speed, already discussed, which sets the time budget of every other factor.
+\item Terrain vibration and slope, which are disturbances rather than commands, but which enter the same equations as the commands.
+\end{enumerate}
+
+A design that optimizes one of these while holding the others at a convenient constant will look good in that slice and fail in the slice beside it. The literature is rich in such slices. It is poor in online coordination.
+
+\subsection{Vacuum, hole diameter, and peripheral speed}
+
+Karayel, Barut, and Ozmerzi modelled the vacuum pressure required to hold a seed on a plate as a function of seed mass, hole area, and the speed of the plate \cite{karayel2004}. The force balance is the one every pneumatic meter uses: pressure difference times hole area must exceed weight, centrifugal force, and a margin for vibration. Singh, Singh, and Saraswat optimized pressure, hole size, and speed for cotton and showed that the optimum is a point in a three-dimensional factor space, not a universal pressure \cite{singh2005}. Yazgi and Degirmencioglu made the experimental design explicit. A central composite response surface over vacuum, hole diameter, and peripheral speed, fitted to the multiple index, the miss index, and the quality-of-feed index, gave an optimum near 5.5~kPa and a 3~mm hole for cotton, and no optimum inside the tested range for plate speed \cite{yazgi2007}. The statistical method is appropriate for a fixed seed lot in a laboratory. It produces a setpoint, not a controller. When the next lot has a different diameter, the surface is a different surface, and the machine is already in the field.
+
+The aerodynamic calculation of Onal and colleagues makes the same point from the other direction. A vacuum band that is wide relative to the seed creates a region in which two seeds can seal, so adding holes to a plate in order to lower peripheral speed can raise the multiple index \cite{onal2012}. For maize they recommended the familiar 26-hole plate. For cotton they recommended fewer holes than the 72-hole plate supplied by default. The recommendation is a mechanical redesign. A wooden-seed machine that must accept pin oak and bur oak in the same season cannot carry a family of plates and still claim to be automatic. The online substitute is to change vacuum and feed speed, which are actuators, and to refuse a vacuum that the current diameter statistics do not support. That refusal is exactly what the factor coordinator in Chapter~\ref{ch:design} does when it drives assist vacuum to zero for the lots studied here.
+
+\subsection{Vibration and the seed-filling angle}
+
+Wu and colleagues measured the vibration of a centralized rapeseed meter and reconstructed the seed motion with a discrete-element model \cite{wu2022,cundall1979}. Field frequencies occupied 0 to 180~Hz. In the simulation, vibration did not merely shake seeds in place. It raised the seed-filling angle from a band of 56 to 59 degrees with no vibration to a band of 70 to 91 degrees with vibration. The angle is the geometric expression of how far around the filling zone the seeds are still in contact with the meter. A larger angle means a disturbed free surface. Bench results followed the geometry: with vibration at 10 to 40~Hz the target-seed rate lay between 88.7 and 99.4 percent, against 100 percent with the device at rest. Longitudinal offset of the seed layer mattered more than lateral offset. Holding that offset inside 0 to 20~mm kept the target rate above 91 percent. The practical conclusion they draw is to manage seed-layer height so that vibration has less to act on.
+
+Zhang and colleagues put a hole-wheel rapeseed meter on a rig whose eccentric mass produced controlled vibration, and compared amplitude with frequency \cite{zhang2024vib}. Amplitude, inside a few millimetres, did little. Frequency did a great deal. From 0 to 10~Hz the discharge stayed near 7.6 to 8.2~g/min and the coefficient of variation of uniformity stayed in a stable band. From 10 to 24~Hz the discharge fell nearly linearly with frequency ($R^2=0.92$) and the coefficient of variation rose nearly linearly ($R^2=0.88$). The 10~Hz threshold is the empirical anchor used later in the miss model. It was measured on rapeseed, not on acorns. Using it for wooden seeds is a modelling choice, stated as such in Chapter~\ref{ch:design}, not a claim that an acorn mass has the same resonance. The qualitative content that transfers is the existence of a frequency above which more agitation is not more singulation.
+
+Li and colleagues, working on irregular vegetable seeds rather than on nuts, found the opposite sign at a much higher frequency \cite{li2025drum}. An air-suction drum, with suction near 16~kPa, clearing air near 3.4~kPa, and a cassette vibrated at 50~Hz, reached a qualified rate of 96.9 percent, with 1.4 percent reseeding and 1.7 percent empty holes. Suction dominated, then clearing air, then vibration. The seeds were small and irregular, and the vibration was a high-frequency assist to stop them sticking, not a low-frequency unlock of a bridge of heavy objects. Copying 50~Hz and 16~kPa onto an acorn meter would be a category error. The factor coordinator must be allowed to choose a low frequency for a heavy seed and to choose almost no vacuum when the cell is larger than the seed. A response surface fitted to pepper seeds will not make that choice.
+
+Inclination is a related factor. Lei and colleagues showed that the angle of a centralized rapeseed meter changes the seed motion enough to move the performance indices, using the same discrete-element tools \cite{lei2022,lei2021,hu2021}. A planter on a 10 to 20 degree trail is an inclined meter whether or not the designer intended one. Wells had already included slope in the hardwood tests: pin oak still metered at 97 percent on a 50 percent grade in the laboratory at 3.2~km/h, and red oak at 97 percent on that grade at 4.0~km/h, while the field result on a mild grade was about 95 percent of the target density at 2.4~km/h \cite{wells1990}. The laboratory number and the field number are both high, and both are for the species the cell could accept. The same paper is the source for the failure mode this manuscript refuses to ignore. Bur oak and black walnut did not meter satisfactorily. A larger seed does not become a smaller seed because the vacuum is raised.
+
+\subsection{Mechanical hardwood meters}
+
+The pneumatic hardwood meter of Wells is the closest field ancestor. A commercial no-till unit was rebuilt with a pneumatic singulator and, after penetration failed, with a parabolic ripper. The metering result is species-dependent in exactly the way a fixed cell predicts. Seeds near the design size pass. Seeds far above it do not. There is no vision and no online change of speed beyond the ground-driven ratio.
+
+The Tourney nursery seeder is the closest mechanical ancestor for singulation by geometry rather than by air \cite{dinkel1991}. A drum with an internal pickup carries one acorn out of the mass and releases it at a fixed clock position. Five rows, 26 holes per revolution, a drum speed of 27~r/min at 1~mile per hour, and a target of eight acorns per foot, give a concrete rate calculation of the same family as Equation~\eqref{eq:omegastar}. The inventors abandoned an adjustable cone gearbox for a more direct drive after the gearbox proved to be the wrong place to put the adjustment. That history supports a direct electric drive. It also shows the limit of a purely mechanical pickup: the hole and the clock angle are manufactured, and a mixed lot returns the designer to the original bridging problem they had already seen when several acorns arrived at once.
+
+Maleki and colleagues evaluated a multi-flight auger as a mass-flow meter for a grain drill \cite{maleki2006}. An auger is the wrong singulator for a seed that must be placed at 0.25~m, because it is designed to produce a continuous ribbon. It remains relevant as a warning. Many ``seeders'' in forestry are mass-flow devices or spot broadcasters \cite{newforest}. A precision index is then the wrong score, and a precision controller is the wrong investment. This manuscript is about the precision case: one wooden seed, one station, a measured spacing.
+
+\subsection{Why offline optimization is not a controller}
+
+Response-surface and discrete-element studies share a workflow. The factors are chosen, the machine or the particle model is run, a polynomial or a simulation output is fitted, and an optimum is published. The optimum is a point $(P^{\star}, d_{\mathrm{hole}}^{\star}, \omega^{\star})$ or a recommended band of frequencies. Nothing in that workflow runs while the hopper is emptying and the slope is changing.
+
+Model-predictive control was built for exactly the online version of this workflow. At each sample one solves a finite-horizon problem, applies the first move, and solves again when the state has moved \cite{garcia1989,clarke1987,camacho2007,maciejowski2002,rawlings2017}. Industrial surveys describe the method as standard on slow multivariable plants where constraints are the real specification \cite{qin2003}. The stability theory for the constrained case is mature: a terminal cost and a terminal set, together with a feasible optimisation, give a decreasing cost and an invariant set \cite{mayne2000}. Explicit solutions exist when the problem is a small quadratic program, which removes the need to run an iterative solver on the machine \cite{bemporad2002,boyd2004}. None of this has been the controller of a hardwood meter. Cereal rate loops are single-input speed loops. Cereal factor studies are offline. The second innovation is the transfer of a constrained, receding-horizon coordinator onto the factor vector of a wooden-seed machine, with a prediction model small enough to sit beside the speed loop rather than replace it.
+
+Identification of that prediction model is a separate and older subject \cite{ljung1999,kalman1960,welch1995}. A recursive least-squares update can track a slow change in the gain from frequency to fill as the lot changes. This manuscript uses a fixed logistic map whose coefficients are published in Chapter~\ref{ch:design}, and it says so. The map is structured so that a later project can replace the coefficients with estimates from a bench without changing the coordinator. Pretending that the coefficients are already hardwood measurements would make the estimation in Chapter~\ref{ch:estimate} look like a field result. It is not.
+
+\subsection{Where factor research stops}
+
+Three limits recur.
+
+First, the factors are optimized one experiment at a time. Vacuum studies hold vibration at whatever the bench happens to produce. Vibration studies hold vacuum at the manufacturer's setting. Depth is another control loop in the intelligent-seeder review, often a down-force loop, not a decision variable inside the same cost as miss and multiple \cite{liu2025review}.
+
+Second, the sign of the vibration effect depends on the seed. Rapeseed is hurt above about 10~Hz \cite{zhang2024vib}. Small irregular vegetable seeds are helped at 50~Hz \cite{li2025drum}. Acorn singulation, in the nursery machine, was helped by a geometric pickup and hurt by bridging \cite{dinkel1991}. A coordinator that cannot change its preferred frequency with measured diameter will copy the wrong paper.
+
+Third, the large-seed failure is accepted as a mechanical fact \cite{wells1990}. It is a mechanical fact for a fixed cell and a fixed speed. It is not yet a fact about a machine that is allowed to slow the input, agitate at a few hertz, drop the vacuum, and hold the depth. Whether that combination recovers a useful fraction of the lost quality is the estimation question of Chapter~\ref{ch:estimate}. The literature does not answer it, because the combination has not been the object of the literature.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners=2pt, align=center, inner sep=3.5pt, minimum width=28mm},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box] (lit1) {Speed loop\\PID or fuzzy PID};
+\node[box, right=8mm of lit1] (lit2) {Offline surface\\vacuum, hole, speed};
+\node[box, right=8mm of lit2] (lit3) {Vibration study\\one frequency band};
+\node[box, below=12mm of lit2] (gap) {No online coupling of\\feed speed and factors\\for variable wooden seeds};
+\node[box, below=12mm of gap, minimum width=40mm] (new) {This manuscript\\vision-constrained feed\\and factor MPC};
+\draw[arr] (lit1.south) -- (gap.north -| lit1.south);
+\draw[arr] (lit2) -- (gap);
+\draw[arr] (lit3.south) -- (gap.north -| lit3.south);
+\draw[arr] (gap) -- (new);
+\end{tikzpicture}
+\caption{The two research lines stop short of a single online design for irregular wooden seeds. The gap is the problem set of Section~\ref{sec:problem}.}
+\label{fig:gap}
+\end{figure}
+
+\section{Problem set}
+\label{sec:problem}
+
+\subsection{Indices that score a single-seed machine}
+
+Kachman and Smith compared the statistics people report for a precision planter and rejected the bare mean and the bare standard deviation of spacing \cite{kachman1995}. Both are pulled by the misses and the doubles, so a machine with many skips can show a plausible mean. The indices that survived their comparison, and that ISO~7256 and the Chinese single-seed test methods also organise around, are defined from the theoretical spacing $X_t$ \cite{iso7256,gb6973,panning2000}. Let the observed positive spacings be $z_i$. Then
+\begin{align}
+I_{\mathrm{mult}} &= 100\cdot\frac{1}{n}\#\{i: z_i \le 0.5 X_t\}, \label{eq:imult}\\
+Q_{\mathrm{f}} &= 100\cdot\frac{1}{n}\#\{i: 0.5 X_t < z_i \le 1.5 X_t\}, \label{eq:qf}\\
+I_{\mathrm{miss}} &= 100\cdot\frac{1}{n}\#\{i: z_i > 1.5 X_t\}. \label{eq:imiss}
+\end{align}
+The three percentages sum to 100. Precision is the coefficient of variation inside the qualified set only,
+\begin{equation}
+C_{\mathrm{v}} = 100\cdot\frac{\mathrm{std}\{z_i: 0.5 X_t < z_i \le 1.5 X_t\}}{\mathrm{mean}\{z_i: 0.5 X_t < z_i \le 1.5 X_t\}}.
+\label{eq:cv}
+\end{equation}
+A precision below about 29 to 30 percent is the informal acceptance band cited from Kachman and Smith by later vacuum-meter papers \cite{onal2012}. A miss index and a multiple index each under about 5 percent, and a quality-of-feed index above about 90 percent, are the cereal aspirations. This manuscript does not adopt 90 percent as a pass mark for bur oak. Wells did not get a satisfactory meter on that seed with a fixed pneumatic cell. The problem is to raise the indices from the ground-driven baseline, especially the miss index on large seeds and the multiple index on small seeds, without inventing a new cell for each lot.
+
+Quality of feed is a statement about spacings, not about productivity. A machine that creeps at a low $v$ can post a high $Q_{\mathrm{f}}$ and finish little ground. The planting-efficiency index used in the estimation is the rate of qualified spacings divided by the kinematic target $\lambda^{\star}$:
+\begin{equation}
+\eta_{\mathrm{E}} = 100\cdot\frac{\text{qualified spacings per second}}{v/X_t}.
+\label{eq:eta}
+\end{equation}
+If the meter runs at the right mean rate and the only errors are local doubles and misses, $\eta_{\mathrm{E}}$ and $Q_{\mathrm{f}}$ are close. If the controller deliberately slows the feed, spacings stretch, $I_{\mathrm{miss}}$ rises, and $\eta_{\mathrm{E}}$ falls even when doubles disappear. That distinction is a required part of the problem statement. A design that only maximises $Q_{\mathrm{f}}$ can do so by going slowly. A design that only maximises seeds per minute can do so by doubling. The cost in Chapter~\ref{ch:design} penalises both.
+
+A short numerical illustration fixes the definitions. Suppose $X_t=0.25$~m and twenty spacings in metres are
+\[
+\begin{aligned}
+&0.04,\ 0.24,\ 0.26,\ 0.23,\ 0.51,\ 0.22,\ 0.25,\ 0.11,\ 0.27,\ 0.24,\\
+&0.48,\ 0.25,\ 0.23,\ 0.08,\ 0.26,\ 0.24,\ 0.62,\ 0.25,\ 0.22,\ 0.27.
+\end{aligned}
+\]
+Five spacings are at most 0.125~m, so $I_{\mathrm{mult}}=25$. Three spacings exceed 0.375~m, so $I_{\mathrm{miss}}=15$. The remaining twelve give $Q_{\mathrm{f}}=60$. The qualified values have mean 0.247~m and standard deviation about 0.017~m, so $C_{\mathrm{v}}\approx 6.8$. The mean of all twenty spacings is pulled up by the gaps and would have flattered a bad multiple count if it had been the only report. This is the Kachman argument in one row of numbers. The estimation in Chapter~\ref{ch:estimate} applies the same definitions to thousands of simulated spacings.
+
+\subsection{The coupled decision}
+
+Let the factor command at a slow sample be
+\begin{equation}
+u_k = \begin{bmatrix} f_k & P_k & h_k \end{bmatrix}^{\mathsf T},
+\label{eq:uk}
+\end{equation}
+and let the fast feed command be the wheel speed $\omega_k$, or equivalently the scale $\sigma_k=\omega_k/\omega^{\star}_k$ by which the kinematic speed is multiplied. The seed lot at that moment is summarised by a diameter distribution with mean $\bar d$ and coefficient of variation $c_d$. Disturbances are slip $s_k$, terrain frequency $f_{\mathrm{dist},k}$, and a depth disturbance. A metering event then produces a spacing contribution whose probabilities depend on all of these:
+\begin{equation}
+(p_m, p_d, p_s) = \Pi(\bar d, c_d, u_k, \sigma_k, s_k, f_{\mathrm{dist},k}).
+\label{eq:pi}
+\end{equation}
+The map $\Pi$ is specified in Chapter~\ref{ch:design}. The decision problem is to choose the sequence of $u_k$ and $\sigma_k$ so that the expected indices improve and the actuator effort stays inside limits:
+\begin{equation}
+\begin{aligned}
+\min_{u,\sigma}\quad
+& \mathbb{E}\big[\, w_m p_m + w_d p_d + w_s (C_{\mathrm{v}}/100) + w_u \ell(u) \,\big] \\
+\text{subject to}\quad
+& f\in[0,14],\quad P\in[0,8],\quad h\in[15,50],\\
+& \sigma\in[0.72,1.08],\quad |\omega_{k+1}-\omega_k|\le \Delta\omega_{\max}.
+\end{aligned}
+\label{eq:decision}
+\end{equation}
+The expectation is over the diameter draw and over the disturbances. The weights are design choices. The constraints are hardware limits. Equation~\eqref{eq:decision} is not solved as one giant program on the machine. It is split, and the split is the architecture.
+
+The fast part owns $\sigma$. It can see a bridge forming and it must act inside one or two cell periods. The slow part owns $u$. Vibration, vacuum, and depth are not usefully changed at 100~Hz, and their effect is on the statistics of the next several hundred seeds. Splitting the decision is justified by time scale, which is a standard reason for cascade and hierarchical control \cite{skogestad2005,astrom2008,franklin2019}. It is also justified by failure containment. If the camera stalls, the slow loop still holds a feasible $(f,P,h)$ and the fast loop falls back to kinematic tracking. If the slow solver fails to return a feasible point, the last feasible $u$ is held and the fast loop continues. A single optimiser that needs both the image and a converged quadratic program before it will turn the motor recreates the latency failure of the combined vision meter \cite{borja2021}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  box/.style={draw, rounded corners=2pt, align=center, inner sep=3pt, minimum height=8mm},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box] (lot) {Seed lot\\$\bar d, c_d$};
+\node[box, right=10mm of lot] (dist) {Disturbances\\$s, f_{\mathrm{dist}}, v$};
+\node[box, below=13mm of lot] (slow) {Slow decision\\$f, P, h$};
+\node[box, below=13mm of dist] (fast) {Fast decision\\feed scale $\sigma$};
+\node[box, below=13mm of $(slow)!0.5!(fast)$] (plant) {Cell wheel, tube,\\opener};
+\node[box, right=12mm of plant] (score) {Indices\\$Q_{\mathrm{f}}, I_{\mathrm{miss}}, I_{\mathrm{mult}}, \eta_{\mathrm{E}}$};
+\draw[arr] (lot) -- (slow);
+\draw[arr] (dist) -- (fast);
+\draw[arr] (dist) -- (slow);
+\draw[arr] (lot) -- (fast);
+\draw[arr] (slow) -- (plant);
+\draw[arr] (fast) -- (plant);
+\draw[arr] (plant) -- (score);
+\end{tikzpicture}
+\caption{The problem is one plant with two decision rates. Seed-lot statistics and terrain disturbances enter both decisions. The indices are defined on the spacings that leave the plant.}
+\label{fig:tworate}
+\end{figure}
+
+\subsection{Requirements}
+
+The requirements below are written so that a later bench test can accept or reject the design. The numerical estimation checks only the subset that can be checked on the model.
+
+\begin{enumerate}
+\item \textbf{Rate.} Given $v$ and $X_t$, the unconstrained feed command shall implement Equation~\eqref{eq:omegastar} with $\hat\eta=1$ as the nominal fill. The nominal spacing studied here is $X_t=0.25$~m. At $v=1.1$~m/s the target rate is 4.4~seeds/s, or 264~seeds/min.
+\item \textbf{Slip.} The speed used in Equation~\eqref{eq:omegastar} shall not be taken from a driven ground wheel. Slope-induced slip shall not scale the mean spacing.
+\item \textbf{Bridge constraint.} When the bridge index exceeds its threshold, the feed scale shall decrease, and the decrease shall be limited so that a single bad frame cannot stall the wheel. The limit used in the model is a scale reduction of at most 0.22.
+\item \textbf{Latency.} Image features shall be computed on a processor that does not share its deadline with the motor current loop. The motor period is 10~ms. The feature period is 50~ms. A missed feature frame shall hold the last bridge index for at most three periods and then decay the constraint.
+\item \textbf{Factors.} Vibration frequency, assist vacuum, and opener depth shall be commands, not factory constants. Frequency shall be selectable at least over 0 to 14~Hz. Vacuum shall be selectable at least over 0 to 8~kPa and shall be allowed to sit at zero.
+\item \textbf{Large seed.} On a lot whose mean diameter exceeds the cell, the design shall be scored by the change in $I_{\mathrm{miss}}$ relative to ground drive, not by a maize acceptance threshold.
+\item \textbf{Small seed.} On a lot whose mean diameter is well below the cell, the design shall be scored by the change in $I_{\mathrm{mult}}$.
+\item \textbf{Harsh vibration.} When the terrain disturbance lies above the 10~Hz anchor, the factor command shall not add a second high frequency on top of it if the predicted miss probability increases.
+\item \textbf{Fallback.} Loss of vision shall leave a stable speed loop. Loss of the factor solver shall leave the last feasible factor command.
+\item \textbf{Effort.} The cost shall include a positive price on vibrator frequency and on vacuum, so that a flat region of the quality surface does not default to maximum actuation.
+\item \textbf{Indices.} Reports shall include $Q_{\mathrm{f}}$, $I_{\mathrm{mult}}$, $I_{\mathrm{miss}}$, $C_{\mathrm{v}}$, and $\eta_{\mathrm{E}}$. A mean spacing alone shall not be used as a pass criterion \cite{kachman1995}.
+\item \textbf{Honesty of evidence.} Any number produced by integrating Equation~\eqref{eq:pi} shall be labelled as a model solution. A requirement that needs a physical hopper, a physical camera, or a live seed lot is out of scope for Chapter~\ref{ch:estimate} and remains a requirement on a future experiment.
+\end{enumerate}
+
+Requirement~12 is unusual in a problem set and is included because the estimation method can be misread. The logistic map is anchored to published qualitative facts: slip hurts a ground drive \cite{zhao2024,aces2024}; vision can cut misses when the computer keeps up and can fail when it does not \cite{borja2021}; vibration above about 10~Hz hurt the rapeseed meters that were measured \cite{zhang2024vib,wu2022}; vacuum and hole size trade doubles against misses \cite{yazgi2007,onal2012}; large hardwood seeds defeated a fixed pneumatic cell \cite{wells1990}. The coefficients that turn those facts into probabilities are choices of this manuscript. They are published so the estimation can be repeated. They are not identified from a new hardwood experiment.
+
+\subsection{Research questions}
+
+The problem set reduces to three questions, which the remaining chapters answer in design and then in numbers.
+
+\begin{enumerate}
+\item Can a feed-speed loop that is allowed to slow down when a vision bridge index is high reduce doubles on small wooden seeds and gaps on large ones, beyond what shaft-speed tracking already achieves by rejecting slip?
+\item Can a slow constrained optimiser, choosing vibration, vacuum, and depth from a size-aware prediction, improve the same indices in regimes where speed tracking has little to offer, in particular under terrain vibration and on seeds larger than the cell?
+\item When the two loops run together, do they interfere? In particular, does the vision loop's willingness to stretch the spacing cancel the factor loop's gain in planting efficiency, or do the loops improve different terms of the cost?
+\end{enumerate}
+
+The first question is about the first innovation. The second is about the second. The third is about the architecture that stacks them. A positive answer to the first two and a qualified answer to the third are both useful. If the stack interferes, the design should say so, because a deployer who turns both loops on by default would otherwise misread the mild-case tables.
+
+\subsection{Scope}
+
+The machine in view is a single-row unit pulled or carried at about 0.7 to 1.2~m/s, with a 12-cell wheel, a 24~mm cell, a vibratory hopper, a small assist vacuum that is allowed to be off, a depth-controlled opener, and a tube. Multi-row coordination, curve compensation, prescription maps, and species switching are outside the design \cite{aces2024,dambroz2025,stafford2000,gebbers2010}. Rodent protection, seed treatment, and germination are outside the indices \cite{lof2019,grossnickle2012}. Communication with a tractor bus is mentioned in the build only as a possible later carrier for the set-point $X_t$; the control design does not depend on ISO~11783 \cite{iso11783}.
+
+The computer-science contribution is the split real-time system, the vision constraint on an otherwise standard motor loop, and the constrained coordinator that treats machine factors as a short-horizon decision with an explicit cost. The mechanical layout in Chapter~\ref{ch:estimate} is the minimum hardware on which those two programs have a meaning. It is not offered as a new singulator geometry. The drum pickup of Dinkel and Kangas and the pneumatic cell of Wells remain the mechanical precedents \cite{dinkel1991,wells1990}. The claim is that those mechanisms are being asked to run open-loop with respect to the two variables that dominate their errors: how fast the wooden seeds are fed in, and how the box, the air, and the opener are set while that happens.
+
+Predictive control enters as a constrained finite-horizon decision, not as a neural policy and not as a claim of global optimality over soil and weather \cite{mayne2000,qin2003}. Fuzzy control enters as a bounded scheduling of three gains on a motor that is already stable at the frozen gains \cite{zadeh1965,mamdani1974,takagi1985,khalil2002}. Vision enters as a scalar constraint, not as a detector of tree species. Each of those reductions is deliberate. Each keeps a failure of one component from becoming a failure of the whole machine, which is the system requirement that the cereal vision meter did not meet when the processor fell behind \cite{borja2021}.
+
+\input{ch1extra}
