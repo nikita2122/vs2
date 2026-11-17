@@ -1,0 +1,19 @@
+The second image on that page is the **cage-fault spectrum** (the one the original poster shared alongside the outer-race/BPFO spectrum you already saw).
+
+**What it shows**
+- A spectrum focused on the lower-frequency region.
+- A cage frequency (FTF / fundamental train frequency) that was first marked at 342 CPM and later corrected to about 147 CPM.
+- Clear **sub-synchronous sidebands** spaced at roughly 6 Hz.
+- A highlighted 2nd harmonic of the cage frequency.
+- Additional peaks that look like 1× shaft-speed sidebands around higher components (the kind of pattern sometimes associated with an inner-race influence or a growing cage defect).
+
+**Why it matters for fault demonstration**
+- Outer-race faults typically produce a family of **harmonics** of BPFO (Ball Pass Frequency Outer).
+- Cage faults (or modulation caused by a damaged cage) produce **sidebands** spaced at the cage frequency (or at shaft speed) around other carriers.
+- In this post the second image is exactly the illustration of those sidebands: the cage frequency and its sideband structure appear once the shaft speed is correctly identified.
+
+So the pair of images on that page gives you both classic signatures:
+1. BPFO harmonics (outer-race damage)
+2. Cage-frequency sidebands (cage-related fault)
+
+That is the kind of visual evidence that shows “the fault appears in the spectrum as harmonics and as sidebands.”
