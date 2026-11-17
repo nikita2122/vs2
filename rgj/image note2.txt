@@ -1,0 +1,28 @@
+Here is a clear diagram of the normal machine status analysis pipeline based on vibration data:
+
+
+
+
+**Short explanation of the diagram**
+
+1. **Machine with vibration sensor**  
+   An accelerometer is mounted on the machine (bearing housing, casing, etc.) and continuously records vibration.
+
+2. **Raw vibration signal (time domain)**  
+   The sensor produces a time-series of acceleration values. In the normal state this signal is relatively stable; when a fault develops, impulses or modulation appear.
+
+3. **Preprocessing**  
+   Filtering removes noise and unwanted frequency ranges. Windowing prepares the signal for spectral analysis.
+
+4. **Feature extraction**  
+   - Time-domain features: RMS, peak, crest factor, kurtosis, etc.  
+   - Frequency-domain features: FFT spectrum that reveals harmonics, sidebands, and characteristic fault frequencies.
+
+5. **Compare with normal baseline**  
+   The extracted features are compared with thresholds or statistical limits established while the machine was known to be healthy.
+
+6. **Status decision**  
+   - If the features stay inside the normal range → **Normal**.  
+   - If they exceed the limits (new harmonics, sidebands, higher RMS, etc.) → **Fault** (further diagnosis recommended).
+
+This is the classical vibration-based condition monitoring pipeline used before neural-network methods.
